@@ -32,10 +32,6 @@ if ('serviceWorker' in navigator) {
   });
 }
 
-// Captura global do prompt de instalação
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  (window as any).deferredPrompt = e;
-  // Dispara um evento customizado para avisar os componentes
-  window.dispatchEvent(new CustomEvent('pwa-prompt-available'));
-});
+// O listener de beforeinstallprompt foi movido para index.html
+// (script inline no <head>) para garantir captura sincrona antes
+// do bundle do React carregar. Aqui apenas reagimos a eventos posteriores.

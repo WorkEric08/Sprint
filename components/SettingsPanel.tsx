@@ -54,26 +54,40 @@ const SettingsPanel: React.FC<Props> = ({ isOpen, onClose, theme, onToggleTheme 
     };
   }, []);
 
-  const handleInstall = async () => {
-    if (isInstalled || !deferredPrompt) return;
-    try {
-      setIsProcessingInstall(true);
-      await deferredPrompt.prompt();
-      const { outcome } = await deferredPrompt.userChoice;
-      if (outcome === 'accepted') {
-        setIsInstalled(true);
-        try { localStorage.setItem('sprint_app_installed', 'true'); } catch {}
-      }
-      setDeferredPrompt(null);
-      (window as any).deferredPrompt = null;
-    } catch (err) {
-      console.error('Erro ao instalar:', err);
-    } finally {
-      setIsProcessingInstall(false);
-    }
-  };
+  const handleInstall = () => {
+    if (isInstalled) return;
 
-  const showInstallSection = isInstalled || !!deferredPrompt;
+    // Le ao vivo do window — o state pode estar desatualizado se
+    // o evento foi capturado pelo script inline antes do React montar.
+    const prompt = deferredPrompt || (window as any).deferredPrompt;
+
+    if (!prompt) {
+      console.warn('[PWA] Prompt de instalacao nao disponivel. Possiveis causas: app ja instalado, criterios PWA nao atendidos, ou usuario ja dispensou.');
+      return;
+    }
+
+    setIsProcessingInstall(true);
+    // IMPORTANTE: prompt() precisa ser chamado SINCRONO no handler de click
+    // para preservar o user gesture. Nao usar await antes dessa linha.
+    prompt.prompt();
+
+    prompt.userChoice
+      .then((choice: { outcome: 'accepted' | 'dismissed' }) => {
+        console.log('[PWA] Resposta do usuario:', choice.outcome);
+        if (choice.outcome === 'accepted') {
+          setIsInstalled(true);
+          try { localStorage.setItem('sprint_app_installed', 'true'); } catch {}
+        }
+        setDeferredPrompt(null);
+        (window as any).deferredPrompt = null;
+      })
+      .catch((err: unknown) => {
+        console.error('[PWA] Erro ao instalar:', err);
+      })
+      .finally(() => {
+        setIsProcessingInstall(false);
+      });
+  };
 
   const handleForceUpdate = async () => {
     setUpdateStatus('clearing');
@@ -158,47 +172,45 @@ const SettingsPanel: React.FC<Props> = ({ isOpen, onClose, theme, onToggleTheme 
           </div>
 
           {/* Aplicativo */}
-          {showInstallSection && (
-            <div className="space-y-3">
-              <label className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">
-                Aplicativo
-              </label>
-              <button
-                onClick={handleInstall}
-                disabled={isInstalled || isProcessingInstall}
-                className={`w-full flex items-center justify-between p-4 rounded-2xl border transition-all active:scale-[0.98] ${
+          <div className="space-y-3">
+            <label className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">
+              Aplicativo
+            </label>
+            <button
+              onClick={handleInstall}
+              disabled={isInstalled || isProcessingInstall}
+              className={`w-full flex items-center justify-between p-4 rounded-2xl border transition-all active:scale-[0.98] ${
+                isInstalled
+                  ? 'bg-green-50 dark:bg-green-900/20 border-green-100 dark:border-green-900/30 cursor-default'
+                  : 'bg-gray-50 dark:bg-gray-800/40 border-gray-100 dark:border-gray-800 hover:border-indigo-200 dark:hover:border-indigo-900/50'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
                   isInstalled
-                    ? 'bg-green-50 dark:bg-green-900/20 border-green-100 dark:border-green-900/30 cursor-default'
-                    : 'bg-gray-50 dark:bg-gray-800/40 border-gray-100 dark:border-gray-800 hover:border-indigo-200 dark:hover:border-indigo-900/50'
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                    isInstalled
-                      ? 'bg-green-100 dark:bg-green-900/40'
-                      : 'bg-indigo-100 dark:bg-indigo-900/30'
-                  }`}>
-                    <i className={`fas ${
-                      isProcessingInstall ? 'fa-circle-notch fa-spin' : isInstalled ? 'fa-check' : 'fa-download'
-                    } text-sm ${
-                      isInstalled ? 'text-green-600 dark:text-green-400' : 'text-indigo-600 dark:text-indigo-400'
-                    }`} />
-                  </div>
-                  <div className="text-left">
-                    <p className="text-sm font-black text-gray-800 dark:text-gray-100">
-                      {isInstalled ? 'App Instalado' : isProcessingInstall ? 'Instalando...' : 'Instalar App'}
-                    </p>
-                    <p className="text-[10px] font-bold text-gray-400 dark:text-gray-600 uppercase tracking-wider mt-0.5">
-                      {isInstalled ? 'Pronto para uso offline' : 'Adicionar à tela de início'}
-                    </p>
-                  </div>
+                    ? 'bg-green-100 dark:bg-green-900/40'
+                    : 'bg-indigo-100 dark:bg-indigo-900/30'
+                }`}>
+                  <i className={`fas ${
+                    isProcessingInstall ? 'fa-circle-notch fa-spin' : isInstalled ? 'fa-check' : 'fa-download'
+                  } text-sm ${
+                    isInstalled ? 'text-green-600 dark:text-green-400' : 'text-indigo-600 dark:text-indigo-400'
+                  }`} />
                 </div>
-                {!isInstalled && !isProcessingInstall && (
-                  <i className="fas fa-chevron-right text-gray-300 dark:text-gray-700 text-xs" />
-                )}
-              </button>
-            </div>
-          )}
+                <div className="text-left">
+                  <p className="text-sm font-black text-gray-800 dark:text-gray-100">
+                    {isInstalled ? 'App Instalado' : isProcessingInstall ? 'Instalando...' : 'Instalar App'}
+                  </p>
+                  <p className="text-[10px] font-bold text-gray-400 dark:text-gray-600 uppercase tracking-wider mt-0.5">
+                    {isInstalled ? 'Pronto para uso offline' : 'Adicionar à tela de início'}
+                  </p>
+                </div>
+              </div>
+              {!isInstalled && !isProcessingInstall && (
+                <i className="fas fa-chevron-right text-gray-300 dark:text-gray-700 text-xs" />
+              )}
+            </button>
+          </div>
 
           {/* Sistema */}
           <div className="space-y-3">

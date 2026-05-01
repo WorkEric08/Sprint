@@ -28,6 +28,25 @@
       }
     })();
   </script>
+  <script>
+    // Captura sincrona do prompt de instalacao do PWA.
+    // Precisa rodar ANTES do bundle (type="module" carrega async),
+    // senao o evento beforeinstallprompt dispara e se perde.
+    (function () {
+      window.deferredPrompt = null;
+      window.addEventListener('beforeinstallprompt', function (e) {
+        e.preventDefault();
+        window.deferredPrompt = e;
+        window.dispatchEvent(new CustomEvent('pwa-prompt-available'));
+        console.log('[PWA] beforeinstallprompt capturado');
+      });
+      window.addEventListener('appinstalled', function () {
+        window.deferredPrompt = null;
+        try { localStorage.setItem('sprint_app_installed', 'true'); } catch (e) {}
+        console.log('[PWA] App instalado');
+      });
+    })();
+  </script>
 </head>
 
 <body class="bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100">
