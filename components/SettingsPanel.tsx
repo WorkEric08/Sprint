@@ -55,21 +55,37 @@ const SettingsPanel: React.FC<Props> = ({ isOpen, onClose, theme, onToggleTheme 
   }, []);
 
   const handleInstall = () => {
-    if (isInstalled) return;
+    console.log('[PWA] Botao "Instalar App" clicado');
+    console.log('[PWA] State.deferredPrompt:', deferredPrompt);
+    console.log('[PWA] window.deferredPrompt:', (window as any).deferredPrompt);
+    console.log('[PWA] isInstalled:', isInstalled);
+
+    if (isInstalled) {
+      console.log('[PWA] Ja instalado, ignorando clique');
+      return;
+    }
 
     // Le ao vivo do window — o state pode estar desatualizado se
     // o evento foi capturado pelo script inline antes do React montar.
     const prompt = deferredPrompt || (window as any).deferredPrompt;
 
     if (!prompt) {
-      console.warn('[PWA] Prompt de instalacao nao disponivel. Possiveis causas: app ja instalado, criterios PWA nao atendidos, ou usuario ja dispensou.');
+      console.warn('[PWA] Prompt nao disponivel. Causas possiveis: app ja instalado neste perfil, criterios PWA nao atendidos, prompt ja dispensado, ou navegador nao suporta install programatico (ex: iOS Safari).');
       return;
     }
 
+    console.log('[PWA] Chamando prompt.prompt()...');
     setIsProcessingInstall(true);
+
     // IMPORTANTE: prompt() precisa ser chamado SINCRONO no handler de click
     // para preservar o user gesture. Nao usar await antes dessa linha.
-    prompt.prompt();
+    try {
+      prompt.prompt();
+    } catch (err) {
+      console.error('[PWA] Erro ao chamar prompt():', err);
+      setIsProcessingInstall(false);
+      return;
+    }
 
     prompt.userChoice
       .then((choice: { outcome: 'accepted' | 'dismissed' }) => {
@@ -82,7 +98,7 @@ const SettingsPanel: React.FC<Props> = ({ isOpen, onClose, theme, onToggleTheme 
         (window as any).deferredPrompt = null;
       })
       .catch((err: unknown) => {
-        console.error('[PWA] Erro ao instalar:', err);
+        console.error('[PWA] Erro no userChoice:', err);
       })
       .finally(() => {
         setIsProcessingInstall(false);

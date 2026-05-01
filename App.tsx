@@ -29,17 +29,6 @@ const App: React.FC = () => {
   });
 
   useEffect(() => {
-    // Registro do Service Worker movido para o App para garantir que o DOM esteja pronto
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js')
-          .then(reg => console.log('SW registrado:', reg.scope))
-          .catch(err => console.warn('Falha no SW:', err));
-      });
-    }
-  }, []);
-
-  useEffect(() => {
     const themeColor = document.querySelector('meta[name="theme-color"]');
     if (theme === 'dark') {
       document.documentElement.classList.add('dark');
