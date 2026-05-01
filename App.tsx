@@ -7,13 +7,14 @@ import Header from './components/Header';
 import StatsOverview from './components/StatsOverview';
 import TimerView from './components/TimerView';
 import ProfileView from './components/ProfileView';
+import CicloView from './components/CicloView';
 
 const App: React.FC = () => {
   const [objectives, setObjectives] = useState<Objective[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingObjective, setEditingObjective] = useState<Objective | null>(null);
   const [activeSprint, setActiveSprint] = useState<Objective | null>(null);
-  const [activeTab, setActiveTab] = useState<'objectives' | 'stats' | 'profile'>('objectives');
+  const [activeTab, setActiveTab] = useState<'objectives' | 'stats' | 'ciclo' | 'profile'>('objectives');
   
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
     try {
@@ -175,6 +176,7 @@ const App: React.FC = () => {
           )}
 
           {activeTab === 'stats' && <StatsOverview objectives={objectives} />}
+          {activeTab === 'ciclo' && <CicloView />}
           {activeTab === 'profile' && <ProfileView />}
         </main>
 
@@ -193,7 +195,14 @@ const App: React.FC = () => {
             <i className="fas fa-chart-line text-xl"></i>
             <span className="text-[10px] font-semibold">Progresso</span>
           </button>
-          <button 
+          <button
+            onClick={() => setActiveTab('ciclo')}
+            className={`flex flex-col items-center gap-1 transition-colors ${activeTab === 'ciclo' ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-400 dark:text-gray-600'}`}
+          >
+            <i className="fas fa-rotate text-xl"></i>
+            <span className="text-[10px] font-semibold">Ciclo</span>
+          </button>
+          <button
             onClick={() => setActiveTab('profile')}
             className={`flex flex-col items-center gap-1 transition-colors ${activeTab === 'profile' ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-400 dark:text-gray-600'}`}
           >

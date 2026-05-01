@@ -22,3 +22,12 @@ export interface UserStats {
   longestStreak: number;
   currentStreak: number;
 }
+
+export interface Subject {
+  id: string;
+  title: string;
+  color: string;
+  duration: number;
+  pixelCount: number;
+  completedPixels: number[];
+}
