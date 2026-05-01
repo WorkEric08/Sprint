@@ -15,14 +15,8 @@ const SettingsPanel: React.FC<Props> = ({ isOpen, onClose, theme, onToggleTheme 
   const [isInstalled, setIsInstalled] = useState(false);
   const [isProcessingInstall, setIsProcessingInstall] = useState(false);
   const [updateStatus, setUpdateStatus] = useState<UpdateStatus>('idle');
-  const [browserType, setBrowserType] = useState<'ios' | 'other'>('other');
 
   useEffect(() => {
-    const ua = navigator.userAgent;
-    if (/iPad|iPhone|iPod/.test(ua) && !(window as any).MSStream) {
-      setBrowserType('ios');
-    }
-
     const isStandalone =
       window.matchMedia('(display-mode: standalone)').matches ||
       (window.navigator as any).standalone === true ||
@@ -35,45 +29,51 @@ const SettingsPanel: React.FC<Props> = ({ isOpen, onClose, theme, onToggleTheme 
 
     const handleBeforeInstall = (e: any) => {
       e.preventDefault();
+      (window as any).deferredPrompt = e;
       setDeferredPrompt(e);
+    };
+    const handlePromptAvailable = () => {
+      if ((window as any).deferredPrompt) {
+        setDeferredPrompt((window as any).deferredPrompt);
+      }
     };
     const handleAppInstalled = () => {
       setIsInstalled(true);
       setDeferredPrompt(null);
+      (window as any).deferredPrompt = null;
       try { localStorage.setItem('sprint_app_installed', 'true'); } catch {}
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstall);
+    window.addEventListener('pwa-prompt-available', handlePromptAvailable);
     window.addEventListener('appinstalled', handleAppInstalled);
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
+      window.removeEventListener('pwa-prompt-available', handlePromptAvailable);
       window.removeEventListener('appinstalled', handleAppInstalled);
     };
   }, []);
 
   const handleInstall = async () => {
-    if (isInstalled) return;
-    if (deferredPrompt) {
-      try {
-        setIsProcessingInstall(true);
-        await deferredPrompt.prompt();
-        const { outcome } = await deferredPrompt.userChoice;
-        if (outcome === 'accepted') {
-          setIsInstalled(true);
-          setDeferredPrompt(null);
-          try { localStorage.setItem('sprint_app_installed', 'true'); } catch {}
-        }
-      } catch (err) {
-        console.error('Erro ao instalar:', err);
-      } finally {
-        setIsProcessingInstall(false);
+    if (isInstalled || !deferredPrompt) return;
+    try {
+      setIsProcessingInstall(true);
+      await deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') {
+        setIsInstalled(true);
+        try { localStorage.setItem('sprint_app_installed', 'true'); } catch {}
       }
-    } else if (browserType === 'ios') {
-      alert('No Safari: toque em Compartilhar (⎋) → Adicionar à Tela de Início');
-    } else {
-      alert('Toque nos três pontos do seu navegador → Instalar Aplicativo');
+      setDeferredPrompt(null);
+      (window as any).deferredPrompt = null;
+    } catch (err) {
+      console.error('Erro ao instalar:', err);
+    } finally {
+      setIsProcessingInstall(false);
     }
   };
+
+  const showInstallSection = isInstalled || !!deferredPrompt;
 
   const handleForceUpdate = async () => {
     setUpdateStatus('clearing');
@@ -158,45 +158,47 @@ const SettingsPanel: React.FC<Props> = ({ isOpen, onClose, theme, onToggleTheme 
           </div>
 
           {/* Aplicativo */}
-          <div className="space-y-3">
-            <label className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">
-              Aplicativo
-            </label>
-            <button
-              onClick={handleInstall}
-              disabled={isInstalled || isProcessingInstall}
-              className={`w-full flex items-center justify-between p-4 rounded-2xl border transition-all active:scale-[0.98] ${
-                isInstalled
-                  ? 'bg-green-50 dark:bg-green-900/20 border-green-100 dark:border-green-900/30 cursor-default'
-                  : 'bg-gray-50 dark:bg-gray-800/40 border-gray-100 dark:border-gray-800 hover:border-indigo-200 dark:hover:border-indigo-900/50'
-              }`}
-            >
-              <div className="flex items-center gap-3">
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+          {showInstallSection && (
+            <div className="space-y-3">
+              <label className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">
+                Aplicativo
+              </label>
+              <button
+                onClick={handleInstall}
+                disabled={isInstalled || isProcessingInstall}
+                className={`w-full flex items-center justify-between p-4 rounded-2xl border transition-all active:scale-[0.98] ${
                   isInstalled
-                    ? 'bg-green-100 dark:bg-green-900/40'
-                    : 'bg-indigo-100 dark:bg-indigo-900/30'
-                }`}>
-                  <i className={`fas ${
-                    isProcessingInstall ? 'fa-circle-notch fa-spin' : isInstalled ? 'fa-check' : 'fa-download'
-                  } text-sm ${
-                    isInstalled ? 'text-green-600 dark:text-green-400' : 'text-indigo-600 dark:text-indigo-400'
-                  }`} />
+                    ? 'bg-green-50 dark:bg-green-900/20 border-green-100 dark:border-green-900/30 cursor-default'
+                    : 'bg-gray-50 dark:bg-gray-800/40 border-gray-100 dark:border-gray-800 hover:border-indigo-200 dark:hover:border-indigo-900/50'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                    isInstalled
+                      ? 'bg-green-100 dark:bg-green-900/40'
+                      : 'bg-indigo-100 dark:bg-indigo-900/30'
+                  }`}>
+                    <i className={`fas ${
+                      isProcessingInstall ? 'fa-circle-notch fa-spin' : isInstalled ? 'fa-check' : 'fa-download'
+                    } text-sm ${
+                      isInstalled ? 'text-green-600 dark:text-green-400' : 'text-indigo-600 dark:text-indigo-400'
+                    }`} />
+                  </div>
+                  <div className="text-left">
+                    <p className="text-sm font-black text-gray-800 dark:text-gray-100">
+                      {isInstalled ? 'App Instalado' : isProcessingInstall ? 'Instalando...' : 'Instalar App'}
+                    </p>
+                    <p className="text-[10px] font-bold text-gray-400 dark:text-gray-600 uppercase tracking-wider mt-0.5">
+                      {isInstalled ? 'Pronto para uso offline' : 'Adicionar à tela de início'}
+                    </p>
+                  </div>
                 </div>
-                <div className="text-left">
-                  <p className="text-sm font-black text-gray-800 dark:text-gray-100">
-                    {isInstalled ? 'App Instalado' : isProcessingInstall ? 'Instalando...' : 'Instalar App'}
-                  </p>
-                  <p className="text-[10px] font-bold text-gray-400 dark:text-gray-600 uppercase tracking-wider mt-0.5">
-                    {isInstalled ? 'Pronto para uso offline' : 'Adicionar à tela de início'}
-                  </p>
-                </div>
-              </div>
-              {!isInstalled && !isProcessingInstall && (
-                <i className="fas fa-chevron-right text-gray-300 dark:text-gray-700 text-xs" />
-              )}
-            </button>
-          </div>
+                {!isInstalled && !isProcessingInstall && (
+                  <i className="fas fa-chevron-right text-gray-300 dark:text-gray-700 text-xs" />
+                )}
+              </button>
+            </div>
+          )}
 
           {/* Sistema */}
           <div className="space-y-3">
