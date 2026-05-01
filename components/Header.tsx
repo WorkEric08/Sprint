@@ -2,11 +2,10 @@
 import React from 'react';
 
 interface Props {
-  theme: 'light' | 'dark';
-  onToggleTheme: () => void;
+  onOpenSettings: () => void;
 }
 
-const Header: React.FC<Props> = ({ theme, onToggleTheme }) => {
+const Header: React.FC<Props> = ({ onOpenSettings }) => {
   return (
     <header className="bg-white dark:bg-gray-950 px-6 pt-8 pb-6 flex items-center justify-between sticky top-0 z-30 border-b border-transparent dark:border-gray-900">
       <div className="flex flex-col">
@@ -20,12 +19,12 @@ const Header: React.FC<Props> = ({ theme, onToggleTheme }) => {
         </div>
         <p className="text-gray-400 dark:text-gray-500 text-[10px] font-bold uppercase tracking-widest mt-1">Eleve seu desenvolvimento</p>
       </div>
-      <button 
-        onClick={onToggleTheme}
-        className="w-10 h-10 rounded-full bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-800 flex items-center justify-center text-gray-400 dark:text-gray-500 transition-all active:rotate-45 hover:text-indigo-500 dark:hover:text-indigo-400"
-        aria-label="Alternar tema"
+      <button
+        onClick={onOpenSettings}
+        className="w-10 h-10 rounded-full bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-800 flex items-center justify-center text-gray-400 dark:text-gray-500 transition-all hover:text-indigo-500 dark:hover:text-indigo-400 active:rotate-45"
+        aria-label="Configurações"
       >
-        <i className={`fas ${theme === 'light' ? 'fa-moon' : 'fa-sun'} text-lg`}></i>
+        <i className="fas fa-gear text-lg"></i>
       </button>
     </header>
   );

@@ -8,6 +8,7 @@ import StatsOverview from './components/StatsOverview';
 import TimerView from './components/TimerView';
 import ProfileView from './components/ProfileView';
 import CicloView from './components/CicloView';
+import SettingsPanel from './components/SettingsPanel';
 
 const App: React.FC = () => {
   const [objectives, setObjectives] = useState<Objective[]>([]);
@@ -15,6 +16,7 @@ const App: React.FC = () => {
   const [editingObjective, setEditingObjective] = useState<Objective | null>(null);
   const [activeSprint, setActiveSprint] = useState<Objective | null>(null);
   const [activeTab, setActiveTab] = useState<'objectives' | 'stats' | 'ciclo' | 'profile'>('objectives');
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
     try {
@@ -130,7 +132,7 @@ const App: React.FC = () => {
 
   return (
     <div className="flex flex-col h-full bg-gray-50 dark:bg-gray-950 max-w-2xl mx-auto shadow-xl dark:shadow-none w-full relative overflow-hidden transition-theme">
-      <Header theme={theme} onToggleTheme={toggleTheme} />
+      <Header onOpenSettings={() => setIsSettingsOpen(true)} />
       
       <main className="scroll-container p-4 space-y-6 pb-24">
         {activeTab === 'objectives' && (
@@ -219,12 +221,19 @@ const App: React.FC = () => {
         />
 
         {activeSprint && (
-          <TimerView 
+          <TimerView
             objective={activeSprint}
             onClose={() => setActiveSprint(null)}
             onComplete={() => completeSprint(activeSprint.id)}
           />
         )}
+
+        <SettingsPanel
+          isOpen={isSettingsOpen}
+          onClose={() => setIsSettingsOpen(false)}
+          theme={theme}
+          onToggleTheme={toggleTheme}
+        />
     </div>
   );
 };
