@@ -4,7 +4,9 @@
       "Bash(Get-ChildItem -Recurse -Force -ErrorAction SilentlyContinue)",
       "Bash(Select-Object -First 100)",
       "Bash(Format-Table FullName)",
-      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\Pichau\\\\Desktop\\\\Sprint\\\\components\" -Recurse | ForEach-Object { $_.FullName })"
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\Pichau\\\\Desktop\\\\Sprint\\\\components\" -Recurse | ForEach-Object { $_.FullName })",
+      "Bash(npx tsc *)",
+      "Bash(npm ls *)"
     ]
   }
 }

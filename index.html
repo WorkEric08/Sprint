@@ -30,21 +30,15 @@
     })();
   </script>
   <script>
-    // Captura sincrona do prompt de instalacao do PWA.
-    // Precisa rodar ANTES do bundle (type="module" carrega async),
-    // senao o evento beforeinstallprompt dispara e se perde.
+    // Captura precoce do beforeinstallprompt: o bundle (type="module") carrega
+    // async, entao o evento pode disparar antes do servico React montar.
+    // Aqui apenas guardamos a referencia; toda a logica vive em services/pwa.ts.
     (function () {
-      window.deferredPrompt = null;
+      window.__pwaDeferredPrompt = null;
       window.addEventListener('beforeinstallprompt', function (e) {
         e.preventDefault();
-        window.deferredPrompt = e;
-        window.dispatchEvent(new CustomEvent('pwa-prompt-available'));
-        console.log('[PWA] beforeinstallprompt capturado');
-      });
-      window.addEventListener('appinstalled', function () {
-        window.deferredPrompt = null;
-        try { localStorage.setItem('sprint_app_installed', 'true'); } catch (e) {}
-        console.log('[PWA] App instalado');
+        window.__pwaDeferredPrompt = e;
+        window.dispatchEvent(new Event('__pwa-prompt-captured'));
       });
     })();
   </script>

@@ -1,5 +1,6 @@
-
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { usePWAInstall } from '../hooks/usePWAInstall';
+import { pwa } from '../services/pwa';
 
 interface Props {
   isOpen: boolean;
@@ -11,122 +12,15 @@ interface Props {
 type UpdateStatus = 'idle' | 'clearing' | 'reloading' | 'error';
 
 const SettingsPanel: React.FC<Props> = ({ isOpen, onClose, theme, onToggleTheme }) => {
-  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
-  const [isInstalled, setIsInstalled] = useState(false);
-  const [isProcessingInstall, setIsProcessingInstall] = useState(false);
+  const { canInstall, isInstalled, isInstalling, install } = usePWAInstall();
   const [updateStatus, setUpdateStatus] = useState<UpdateStatus>('idle');
-
-  useEffect(() => {
-    const isStandalone =
-      window.matchMedia('(display-mode: standalone)').matches ||
-      (window.navigator as any).standalone === true ||
-      localStorage.getItem('sprint_app_installed') === 'true';
-    if (isStandalone) setIsInstalled(true);
-
-    if ((window as any).deferredPrompt) {
-      setDeferredPrompt((window as any).deferredPrompt);
-    }
-
-    const handleBeforeInstall = (e: any) => {
-      e.preventDefault();
-      (window as any).deferredPrompt = e;
-      setDeferredPrompt(e);
-    };
-    const handlePromptAvailable = () => {
-      if ((window as any).deferredPrompt) {
-        setDeferredPrompt((window as any).deferredPrompt);
-      }
-    };
-    const handleAppInstalled = () => {
-      setIsInstalled(true);
-      setDeferredPrompt(null);
-      (window as any).deferredPrompt = null;
-      try { localStorage.setItem('sprint_app_installed', 'true'); } catch {}
-    };
-
-    window.addEventListener('beforeinstallprompt', handleBeforeInstall);
-    window.addEventListener('pwa-prompt-available', handlePromptAvailable);
-    window.addEventListener('appinstalled', handleAppInstalled);
-    return () => {
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
-      window.removeEventListener('pwa-prompt-available', handlePromptAvailable);
-      window.removeEventListener('appinstalled', handleAppInstalled);
-    };
-  }, []);
-
-  const handleInstall = () => {
-    console.log('[PWA] Botao "Instalar App" clicado');
-    console.log('[PWA] State.deferredPrompt:', deferredPrompt);
-    console.log('[PWA] window.deferredPrompt:', (window as any).deferredPrompt);
-    console.log('[PWA] isInstalled:', isInstalled);
-
-    if (isInstalled) {
-      console.log('[PWA] Ja instalado, ignorando clique');
-      return;
-    }
-
-    // Le ao vivo do window — o state pode estar desatualizado se
-    // o evento foi capturado pelo script inline antes do React montar.
-    const prompt = deferredPrompt || (window as any).deferredPrompt;
-
-    if (!prompt) {
-      console.warn('[PWA] Prompt nao disponivel. Causas possiveis: app ja instalado neste perfil, criterios PWA nao atendidos, prompt ja dispensado, ou navegador nao suporta install programatico (ex: iOS Safari).');
-      return;
-    }
-
-    console.log('[PWA] Chamando prompt.prompt()...');
-    setIsProcessingInstall(true);
-
-    // IMPORTANTE: prompt() precisa ser chamado SINCRONO no handler de click
-    // para preservar o user gesture. Nao usar await antes dessa linha.
-    try {
-      prompt.prompt();
-    } catch (err) {
-      console.error('[PWA] Erro ao chamar prompt():', err);
-      setIsProcessingInstall(false);
-      return;
-    }
-
-    prompt.userChoice
-      .then((choice: { outcome: 'accepted' | 'dismissed' }) => {
-        console.log('[PWA] Resposta do usuario:', choice.outcome);
-        if (choice.outcome === 'accepted') {
-          setIsInstalled(true);
-          try { localStorage.setItem('sprint_app_installed', 'true'); } catch {}
-        }
-        setDeferredPrompt(null);
-        (window as any).deferredPrompt = null;
-      })
-      .catch((err: unknown) => {
-        console.error('[PWA] Erro no userChoice:', err);
-      })
-      .finally(() => {
-        setIsProcessingInstall(false);
-      });
-  };
 
   const handleForceUpdate = async () => {
     setUpdateStatus('clearing');
     try {
-      // Limpa todos os caches do SW
-      if ('caches' in window) {
-        const names = await caches.keys();
-        await Promise.all(names.map(n => caches.delete(n)));
-      }
-
-      // Força o SW a buscar a versão mais recente no servidor
-      if ('serviceWorker' in navigator) {
-        const registrations = await navigator.serviceWorker.getRegistrations();
-        await Promise.all(registrations.map(r => r.update()));
-      }
-
+      await pwa.forceUpdate();
       setUpdateStatus('reloading');
-
-      // Aguarda um momento para exibir o estado visual, depois recarrega
-      // O reload vai buscar o HTML/JS mais recente da Vercel
-      setTimeout(() => {
-        window.location.reload();
-      }, 900);
+      setTimeout(() => window.location.reload(), 900);
     } catch (e) {
       console.error('Falha ao atualizar:', e);
       setUpdateStatus('error');
@@ -135,6 +29,8 @@ const SettingsPanel: React.FC<Props> = ({ isOpen, onClose, theme, onToggleTheme 
   };
 
   if (!isOpen) return null;
+
+  const installDisabled = isInstalled || isInstalling || !canInstall;
 
   return (
     <div
@@ -193,11 +89,13 @@ const SettingsPanel: React.FC<Props> = ({ isOpen, onClose, theme, onToggleTheme 
               Aplicativo
             </label>
             <button
-              onClick={handleInstall}
-              disabled={isInstalled || isProcessingInstall}
+              onClick={install}
+              disabled={installDisabled}
               className={`w-full flex items-center justify-between p-4 rounded-2xl border transition-all active:scale-[0.98] ${
                 isInstalled
                   ? 'bg-green-50 dark:bg-green-900/20 border-green-100 dark:border-green-900/30 cursor-default'
+                  : !canInstall
+                  ? 'bg-gray-50 dark:bg-gray-800/40 border-gray-100 dark:border-gray-800 opacity-60 cursor-not-allowed'
                   : 'bg-gray-50 dark:bg-gray-800/40 border-gray-100 dark:border-gray-800 hover:border-indigo-200 dark:hover:border-indigo-900/50'
               }`}
             >
@@ -208,21 +106,31 @@ const SettingsPanel: React.FC<Props> = ({ isOpen, onClose, theme, onToggleTheme 
                     : 'bg-indigo-100 dark:bg-indigo-900/30'
                 }`}>
                   <i className={`fas ${
-                    isProcessingInstall ? 'fa-circle-notch fa-spin' : isInstalled ? 'fa-check' : 'fa-download'
+                    isInstalling ? 'fa-circle-notch fa-spin' : isInstalled ? 'fa-check' : 'fa-download'
                   } text-sm ${
                     isInstalled ? 'text-green-600 dark:text-green-400' : 'text-indigo-600 dark:text-indigo-400'
                   }`} />
                 </div>
                 <div className="text-left">
                   <p className="text-sm font-black text-gray-800 dark:text-gray-100">
-                    {isInstalled ? 'App Instalado' : isProcessingInstall ? 'Instalando...' : 'Instalar App'}
+                    {isInstalled
+                      ? 'App Instalado'
+                      : isInstalling
+                      ? 'Instalando...'
+                      : canInstall
+                      ? 'Instalar PWA'
+                      : 'Instalação indisponível'}
                   </p>
                   <p className="text-[10px] font-bold text-gray-400 dark:text-gray-600 uppercase tracking-wider mt-0.5">
-                    {isInstalled ? 'Pronto para uso offline' : 'Adicionar à tela de início'}
+                    {isInstalled
+                      ? 'Pronto para uso offline'
+                      : canInstall
+                      ? 'Adicionar à tela de início'
+                      : 'Aguardando navegador habilitar'}
                   </p>
                 </div>
               </div>
-              {!isInstalled && !isProcessingInstall && (
+              {!isInstalled && !isInstalling && canInstall && (
                 <i className="fas fa-chevron-right text-gray-300 dark:text-gray-700 text-xs" />
               )}
             </button>
@@ -280,7 +188,6 @@ const SettingsPanel: React.FC<Props> = ({ isOpen, onClose, theme, onToggleTheme 
               )}
             </button>
 
-            {/* Update in progress: full-width status bar */}
             {(updateStatus === 'clearing' || updateStatus === 'reloading') && (
               <div className="w-full bg-indigo-50 dark:bg-indigo-900/20 rounded-2xl px-4 py-3 flex items-center gap-3">
                 <div className="flex-1 h-1.5 bg-indigo-100 dark:bg-indigo-900/50 rounded-full overflow-hidden">
