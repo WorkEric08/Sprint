@@ -10,7 +10,13 @@ const App: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingObjective, setEditingObjective] = useState<Objective | null>(null);
   const [activeSprint, setActiveSprint] = useState<Objective | null>(null);
-  const [activeTab, setActiveTab] = useState<'stats' | 'ciclo' | 'settings'>('stats');
+  const [activeTab, setActiveTab] = useState<'stats' | 'ciclo' | 'settings'>(() => {
+    // Após force update no PWA, volta para a tela de Configurações
+    try {
+      if (sessionStorage.getItem('pwa-force-update') === '1') return 'settings';
+    } catch {}
+    return 'stats';
+  });
   
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
     try {
