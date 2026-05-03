@@ -121,10 +121,34 @@ class PWAService {
       const names = await caches.keys();
       await Promise.all(names.map(n => caches.delete(n)));
     }
-    if ('serviceWorker' in navigator) {
-      const regs = await navigator.serviceWorker.getRegistrations();
-      await Promise.all(regs.map(r => r.update()));
+
+    if (!('serviceWorker' in navigator)) {
+      window.location.reload();
+      return;
     }
+
+    const regs = await navigator.serviceWorker.getRegistrations();
+    await Promise.all(regs.map(r => r.update()));
+
+    const waiting = regs.map(r => r.waiting).find(Boolean);
+
+    if (waiting) {
+      // Novo SW está pronto — espera ele ativar via controllerchange, depois recarrega
+      await new Promise<void>((resolve) => {
+        let resolved = false;
+        const done = () => {
+          if (resolved) return;
+          resolved = true;
+          navigator.serviceWorker.removeEventListener('controllerchange', done);
+          resolve();
+        };
+        navigator.serviceWorker.addEventListener('controllerchange', done);
+        setTimeout(done, 3000);
+        waiting.postMessage({ type: 'SKIP_WAITING' });
+      });
+    }
+
+    window.location.reload();
   }
 
   registerServiceWorker(path = '/sw.js') {
