@@ -1,11 +1,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { Objective } from './types';
-import ObjectiveCard from './components/ObjectiveCard';
-import AddObjectiveModal from './components/AddObjectiveModal';
 import Header from './components/Header';
 import StatsOverview from './components/StatsOverview';
-import TimerView from './components/TimerView';
 import ProfileView from './components/ProfileView';
 import CicloView from './components/CicloView';
 import SettingsPanel from './components/SettingsPanel';
@@ -15,7 +12,7 @@ const App: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingObjective, setEditingObjective] = useState<Objective | null>(null);
   const [activeSprint, setActiveSprint] = useState<Objective | null>(null);
-  const [activeTab, setActiveTab] = useState<'objectives' | 'stats' | 'ciclo' | 'profile'>('objectives');
+  const [activeTab, setActiveTab] = useState<'stats' | 'ciclo' | 'profile'>('stats');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
@@ -124,62 +121,13 @@ const App: React.FC = () => {
       <Header onOpenSettings={() => setIsSettingsOpen(true)} />
       
       <main className="scroll-container p-4 space-y-6 pb-24">
-        {activeTab === 'objectives' && (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100">Seus Objetivos</h2>
-                <button 
-                  onClick={openAddModal}
-                  className="bg-indigo-600 text-white w-10 h-10 rounded-full flex items-center justify-center shadow-lg hover:bg-indigo-700 transition-colors active:scale-90"
-                >
-                  <i className="fas fa-plus"></i>
-                </button>
-              </div>
-              
-              {objectives.length === 0 ? (
-                <div className="text-center py-12 px-6 bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm">
-                  <div className="bg-indigo-50 dark:bg-indigo-900/30 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <i className="fas fa-bullseye text-indigo-400 text-2xl"></i>
-                  </div>
-                  <h3 className="text-gray-700 dark:text-gray-200 font-medium text-lg">Nenhum objetivo ainda</h3>
-                  <p className="text-gray-500 dark:text-gray-400 mt-2">Adicione seu primeiro objetivo para começar sua jornada de desenvolvimento.</p>
-                  <button 
-                    onClick={openAddModal}
-                    className="mt-6 px-6 py-2 bg-indigo-600 text-white rounded-lg font-semibold active:scale-95 transition-transform"
-                  >
-                    Adicionar Objetivo
-                  </button>
-                </div>
-              ) : (
-                <div className="grid gap-4">
-                  {objectives.map(obj => (
-                    <ObjectiveCard 
-                      key={obj.id} 
-                      objective={obj} 
-                      onComplete={() => startSprintTimer(obj)}
-                      onDelete={() => deleteObjective(obj.id)}
-                      onEdit={() => openEditModal(obj)}
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-
           {activeTab === 'stats' && <StatsOverview objectives={objectives} />}
           {activeTab === 'ciclo' && <CicloView />}
           {activeTab === 'profile' && <ProfileView />}
         </main>
 
         <nav className="shrink-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-t border-gray-100 dark:border-gray-800 px-6 py-3 flex justify-around items-center max-w-2xl mx-auto w-full z-40">
-          <button 
-            onClick={() => setActiveTab('objectives')}
-            className={`flex flex-col items-center gap-1 transition-colors ${activeTab === 'objectives' ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-400 dark:text-gray-600'}`}
-          >
-            <i className="fas fa-list-check text-xl"></i>
-            <span className="text-[10px] font-semibold">Sprint</span>
-          </button>
-          <button 
+          <button
             onClick={() => setActiveTab('stats')}
             className={`flex flex-col items-center gap-1 transition-colors ${activeTab === 'stats' ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-400 dark:text-gray-600'}`}
           >
@@ -201,21 +149,6 @@ const App: React.FC = () => {
             <span className="text-[10px] font-semibold">Perfil</span>
           </button>
         </nav>
-
-        <AddObjectiveModal 
-          isOpen={isModalOpen} 
-          onClose={closeModal} 
-          onSubmit={handleModalSubmit} 
-          initialData={editingObjective}
-        />
-
-        {activeSprint && (
-          <TimerView
-            objective={activeSprint}
-            onClose={() => setActiveSprint(null)}
-            onComplete={() => completeSprint(activeSprint.id)}
-          />
-        )}
 
         <SettingsPanel
           isOpen={isSettingsOpen}
