@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { usePWAInstall } from '../hooks/usePWAInstall';
-import { pwa } from '../services/pwa';
 
 interface Props {
   theme: 'light' | 'dark';
@@ -9,33 +8,27 @@ interface Props {
 
 type UpdateStatus = 'idle' | 'clearing' | 'reloading' | 'error';
 
-const formatCommitDate = (dateStr: string) => {
-  try {
-    return new Intl.DateTimeFormat('pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    }).format(new Date(dateStr));
-  } catch {
-    return dateStr;
-  }
-};
-
 const SettingsPanel: React.FC<Props> = ({ theme, onToggleTheme }) => {
   const { canInstall, isInstalled, isInstalling, install } = usePWAInstall();
   const [updateStatus, setUpdateStatus] = useState<UpdateStatus>('idle');
 
   const commitHash = __BUILD_COMMIT_HASH__;
   const commitMsg = __BUILD_COMMIT_MSG__;
-  const commitDate = __BUILD_COMMIT_DATE__;
 
   const handleForceUpdate = async () => {
     setUpdateStatus('clearing');
     try {
-      await pwa.forceUpdate();
+      if ('caches' in window) {
+        const names = await caches.keys();
+        await Promise.all(names.map(n => caches.delete(n)));
+      }
+      if ('serviceWorker' in navigator) {
+        const regs = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(regs.map(r => r.update()));
+      }
       setUpdateStatus('reloading');
+      // Aguarda React renderizar o estado "reloading" antes de recarregar
+      await new Promise(r => setTimeout(r, 400));
       window.location.reload();
     } catch (e) {
       console.error('Falha ao atualizar:', e);
@@ -144,24 +137,19 @@ const SettingsPanel: React.FC<Props> = ({ theme, onToggleTheme }) => {
 
         {/* Versão / último commit */}
         <div className="w-full flex items-center justify-between p-4 rounded-2xl border bg-gray-50 dark:bg-gray-800/40 border-gray-100 dark:border-gray-800">
-          <div className="flex items-center gap-3 min-w-0">
+          <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-gray-100 dark:bg-gray-800 shrink-0">
               <i className="fas fa-code-branch text-sm text-gray-500 dark:text-gray-400" />
             </div>
-            <div className="text-left min-w-0">
+            <div className="text-left">
               <p className="text-sm font-black text-gray-800 dark:text-gray-100">
                 {commitHash !== 'unknown' ? `Commit ${commitHash}` : 'Versão desconhecida'}
               </p>
-              <p className="text-[10px] font-bold text-gray-400 dark:text-gray-600 uppercase tracking-wider mt-0.5 truncate max-w-[180px]">
+              <p className="text-[10px] font-bold text-gray-400 dark:text-gray-600 uppercase tracking-wider mt-0.5">
                 {commitHash !== 'unknown' ? commitMsg : 'Não disponível'}
               </p>
             </div>
           </div>
-          {commitHash !== 'unknown' && (
-            <span className="text-[10px] font-bold text-gray-400 dark:text-gray-600 shrink-0 ml-2 text-right">
-              {formatCommitDate(commitDate)}
-            </span>
-          )}
         </div>
 
         {/* Forçar atualização */}
