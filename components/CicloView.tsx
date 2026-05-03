@@ -220,17 +220,42 @@ const CicloView: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* Progress text */}
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-gray-400 dark:text-gray-600">
-                        {completed} de {total} pixels
-                      </span>
-                      <span
-                        className="text-xs font-black"
-                        style={{ color: allDone ? '#22c55e' : subject.color }}
-                      >
-                        {pct}%
-                      </span>
+                    {/* Progress display */}
+                    <div className="space-y-2">
+                      <div className="flex items-end justify-between">
+                        <div className="flex items-baseline gap-0.5">
+                          <span
+                            className="text-3xl font-black tracking-tighter leading-none"
+                            style={{ color: allDone ? '#22c55e' : subject.color }}
+                          >
+                            {pct}
+                          </span>
+                          <span
+                            className="text-base font-black leading-none"
+                            style={{ color: allDone ? '#22c55e' : subject.color }}
+                          >
+                            %
+                          </span>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-[10px] font-black text-gray-400 dark:text-gray-600 uppercase tracking-widest">
+                            {completed} / {total}
+                          </p>
+                          <p className="text-[9px] font-bold text-gray-300 dark:text-gray-700 uppercase tracking-wider mt-0.5">
+                            pixels
+                          </p>
+                        </div>
+                      </div>
+                      <div className="h-2 w-full bg-gray-100 dark:bg-gray-800/80 rounded-full overflow-hidden">
+                        <div
+                          className="h-full rounded-full transition-all duration-700 ease-out"
+                          style={{
+                            width: `${pct}%`,
+                            backgroundColor: allDone ? '#22c55e' : subject.color,
+                            boxShadow: pct > 0 ? `0 0 8px ${allDone ? '#22c55e' : subject.color}66` : undefined,
+                          }}
+                        />
+                      </div>
                     </div>
 
                     {/* Pixel grid */}
