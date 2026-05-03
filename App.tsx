@@ -10,8 +10,7 @@ const App: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingObjective, setEditingObjective] = useState<Objective | null>(null);
   const [activeSprint, setActiveSprint] = useState<Objective | null>(null);
-  const [activeTab, setActiveTab] = useState<'stats' | 'ciclo'>('stats');
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<'stats' | 'ciclo' | 'settings'>('stats');
   
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
     try {
@@ -119,6 +118,7 @@ const App: React.FC = () => {
       <main className="scroll-container p-4 space-y-6 pb-24">
           {activeTab === 'stats' && <StatsOverview objectives={objectives} />}
           {activeTab === 'ciclo' && <CicloView />}
+          {activeTab === 'settings' && <SettingsPanel theme={theme} onToggleTheme={toggleTheme} />}
         </main>
 
         <nav className="shrink-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-t border-gray-100 dark:border-gray-800 py-3 flex items-center max-w-2xl mx-auto w-full z-40">
@@ -137,20 +137,13 @@ const App: React.FC = () => {
             <span className="text-[10px] font-semibold">Ciclo</span>
           </button>
           <button
-            onClick={() => setIsSettingsOpen(true)}
-            className="flex-1 flex flex-col items-center gap-1 transition-colors text-gray-400 dark:text-gray-600 hover:text-indigo-500 dark:hover:text-indigo-400"
+            onClick={() => setActiveTab('settings')}
+            className={`flex-1 flex flex-col items-center gap-1 transition-colors ${activeTab === 'settings' ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-400 dark:text-gray-600'}`}
           >
             <i className="fas fa-gear text-xl"></i>
             <span className="text-[10px] font-semibold">Configurações</span>
           </button>
         </nav>
-
-        <SettingsPanel
-          isOpen={isSettingsOpen}
-          onClose={() => setIsSettingsOpen(false)}
-          theme={theme}
-          onToggleTheme={toggleTheme}
-        />
     </div>
   );
 };

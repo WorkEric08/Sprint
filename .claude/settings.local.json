@@ -6,7 +6,11 @@
       "Bash(Format-Table FullName)",
       "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\Pichau\\\\Desktop\\\\Sprint\\\\components\" -Recurse | ForEach-Object { $_.FullName })",
       "Bash(npx tsc *)",
-      "Bash(npm ls *)"
+      "Bash(npm ls *)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\Pichau\\\\Desktop\\\\Sprint\" -Recurse -File)",
+      "Bash(Select-Object -ExpandProperty FullName)",
+      "Bash(node_modules/.bin/tsc --noEmit)",
+      "Bash(npm run *)"
     ]
   }
 }
