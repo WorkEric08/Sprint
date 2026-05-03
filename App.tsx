@@ -134,14 +134,17 @@ const App: React.FC = () => {
 
   return (
     <div className="flex flex-col h-full bg-gray-50 dark:bg-gray-950 max-w-2xl mx-auto shadow-xl dark:shadow-none w-full relative overflow-hidden transition-theme">
-      <main className="scroll-container p-4 space-y-6 pb-24">
+      <main
+        className="scroll-container p-4 space-y-6"
+        style={{ paddingBottom: 'calc(6rem + env(safe-area-inset-bottom, 0px))' }}
+      >
           {activeTab === 'stats' && <StatsOverview objectives={objectives} />}
           {activeTab === 'ciclo' && <CicloView />}
           {activeTab === 'settings' && <SettingsPanel theme={theme} onToggleTheme={toggleTheme} />}
         </main>
 
         <nav
-          className="shrink-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-t border-gray-100 dark:border-gray-800 pt-3 flex items-center max-w-2xl mx-auto w-full z-40"
+          className="fixed bottom-0 left-0 right-0 mx-auto max-w-2xl w-full bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-t border-gray-100 dark:border-gray-800 pt-3 flex items-center z-40"
           style={{ paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom, 0px))' }}
         >
           <button
