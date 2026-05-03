@@ -45,6 +45,25 @@
 </head>
 
 <body class="bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100">
+  <!-- Overlay de atualização: aparece durante o reload do force update -->
+  <div id="pwa-update-overlay" style="display:none;position:fixed;inset:0;z-index:9999;flex-direction:column;align-items:center;justify-content:center;gap:16px;"></div>
+  <script>
+    (function () {
+      if (sessionStorage.getItem('pwa-force-update') === '1') {
+        var dark = localStorage.getItem('sprint_theme') === 'dark' ||
+          (!localStorage.getItem('sprint_theme') && window.matchMedia('(prefers-color-scheme:dark)').matches);
+        var el = document.getElementById('pwa-update-overlay');
+        if (el) {
+          el.style.background = dark ? '#030712' : '#f9fafb';
+          el.style.display = 'flex';
+          el.innerHTML =
+            '<div style="width:36px;height:36px;border:3px solid #6366f1;border-top-color:transparent;border-radius:50%;animation:pwa-spin 0.75s linear infinite"></div>' +
+            '<span style="font-family:system-ui,-apple-system,sans-serif;font-size:11px;font-weight:700;color:' + (dark ? '#6b7280' : '#9ca3af') + ';letter-spacing:0.1em;text-transform:uppercase">Aplicando atualização...</span>' +
+            '<style>@keyframes pwa-spin{to{transform:rotate(360deg)}}</style>';
+        }
+      }
+    })();
+  </script>
   <div id="root"></div>
   <script type="module" src="/index.tsx"></script>
 </body>

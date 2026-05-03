@@ -27,8 +27,10 @@ const SettingsPanel: React.FC<Props> = ({ theme, onToggleTheme }) => {
         await Promise.all(regs.map(r => r.update()));
       }
       setUpdateStatus('reloading');
-      // Aguarda React renderizar o estado "reloading" antes de recarregar
-      await new Promise(r => setTimeout(r, 400));
+      // Pequena pausa para React renderizar "Aplicando atualização..."
+      await new Promise(r => setTimeout(r, 300));
+      // Marca no sessionStorage para o overlay aparecer durante o reload
+      sessionStorage.setItem('pwa-force-update', '1');
       window.location.reload();
     } catch (e) {
       console.error('Falha ao atualizar:', e);

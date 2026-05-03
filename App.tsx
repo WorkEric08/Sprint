@@ -23,6 +23,19 @@ const App: React.FC = () => {
   });
 
   useEffect(() => {
+    // Remove overlay de atualização assim que o app estiver renderizado
+    if (sessionStorage.getItem('pwa-force-update') === '1') {
+      sessionStorage.removeItem('pwa-force-update');
+      const overlay = document.getElementById('pwa-update-overlay');
+      if (overlay) {
+        overlay.style.transition = 'opacity 0.3s';
+        overlay.style.opacity = '0';
+        setTimeout(() => { overlay.style.display = 'none'; }, 300);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
     const themeColor = document.querySelector('meta[name="theme-color"]');
     if (theme === 'dark') {
       document.documentElement.classList.add('dark');
