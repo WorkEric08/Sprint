@@ -134,7 +134,10 @@ const App: React.FC = () => {
           {activeTab === 'settings' && <SettingsPanel theme={theme} onToggleTheme={toggleTheme} />}
         </main>
 
-        <nav className="shrink-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-t border-gray-100 dark:border-gray-800 py-3 flex items-center max-w-2xl mx-auto w-full z-40">
+        <nav
+          className="shrink-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-t border-gray-100 dark:border-gray-800 pt-3 flex items-center max-w-2xl mx-auto w-full z-40"
+          style={{ paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom, 0px))' }}
+        >
           <button
             onClick={() => setActiveTab('stats')}
             className={`flex-1 flex flex-col items-center gap-1 transition-colors ${activeTab === 'stats' ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-400 dark:text-gray-600'}`}

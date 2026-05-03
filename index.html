@@ -55,7 +55,7 @@
     #pwa-update-overlay .pwa-text { font-family: system-ui, -apple-system, sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
     #pwa-update-overlay.dark .pwa-text { color: #6b7280; }
     #pwa-update-overlay.light .pwa-text { color: #9ca3af; }
-    #pwa-update-overlay nav { flex-shrink: 0; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-top: 1px solid; padding: 12px 0; display: flex; align-items: center; max-width: 42rem; margin: 0 auto; width: 100%; }
+    #pwa-update-overlay nav { flex-shrink: 0; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-top: 1px solid; padding: 12px 0 calc(12px + env(safe-area-inset-bottom, 0px)); display: flex; align-items: center; max-width: 42rem; margin: 0 auto; width: 100%; }
     #pwa-update-overlay.dark nav { background: rgba(17,24,39,0.8); border-top-color: #1f2937; }
     #pwa-update-overlay.light nav { background: rgba(255,255,255,0.8); border-top-color: #f3f4f6; }
     #pwa-update-overlay nav > div { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
