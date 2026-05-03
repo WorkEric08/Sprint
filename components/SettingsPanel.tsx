@@ -20,7 +20,7 @@ const SettingsPanel: React.FC<Props> = ({ isOpen, onClose, theme, onToggleTheme 
     try {
       await pwa.forceUpdate();
       setUpdateStatus('reloading');
-      setTimeout(() => window.location.reload(), 900);
+      window.location.reload();
     } catch (e) {
       console.error('Falha ao atualizar:', e);
       setUpdateStatus('error');
