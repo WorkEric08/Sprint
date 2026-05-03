@@ -121,24 +121,24 @@ const App: React.FC = () => {
           {activeTab === 'ciclo' && <CicloView />}
         </main>
 
-        <nav className="shrink-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-t border-gray-100 dark:border-gray-800 px-6 py-3 flex justify-center items-center gap-12 max-w-2xl mx-auto w-full z-40">
+        <nav className="shrink-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-t border-gray-100 dark:border-gray-800 py-3 flex items-center max-w-2xl mx-auto w-full z-40">
           <button
             onClick={() => setActiveTab('stats')}
-            className={`flex flex-col items-center gap-1 transition-colors ${activeTab === 'stats' ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-400 dark:text-gray-600'}`}
+            className={`flex-1 flex flex-col items-center gap-1 transition-colors ${activeTab === 'stats' ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-400 dark:text-gray-600'}`}
           >
             <i className="fas fa-chart-line text-xl"></i>
             <span className="text-[10px] font-semibold">Progresso</span>
           </button>
           <button
             onClick={() => setActiveTab('ciclo')}
-            className={`flex flex-col items-center gap-1 transition-colors ${activeTab === 'ciclo' ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-400 dark:text-gray-600'}`}
+            className={`flex-1 flex flex-col items-center gap-1 transition-colors ${activeTab === 'ciclo' ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-400 dark:text-gray-600'}`}
           >
             <i className="fas fa-rotate text-xl"></i>
             <span className="text-[10px] font-semibold">Ciclo</span>
           </button>
           <button
             onClick={() => setIsSettingsOpen(true)}
-            className="flex flex-col items-center gap-1 transition-colors text-gray-400 dark:text-gray-600 hover:text-indigo-500 dark:hover:text-indigo-400"
+            className="flex-1 flex flex-col items-center gap-1 transition-colors text-gray-400 dark:text-gray-600 hover:text-indigo-500 dark:hover:text-indigo-400"
           >
             <i className="fas fa-gear text-xl"></i>
             <span className="text-[10px] font-semibold">Configurações</span>
