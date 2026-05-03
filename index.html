@@ -46,21 +46,54 @@
 
 <body class="bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100">
   <!-- Overlay de atualização: aparece durante o reload do force update -->
-  <div id="pwa-update-overlay" style="display:none;position:fixed;inset:0;z-index:9999;flex-direction:column;align-items:center;justify-content:center;gap:16px;"></div>
+  <style>
+    #pwa-update-overlay { display: none; position: fixed; inset: 0; z-index: 9999; flex-direction: column; transition: opacity 0.3s; }
+    #pwa-update-overlay.dark { background: #030712; }
+    #pwa-update-overlay.light { background: #f9fafb; }
+    #pwa-update-overlay .pwa-content { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding: 0 24px; }
+    #pwa-update-overlay .pwa-spinner { width: 40px; height: 40px; border: 3px solid #6366f1; border-top-color: transparent; border-radius: 50%; animation: pwa-spin 0.75s linear infinite; }
+    #pwa-update-overlay .pwa-text { font-family: system-ui, -apple-system, sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
+    #pwa-update-overlay.dark .pwa-text { color: #6b7280; }
+    #pwa-update-overlay.light .pwa-text { color: #9ca3af; }
+    #pwa-update-overlay nav { flex-shrink: 0; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-top: 1px solid; padding: 12px 0; display: flex; align-items: center; max-width: 42rem; margin: 0 auto; width: 100%; }
+    #pwa-update-overlay.dark nav { background: rgba(17,24,39,0.8); border-top-color: #1f2937; }
+    #pwa-update-overlay.light nav { background: rgba(255,255,255,0.8); border-top-color: #f3f4f6; }
+    #pwa-update-overlay nav > div { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+    #pwa-update-overlay.dark nav > div { color: #4b5563; }
+    #pwa-update-overlay.light nav > div { color: #9ca3af; }
+    #pwa-update-overlay nav svg { width: 22px; height: 22px; }
+    #pwa-update-overlay nav span { font-size: 10px; font-weight: 600; font-family: system-ui, -apple-system, sans-serif; }
+    @keyframes pwa-spin { to { transform: rotate(360deg); } }
+  </style>
+  <div id="pwa-update-overlay">
+    <div class="pwa-content">
+      <div class="pwa-spinner"></div>
+      <span class="pwa-text">Aplicando atualização...</span>
+    </div>
+    <nav>
+      <div>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+        <span>Progresso</span>
+      </div>
+      <div>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
+        <span>Ciclo</span>
+      </div>
+      <div>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        <span>Configurações</span>
+      </div>
+    </nav>
+  </div>
   <script>
     (function () {
-      if (sessionStorage.getItem('pwa-force-update') === '1') {
-        var dark = localStorage.getItem('sprint_theme') === 'dark' ||
-          (!localStorage.getItem('sprint_theme') && window.matchMedia('(prefers-color-scheme:dark)').matches);
-        var el = document.getElementById('pwa-update-overlay');
-        if (el) {
-          el.style.background = dark ? '#030712' : '#f9fafb';
-          el.style.display = 'flex';
-          el.innerHTML =
-            '<div style="width:36px;height:36px;border:3px solid #6366f1;border-top-color:transparent;border-radius:50%;animation:pwa-spin 0.75s linear infinite"></div>' +
-            '<span style="font-family:system-ui,-apple-system,sans-serif;font-size:11px;font-weight:700;color:' + (dark ? '#6b7280' : '#9ca3af') + ';letter-spacing:0.1em;text-transform:uppercase">Aplicando atualização...</span>' +
-            '<style>@keyframes pwa-spin{to{transform:rotate(360deg)}}</style>';
-        }
+      if (sessionStorage.getItem('pwa-force-update') !== '1') return;
+      var dark = localStorage.getItem('sprint_theme') === 'dark' ||
+        (!localStorage.getItem('sprint_theme') && window.matchMedia('(prefers-color-scheme:dark)').matches);
+      var el = document.getElementById('pwa-update-overlay');
+      if (el) {
+        el.classList.add(dark ? 'dark' : 'light');
+        el.style.display = 'flex';
       }
     })();
   </script>

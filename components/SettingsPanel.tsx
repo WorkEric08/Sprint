@@ -25,15 +25,30 @@ const SettingsPanel: React.FC<Props> = ({ theme, onToggleTheme }) => {
       if ('serviceWorker' in navigator) {
         const regs = await navigator.serviceWorker.getRegistrations();
         await Promise.all(regs.map(r => r.update()));
+
+        // Ativa o novo SW imediatamente para que o cache fresco esteja
+        // disponível antes do reload — evita tela branca durante o reload.
+        const waiting = regs.map(r => r.waiting).find(Boolean);
+        if (waiting) {
+          await new Promise<void>((resolve) => {
+            let done = false;
+            const finish = () => { if (!done) { done = true; resolve(); } };
+            navigator.serviceWorker.addEventListener('controllerchange', finish, { once: true });
+            setTimeout(finish, 2000);
+            waiting.postMessage({ type: 'SKIP_WAITING' });
+          });
+        }
       }
       setUpdateStatus('reloading');
-      // Pequena pausa para React renderizar "Aplicando atualização..."
-      await new Promise(r => setTimeout(r, 300));
-      // Marca no sessionStorage para o overlay aparecer durante o reload
+      // Marca antes do reload — o script inline em index.html lê isso
+      // e mostra o overlay com nav fake assim que a nova página renderiza.
       sessionStorage.setItem('pwa-force-update', '1');
+      // Pequena pausa para React pintar "Aplicando atualização..."
+      await new Promise(r => setTimeout(r, 250));
       window.location.reload();
     } catch (e) {
       console.error('Falha ao atualizar:', e);
+      sessionStorage.removeItem('pwa-force-update');
       setUpdateStatus('error');
       setTimeout(() => setUpdateStatus('idle'), 3000);
     }
