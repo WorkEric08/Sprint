@@ -3,7 +3,6 @@ import React, { useState, useEffect } from 'react';
 import { Objective } from './types';
 import Header from './components/Header';
 import StatsOverview from './components/StatsOverview';
-import ProfileView from './components/ProfileView';
 import CicloView from './components/CicloView';
 import SettingsPanel from './components/SettingsPanel';
 
@@ -12,7 +11,7 @@ const App: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingObjective, setEditingObjective] = useState<Objective | null>(null);
   const [activeSprint, setActiveSprint] = useState<Objective | null>(null);
-  const [activeTab, setActiveTab] = useState<'stats' | 'ciclo' | 'profile'>('stats');
+  const [activeTab, setActiveTab] = useState<'stats' | 'ciclo'>('stats');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
@@ -123,7 +122,6 @@ const App: React.FC = () => {
       <main className="scroll-container p-4 space-y-6 pb-24">
           {activeTab === 'stats' && <StatsOverview objectives={objectives} />}
           {activeTab === 'ciclo' && <CicloView />}
-          {activeTab === 'profile' && <ProfileView />}
         </main>
 
         <nav className="shrink-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-t border-gray-100 dark:border-gray-800 px-6 py-3 flex justify-around items-center max-w-2xl mx-auto w-full z-40">
@@ -140,13 +138,6 @@ const App: React.FC = () => {
           >
             <i className="fas fa-rotate text-xl"></i>
             <span className="text-[10px] font-semibold">Ciclo</span>
-          </button>
-          <button
-            onClick={() => setActiveTab('profile')}
-            className={`flex flex-col items-center gap-1 transition-colors ${activeTab === 'profile' ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-400 dark:text-gray-600'}`}
-          >
-            <i className="fas fa-user text-xl"></i>
-            <span className="text-[10px] font-semibold">Perfil</span>
           </button>
         </nav>
 
