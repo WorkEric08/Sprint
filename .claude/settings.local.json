@@ -21,7 +21,10 @@
       "Bash(Select-Object Name, Mode)",
       "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\Pichau\\\\Desktop\\\\Sprint\" -Recurse -Depth 3)",
       "Bash(Select-Object FullName)",
-      "Bash(Sort-Object FullName)"
+      "Bash(Sort-Object FullName)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\Pichau\\\\Desktop\\\\Sprint\" -Force)",
+      "Bash(npm install *)",
+      "Bash(node scripts/generate-icons.mjs)"
     ]
   }
 }

@@ -55,24 +55,22 @@ const ProfileView: React.FC = () => {
     };
 
     const handlePromptAvailable = () => {
-      if ((window as any).deferredPrompt) {
-        setDeferredPrompt((window as any).deferredPrompt);
-      }
+      const prompt = (window as any).__pwaDeferredPrompt || (window as any).__deferredInstallPrompt;
+      if (prompt) setDeferredPrompt(prompt);
     };
 
     // Verifica se já existe um prompt capturado globalmente
-    if ((window as any).deferredPrompt) {
-      setDeferredPrompt((window as any).deferredPrompt);
-    }
+    const existing = (window as any).__pwaDeferredPrompt || (window as any).__deferredInstallPrompt;
+    if (existing) setDeferredPrompt(existing);
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
     window.addEventListener('appinstalled', handleAppInstalled);
-    window.addEventListener('pwa-prompt-available', handlePromptAvailable);
+    window.addEventListener('pwa-install-available', handlePromptAvailable);
 
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
       window.removeEventListener('appinstalled', handleAppInstalled);
-      window.removeEventListener('pwa-prompt-available', handlePromptAvailable);
+      window.removeEventListener('pwa-install-available', handlePromptAvailable);
     };
   }, []);
 

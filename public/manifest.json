@@ -10,32 +10,33 @@
   "orientation": "portrait",
   "background_color": "#030712",
   "theme_color": "#030712",
+  "lang": "pt-BR",
   "prefer_related_applications": false,
   "categories": ["productivity", "lifestyle"],
   "shortcuts": [
     {
       "name": "Novo Objetivo",
       "url": "/?action=new",
-      "icons": [{ "src": "/icon.svg", "sizes": "192x192" }]
+      "icons": [{ "src": "/logo-192.png", "sizes": "192x192", "type": "image/png" }]
     }
   ],
   "icons": [
     {
-      "src": "/icon.svg",
+      "src": "/logo-192.png",
       "sizes": "192x192",
-      "type": "image/svg+xml",
+      "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icon.svg",
+      "src": "/logo-512.png",
       "sizes": "512x512",
-      "type": "image/svg+xml",
+      "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icon.svg",
+      "src": "/logo-512.png",
       "sizes": "512x512",
-      "type": "image/svg+xml",
+      "type": "image/png",
       "purpose": "maskable"
     }
   ]
