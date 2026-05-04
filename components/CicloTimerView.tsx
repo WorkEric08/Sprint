@@ -10,9 +10,10 @@ interface Props {
   onClose: () => void;
   onComplete: () => void;
   onNext: () => void;
+  isDevMode?: boolean;
 }
 
-const CicloTimerView: React.FC<Props> = ({ subject, cycleIndex, cycleTotal, onClose, onComplete, onNext }) => {
+const CicloTimerView: React.FC<Props> = ({ subject, cycleIndex, cycleTotal, onClose, onComplete, onNext, isDevMode }) => {
   const [secondsLeft, setSecondsLeft] = useState(subject.duration * 60);
   const [isActive, setIsActive] = useState(true);
   const [isFinished, setIsFinished] = useState(false);
@@ -141,7 +142,7 @@ const CicloTimerView: React.FC<Props> = ({ subject, cycleIndex, cycleTotal, onCl
               {isActive ? 'Pausar' : 'Retomar'}
             </button>
             <button
-              onClick={onNext}
+              onClick={() => { if (isDevMode) onComplete(); onNext(); }}
               className="w-full py-4 text-gray-400 dark:text-gray-600 font-bold text-xs uppercase tracking-widest hover:text-indigo-500 transition-colors"
             >
               {cycleIndex + 1 < cycleTotal ? 'Pular → Próxima Matéria' : 'Pular → Finalizar Ciclo'}

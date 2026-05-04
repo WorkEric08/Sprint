@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { usePWAInstall } from '../hooks/usePWAInstall';
 
 interface Props {
@@ -14,6 +14,25 @@ type UpdateStatus = 'idle' | 'clearing' | 'reloading' | 'error';
 const SettingsPanel: React.FC<Props> = ({ theme, onToggleTheme, onUpdateStart, userName, onUserNameChange }) => {
   const { canInstall, isInstalled, isInstalling, install } = usePWAInstall();
   const [updateStatus, setUpdateStatus] = useState<UpdateStatus>('idle');
+  const [toast, setToast] = useState<{ msg: string; type: 'on' | 'off' } | null>(null);
+  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const isDevMode = userName.trim().toLowerCase() === 'devinfo';
+
+  const handleNameChange = (name: string) => {
+    const wasDevMode = userName.trim().toLowerCase() === 'devinfo';
+    const nowDevMode = name.trim().toLowerCase() === 'devinfo';
+    if (!wasDevMode && nowDevMode) {
+      if (toastTimer.current) clearTimeout(toastTimer.current);
+      setToast({ msg: 'Modo desenvolvedor ativado', type: 'on' });
+      toastTimer.current = setTimeout(() => setToast(null), 3000);
+    } else if (wasDevMode && !nowDevMode) {
+      if (toastTimer.current) clearTimeout(toastTimer.current);
+      setToast({ msg: 'Modo desenvolvedor desativado', type: 'off' });
+      toastTimer.current = setTimeout(() => setToast(null), 3000);
+    }
+    onUserNameChange(name);
+  };
 
   const commitHash = __BUILD_COMMIT_HASH__;
   const commitMsg = __BUILD_COMMIT_MSG__;
@@ -78,7 +97,7 @@ const SettingsPanel: React.FC<Props> = ({ theme, onToggleTheme, onUpdateStart, u
           <input
             type="text"
             value={userName}
-            onChange={e => onUserNameChange(e.target.value)}
+            onChange={e => handleNameChange(e.target.value)}
             placeholder="Seu nome"
             maxLength={30}
             className="flex-1 bg-transparent text-sm font-black text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-600 placeholder:font-normal focus:outline-none"
@@ -170,8 +189,8 @@ const SettingsPanel: React.FC<Props> = ({ theme, onToggleTheme, onUpdateStart, u
         </button>
       </div>
 
-      {/* Sistema */}
-      <div className="space-y-2">
+      {/* Sistema — visível apenas em modo desenvolvedor */}
+      {isDevMode && <div className="space-y-2">
         <label className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">
           Sistema
         </label>
@@ -254,7 +273,23 @@ const SettingsPanel: React.FC<Props> = ({ theme, onToggleTheme, onUpdateStart, u
             </span>
           </div>
         )}
-      </div>
+      </div>}
+
+      {/* Toast de modo desenvolvedor */}
+      {toast && (
+        <div className="fixed bottom-28 left-1/2 -translate-x-1/2 z-[200] animate-in fade-in slide-in-from-bottom-2 duration-300 pointer-events-none">
+          <div className={`flex items-center gap-2 px-4 py-2.5 rounded-full shadow-xl ${
+            toast.type === 'on'
+              ? 'bg-indigo-600 text-white'
+              : 'bg-gray-700 dark:bg-gray-600 text-white'
+          }`}>
+            <i className={`fas ${toast.type === 'on' ? 'fa-terminal' : 'fa-times-circle'} text-xs`} />
+            <span className="text-[11px] font-black uppercase tracking-widest whitespace-nowrap">
+              {toast.msg}
+            </span>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

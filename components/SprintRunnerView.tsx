@@ -7,9 +7,10 @@ interface Props {
   items: SprintResolvedItem[];
   onBlockComplete: (subjectId: string) => void;
   onClose: () => void;
+  isDevMode?: boolean;
 }
 
-const SprintRunnerView: React.FC<Props> = ({ items, onBlockComplete, onClose }) => {
+const SprintRunnerView: React.FC<Props> = ({ items, onBlockComplete, onClose, isDevMode }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const advance = () => {
@@ -60,6 +61,7 @@ const SprintRunnerView: React.FC<Props> = ({ items, onBlockComplete, onClose }) 
       onClose={onClose}
       onComplete={() => onBlockComplete(current.subject.id)}
       onNext={advance}
+      isDevMode={isDevMode}
     />
   );
 };

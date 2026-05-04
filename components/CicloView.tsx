@@ -388,6 +388,7 @@ const CicloView: React.FC<Props> = ({ userName }) => {
           items={sprintItems}
           onBlockComplete={handleBlockComplete}
           onClose={() => setSprintItems(null)}
+          isDevMode={userName.trim().toLowerCase() === 'devinfo'}
         />
       )}
     </div>
