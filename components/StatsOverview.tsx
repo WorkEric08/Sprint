@@ -175,10 +175,11 @@ const StatsOverview: React.FC<Props> = () => {
 
       {/* Métricas por período */}
       <div className="space-y-4 px-2">
-        <div className="relative flex items-center justify-end">
-          <h3 className="absolute left-0 right-1/2 text-center text-sm font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest pointer-events-none">
+        <div className="grid grid-cols-2 items-center">
+          <h3 className="text-center text-sm font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">
             Métricas
           </h3>
+          <div className="flex justify-center">
           <div className="flex bg-gray-100 dark:bg-gray-800/80 rounded-xl p-0.5">
             {(Object.keys(PERIOD_LABELS) as Period[]).map(p => (
               <button
@@ -193,6 +194,7 @@ const StatsOverview: React.FC<Props> = () => {
                 {PERIOD_LABELS[p]}
               </button>
             ))}
+          </div>
           </div>
         </div>
 
