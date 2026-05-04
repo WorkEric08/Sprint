@@ -12,6 +12,10 @@ const AIAssistant: React.FC<Props> = ({ objectives }) => {
   const [loading, setLoading] = useState(false);
 
   const generateInsight = async () => {
+    if (!navigator.onLine) {
+      setInsight('Você está offline. Conecte-se à internet para usar o Mentor AI.');
+      return;
+    }
     setLoading(true);
     try {
       const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });

@@ -1,4 +1,5 @@
-const CACHE_NAME = 'sprint-v5';
+// Development service worker — production uses the generated version from vite.config.ts
+const CACHE_NAME = 'sprint-dev';
 const PRECACHE = ['/', '/index.html', '/manifest.json', '/icon.svg'];
 
 self.addEventListener('install', (event) => {
@@ -7,7 +8,7 @@ self.addEventListener('install', (event) => {
       Promise.all(
         PRECACHE.map((url) =>
           fetch(url, { cache: 'no-cache' })
-            .then((response) => response.ok ? cache.put(url, response) : null)
+            .then((r) => r.ok ? cache.put(url, r) : null)
             .catch(() => null)
         )
       )
@@ -25,47 +26,51 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// O cliente envia SKIP_WAITING quando força atualização
 self.addEventListener('message', (event) => {
-  if (event.data?.type === 'SKIP_WAITING') {
-    self.skipWaiting();
-  }
+  if (event.data?.type === 'SKIP_WAITING') self.skipWaiting();
 });
 
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
+  const url = new URL(event.request.url);
+  if (url.origin !== self.location.origin) return;
 
-  const isNavigation =
-    event.request.mode === 'navigate' ||
-    event.request.destination === 'document';
+  const isNavigation = event.request.mode === 'navigate';
+  const isAsset = url.pathname.startsWith('/assets/');
 
-  // Navegações (HTML): stale-while-revalidate — serve cache instantaneamente
-  // e atualiza em background. Elimina tela branca no reload do PWA.
-  if (isNavigation) {
+  if (isAsset) {
     event.respondWith(
       caches.match(event.request).then((cached) => {
-        const networkPromise = fetch(event.request)
-          .then((response) => {
-            if (response.ok) {
-              caches.open(CACHE_NAME).then((cache) => cache.put(event.request, response.clone()));
-            }
-            return response;
-          })
-          .catch(() => cached);
-        return cached || networkPromise;
+        if (cached) return cached;
+        return fetch(event.request).then((r) => {
+          if (r.ok) caches.open(CACHE_NAME).then((c) => c.put(event.request, r.clone()));
+          return r;
+        });
       })
     );
     return;
   }
 
-  // Outros recursos: network-first com fallback offline
+  if (isNavigation) {
+    event.respondWith(
+      caches.match(event.request).then((cached) => {
+        const net = fetch(event.request)
+          .then((r) => {
+            if (r.ok) caches.open(CACHE_NAME).then((c) => c.put(event.request, r.clone()));
+            return r;
+          })
+          .catch(() => cached);
+        return cached || net;
+      })
+    );
+    return;
+  }
+
   event.respondWith(
     fetch(event.request)
-      .then((response) => {
-        if (response.ok || response.type === 'opaque') {
-          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, response.clone()));
-        }
-        return response;
+      .then((r) => {
+        if (r.ok) caches.open(CACHE_NAME).then((c) => c.put(event.request, r.clone()));
+        return r;
       })
       .catch(() => caches.match(event.request))
   );
