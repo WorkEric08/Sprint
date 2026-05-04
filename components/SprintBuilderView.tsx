@@ -8,7 +8,7 @@ interface Props {
   onClose: () => void;
 }
 
-const BREAK_STEPS = [5, 10, 15, 20, 30, 45, 60];
+const BREAK_STEPS = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60];
 
 function uid(): string {
   return Math.random().toString(36).substring(2, 11) + Date.now().toString(36);
@@ -184,18 +184,24 @@ const SprintBuilderView: React.FC<Props> = ({ subjects, onStart, onClose }) => {
       <div className="border-t border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900">
         {/* Subject + break chips */}
         <div className="flex gap-2 px-4 pt-3 pb-2 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
-          {subjects.map(subject => (
-            <button
-              key={subject.id}
-              onClick={() => addStudy(subject.id)}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-full border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/60 active:scale-95 transition-transform shrink-0"
-            >
-              <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: subject.color }} />
-              <span className="text-[11px] font-black text-gray-700 dark:text-gray-300 uppercase tracking-tight whitespace-nowrap">
-                {subject.title}
-              </span>
-            </button>
-          ))}
+          {subjects.map(subject => {
+            const remaining = subject.blockCount - subject.completedBlocks.length;
+            return (
+              <button
+                key={subject.id}
+                onClick={() => addStudy(subject.id)}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-full border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/60 active:scale-95 transition-transform shrink-0"
+              >
+                <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: subject.color }} />
+                <span className="text-[11px] font-black text-gray-700 dark:text-gray-300 uppercase tracking-tight whitespace-nowrap">
+                  {subject.title}
+                </span>
+                <span className="text-[10px] font-bold text-gray-400 dark:text-gray-600 whitespace-nowrap">
+                  {remaining}/{subject.blockCount}
+                </span>
+              </button>
+            );
+          })}
           <button
             onClick={addBreak}
             className="flex items-center gap-1.5 px-3 py-2 rounded-full border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 active:scale-95 transition-transform shrink-0"
