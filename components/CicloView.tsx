@@ -170,11 +170,6 @@ const CicloView: React.FC<Props> = ({ userName }) => {
                         <span className="font-black text-gray-800 dark:text-gray-100 text-sm uppercase tracking-tight truncate">
                           {subject.title}
                         </span>
-                        {allDone && (
-                          <span className="shrink-0 text-[9px] font-black uppercase tracking-widest text-green-500 bg-green-50 dark:bg-green-900/20 px-2 py-0.5 rounded-full">
-                            Completo
-                          </span>
-                        )}
                       </div>
                       <div className="flex items-center gap-1.5 shrink-0 ml-2">
                         <span className="text-[10px] font-bold text-gray-400 dark:text-gray-600 uppercase">{subject.duration}min</span>

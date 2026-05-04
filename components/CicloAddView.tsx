@@ -84,7 +84,7 @@ const CicloAddView: React.FC<Props> = ({ onSave, onClose }) => {
             max="100"
             step="1"
             value={blockCount}
-            onChange={e => setPixelCount(Number(e.target.value))}
+            onChange={e => setBlockCount(Number(e.target.value))}
             className="w-full accent-indigo-600 h-1.5 bg-gray-100 dark:bg-gray-800/80 rounded-full appearance-none cursor-pointer"
           />
           <div className="text-sm font-black text-indigo-600 dark:text-indigo-400 tracking-tighter text-center">
