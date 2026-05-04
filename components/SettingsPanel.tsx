@@ -57,6 +57,23 @@ const SettingsPanel: React.FC<Props> = ({ theme, onToggleTheme }) => {
   const installDisabled = isInstalled || isInstalling || !canInstall;
 
   return (
+    <>
+    {(updateStatus === 'clearing' || updateStatus === 'reloading') && (
+      <div
+        className="fixed inset-0 z-[9998] flex items-center justify-center"
+        style={{ background: theme === 'dark' ? '#030712' : '#f9fafb' }}
+      >
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-10 h-10 rounded-full border-[3px] border-indigo-500 border-t-transparent animate-spin" />
+          <span
+            className="text-[11px] font-black uppercase tracking-[0.1em]"
+            style={{ color: theme === 'dark' ? '#6b7280' : '#9ca3af' }}
+          >
+            Atualizando...
+          </span>
+        </div>
+      </div>
+    )}
     <div className="space-y-6">
       <h2 className="text-xl font-black text-gray-800 dark:text-gray-100 uppercase tracking-tight">
         Configurações
@@ -232,6 +249,7 @@ const SettingsPanel: React.FC<Props> = ({ theme, onToggleTheme }) => {
         )}
       </div>
     </div>
+    </>
   );
 };
 
