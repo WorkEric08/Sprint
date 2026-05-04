@@ -11,13 +11,16 @@ const App: React.FC = () => {
   const [editingObjective, setEditingObjective] = useState<Objective | null>(null);
   const [activeSprint, setActiveSprint] = useState<Objective | null>(null);
   const [activeTab, setActiveTab] = useState<'stats' | 'ciclo' | 'settings'>(() => {
-    // Após force update no PWA, volta para a tela de Configurações
     try {
       if (sessionStorage.getItem('pwa-force-update') === '1') return 'settings';
     } catch {}
-    return 'stats';
+    return 'ciclo';
   });
-  
+
+  const [userName, setUserName] = useState<string>(() => {
+    try { return localStorage.getItem('sprint_user_name') ?? ''; } catch { return ''; }
+  });
+
   const [isUpdating, setIsUpdating] = useState(false);
 
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
@@ -79,6 +82,11 @@ const App: React.FC = () => {
   }, [objectives]);
 
   const toggleTheme = () => setTheme(prev => prev === 'light' ? 'dark' : 'light');
+
+  const handleUserNameChange = (name: string) => {
+    setUserName(name);
+    try { localStorage.setItem('sprint_user_name', name); } catch {}
+  };
 
   const handleModalSubmit = (data: Omit<Objective, 'id' | 'createdAt' | 'completions'>) => {
     if (editingObjective) {
@@ -158,8 +166,8 @@ const App: React.FC = () => {
         style={{ paddingBottom: 'calc(6rem + env(safe-area-inset-bottom, 0px))' }}
       >
           {activeTab === 'stats' && <StatsOverview objectives={objectives} />}
-          {activeTab === 'ciclo' && <CicloView />}
-          {activeTab === 'settings' && <SettingsPanel theme={theme} onToggleTheme={toggleTheme} onUpdateStart={() => setIsUpdating(true)} />}
+          {activeTab === 'ciclo' && <CicloView userName={userName} />}
+          {activeTab === 'settings' && <SettingsPanel theme={theme} onToggleTheme={toggleTheme} onUpdateStart={() => setIsUpdating(true)} userName={userName} onUserNameChange={handleUserNameChange} />}
         </main>
 
         <nav

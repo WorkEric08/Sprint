@@ -5,11 +5,13 @@ interface Props {
   theme: 'light' | 'dark';
   onToggleTheme: () => void;
   onUpdateStart: () => void;
+  userName: string;
+  onUserNameChange: (name: string) => void;
 }
 
 type UpdateStatus = 'idle' | 'clearing' | 'reloading' | 'error';
 
-const SettingsPanel: React.FC<Props> = ({ theme, onToggleTheme, onUpdateStart }) => {
+const SettingsPanel: React.FC<Props> = ({ theme, onToggleTheme, onUpdateStart, userName, onUserNameChange }) => {
   const { canInstall, isInstalled, isInstalling, install } = usePWAInstall();
   const [updateStatus, setUpdateStatus] = useState<UpdateStatus>('idle');
 
@@ -63,6 +65,26 @@ const SettingsPanel: React.FC<Props> = ({ theme, onToggleTheme, onUpdateStart })
       <h2 className="text-xl font-black text-gray-800 dark:text-gray-100 uppercase tracking-tight">
         Configurações
       </h2>
+
+      {/* Perfil */}
+      <div className="space-y-3">
+        <label className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">
+          Perfil
+        </label>
+        <div className="bg-gray-50 dark:bg-gray-800/40 border border-gray-100 dark:border-gray-800 rounded-2xl p-4 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center shrink-0">
+            <i className="fas fa-user text-sm text-indigo-600 dark:text-indigo-400" />
+          </div>
+          <input
+            type="text"
+            value={userName}
+            onChange={e => onUserNameChange(e.target.value)}
+            placeholder="Seu nome"
+            maxLength={30}
+            className="flex-1 bg-transparent text-sm font-black text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-600 placeholder:font-normal focus:outline-none"
+          />
+        </div>
+      </div>
 
       {/* Aparência */}
       <div className="space-y-3">

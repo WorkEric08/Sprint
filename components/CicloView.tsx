@@ -1,12 +1,23 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Subject } from '../types';
 import CicloTimerView from './CicloTimerView';
 import CicloEditView from './CicloEditView';
+import CicloAddView from './CicloAddView';
 import { useBackButton } from '../hooks/useBackButton';
 
-const COLORS = ['#4f46e5', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4'];
+function getGreeting(): string {
+  const h = new Date().getHours();
+  if (h < 6) return 'Boa madrugada';
+  if (h < 12) return 'Bom dia';
+  if (h < 18) return 'Boa tarde';
+  return 'Boa noite';
+}
 
-const CicloView: React.FC = () => {
+interface Props {
+  userName: string;
+}
+
+const CicloView: React.FC<Props> = ({ userName }) => {
   const [subjects, setSubjects] = useState<Subject[]>(() => {
     try {
       const saved = localStorage.getItem('sprint_ciclo_subjects');
@@ -16,18 +27,12 @@ const CicloView: React.FC = () => {
     }
   });
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isAdding, setIsAdding] = useState(false);
   const [editingSubject, setEditingSubject] = useState<Subject | null>(null);
 
   // Confirm dialogs
   const [confirmReset, setConfirmReset] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
-
-  // Add modal form state
-  const [title, setTitle] = useState('');
-  const [color, setColor] = useState(COLORS[0]);
-  const [duration, setDuration] = useState(25);
-  const [pixelCount, setPixelCount] = useState(20);
 
   const [activeCycle, setActiveCycle] = useState<{ subjectIds: string[]; currentIndex: number } | null>(null);
 
@@ -39,36 +44,14 @@ const CicloView: React.FC = () => {
     }
   }, [subjects]);
 
-  const resetModalForm = useCallback(() => {
-    setTitle('');
-    setColor(COLORS[0]);
-    setDuration(25);
-    setPixelCount(20);
-  }, []);
-
-  const openAddModal = () => {
-    resetModalForm();
-    setIsModalOpen(true);
-  };
-
-  const closeModal = () => {
-    setIsModalOpen(false);
-    resetModalForm();
-  };
-
-  const handleModalSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!title.trim()) return;
+  const handleAddSave = (data: Pick<Subject, 'title' | 'color' | 'duration' | 'pixelCount'>) => {
     const newSubject: Subject = {
       id: Math.random().toString(36).substring(2, 11) + Date.now().toString(36),
-      title,
-      color,
-      duration,
-      pixelCount,
+      ...data,
       completedPixels: [],
     };
     setSubjects(prev => [...prev, newSubject]);
-    closeModal();
+    setIsAdding(false);
   };
 
   const handleEditSave = (data: Pick<Subject, 'title' | 'color' | 'duration' | 'pixelCount'>) => {
@@ -124,11 +107,10 @@ const CicloView: React.FC = () => {
   const subjectToReset = confirmReset ? subjects.find(s => s.id === confirmReset) : null;
   const subjectToDelete = confirmDelete ? subjects.find(s => s.id === confirmDelete) : null;
 
-  const hasOverlay = isModalOpen || !!confirmReset || !!confirmDelete;
+  const hasOverlay = !!confirmReset || !!confirmDelete;
   useBackButton(() => {
     if (confirmReset) { setConfirmReset(null); return; }
-    if (confirmDelete) { setConfirmDelete(null); return; }
-    closeModal();
+    setConfirmDelete(null);
   }, hasOverlay);
 
   return (
@@ -136,11 +118,15 @@ const CicloView: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100">Ciclo de Estudos</h2>
-          <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Estude cada matéria, ganhe pixels</p>
+          <p className="text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">
+            {getGreeting()}
+          </p>
+          <h2 className="text-xl font-black text-gray-800 dark:text-gray-100 tracking-tight">
+            {userName || 'Estudante'}
+          </h2>
         </div>
         <button
-          onClick={openAddModal}
+          onClick={() => setIsAdding(true)}
           className="bg-indigo-600 text-white w-10 h-10 rounded-full flex items-center justify-center shadow-lg hover:bg-indigo-700 transition-colors active:scale-90"
         >
           <i className="fas fa-plus" />
@@ -157,7 +143,7 @@ const CicloView: React.FC = () => {
             Adicione suas matérias e comece a construir seu mapa de pixels de estudo.
           </p>
           <button
-            onClick={openAddModal}
+            onClick={() => setIsAdding(true)}
             className="mt-6 px-6 py-2 bg-indigo-600 text-white rounded-lg font-semibold active:scale-95 transition-transform"
           >
             Adicionar Matéria
@@ -292,118 +278,12 @@ const CicloView: React.FC = () => {
         </>
       )}
 
-      {/* Add Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-300">
-          <div className="bg-white dark:bg-gray-900 w-full max-w-lg rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl animate-in slide-in-from-bottom duration-500 border-t border-gray-100 dark:border-gray-800">
-            <div className="flex justify-between items-center mb-6 px-1">
-              <h2 className="text-xl font-black text-gray-800 dark:text-gray-100 tracking-tight uppercase">
-                Nova Matéria
-              </h2>
-              <button
-                onClick={closeModal}
-                className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 hover:text-gray-600 transition-colors"
-              >
-                <i className="fas fa-times text-sm" />
-              </button>
-            </div>
-
-            <form onSubmit={handleModalSubmit} className="space-y-7 overflow-y-auto max-h-[70vh] px-1 no-scrollbar pb-2">
-              <div className="space-y-2">
-                <label className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">
-                  Nome da Matéria
-                </label>
-                <input
-                  required
-                  value={title}
-                  onChange={e => setTitle(e.target.value)}
-                  placeholder="Ex: Matemática"
-                  className="w-full bg-gray-50 dark:bg-gray-800/40 border border-gray-200 dark:border-gray-800 rounded-2xl px-5 py-3.5 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all font-bold placeholder:text-gray-400 dark:placeholder:text-gray-600"
-                />
-              </div>
-
-              <div className="space-y-3">
-                <label className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest block">
-                  Tempo por Sessão
-                </label>
-                <input
-                  type="range"
-                  min="5"
-                  max="120"
-                  step="5"
-                  value={duration}
-                  onChange={e => setDuration(Number(e.target.value))}
-                  className="w-full accent-indigo-600 h-1.5 bg-gray-100 dark:bg-gray-800/80 rounded-full appearance-none cursor-pointer"
-                />
-                <div className="text-sm font-black text-indigo-600 dark:text-indigo-400 tracking-tighter text-center">
-                  {duration} min
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                <label className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest block">
-                  Pixels de Estudo
-                </label>
-                <input
-                  type="range"
-                  min="1"
-                  max="100"
-                  step="1"
-                  value={pixelCount}
-                  onChange={e => setPixelCount(Number(e.target.value))}
-                  className="w-full accent-indigo-600 h-1.5 bg-gray-100 dark:bg-gray-800/80 rounded-full appearance-none cursor-pointer"
-                />
-                <div className="text-sm font-black text-indigo-600 dark:text-indigo-400 tracking-tighter text-center">
-                  {pixelCount} pixels
-                </div>
-                <div className="flex flex-wrap gap-1 pt-1 justify-center max-h-20 overflow-hidden">
-                  {Array.from({ length: Math.min(pixelCount, 35) }).map((_, i) => (
-                    <div
-                      key={i}
-                      className="w-3.5 h-3.5 rounded-sm opacity-30"
-                      style={{ backgroundColor: color }}
-                    />
-                  ))}
-                  {pixelCount > 35 && (
-                    <span className="text-[10px] text-gray-400 dark:text-gray-600 font-bold self-center">
-                      +{pixelCount - 35}
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <label className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest block">
-                  Cor da Matéria
-                </label>
-                <div className="flex flex-wrap gap-3 items-center justify-center py-2">
-                  {COLORS.map(c => (
-                    <button
-                      key={c}
-                      type="button"
-                      onClick={() => setColor(c)}
-                      className={`w-9 h-9 rounded-full transition-all duration-300 border-2 flex items-center justify-center ${
-                        color === c
-                          ? 'scale-110 border-gray-400 dark:border-white ring-4 ring-indigo-500/20'
-                          : 'border-transparent opacity-60 hover:opacity-100'
-                      }`}
-                      style={{ backgroundColor: c }}
-                    >
-                      {color === c && <i className="fas fa-check text-[10px] text-white" />}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <button
-                type="submit"
-                className="w-full bg-indigo-600 text-white py-5 rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-2xl shadow-indigo-500/20 dark:shadow-none hover:bg-indigo-700 active:scale-[0.98] transition-all mt-4"
-              >
-                Criar Matéria
-              </button>
-            </form>
-          </div>
-        </div>
+      {/* Add full-screen */}
+      {isAdding && (
+        <CicloAddView
+          onSave={handleAddSave}
+          onClose={() => setIsAdding(false)}
+        />
       )}
 
       {/* Reset confirm dialog */}
