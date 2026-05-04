@@ -9,7 +9,7 @@ const FAST_COLORS = [
 ];
 
 interface Props {
-  onSave: (data: Pick<Subject, 'title' | 'color' | 'duration' | 'pixelCount'>) => void;
+  onSave: (data: Pick<Subject, 'title' | 'color' | 'duration' | 'blockCount'>) => void;
   onClose: () => void;
 }
 
@@ -17,14 +17,14 @@ const CicloAddView: React.FC<Props> = ({ onSave, onClose }) => {
   const [title, setTitle] = useState('');
   const [color, setColor] = useState(FAST_COLORS[0]);
   const [duration, setDuration] = useState(25);
-  const [pixelCount, setPixelCount] = useState(20);
+  const [blockCount, setBlockCount] = useState(20);
 
   useBackButton(onClose);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) return;
-    onSave({ title, color, duration, pixelCount });
+    onSave({ title, color, duration, blockCount });
   };
 
   return (
@@ -76,31 +76,31 @@ const CicloAddView: React.FC<Props> = ({ onSave, onClose }) => {
 
         <div className="space-y-3">
           <label className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest block">
-            Pixels de Estudo
+            Blocos de Estudo
           </label>
           <input
             type="range"
             min="1"
             max="100"
             step="1"
-            value={pixelCount}
+            value={blockCount}
             onChange={e => setPixelCount(Number(e.target.value))}
             className="w-full accent-indigo-600 h-1.5 bg-gray-100 dark:bg-gray-800/80 rounded-full appearance-none cursor-pointer"
           />
           <div className="text-sm font-black text-indigo-600 dark:text-indigo-400 tracking-tighter text-center">
-            {pixelCount} pixels
+            {blockCount} blocos
           </div>
           <div className="flex flex-wrap gap-1 pt-1 justify-center max-h-20 overflow-hidden">
-            {Array.from({ length: Math.min(pixelCount, 35) }).map((_, i) => (
+            {Array.from({ length: Math.min(blockCount, 35) }).map((_, i) => (
               <div
                 key={i}
                 className="w-3.5 h-3.5 rounded-sm opacity-30"
                 style={{ backgroundColor: color }}
               />
             ))}
-            {pixelCount > 35 && (
+            {blockCount > 35 && (
               <span className="text-[10px] text-gray-400 dark:text-gray-600 font-bold self-center">
-                +{pixelCount - 35}
+                +{blockCount - 35}
               </span>
             )}
           </div>

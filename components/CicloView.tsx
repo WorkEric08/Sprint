@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Subject } from '../types';
-import CicloTimerView from './CicloTimerView';
+import { Subject, SprintResolvedItem } from '../types';
 import CicloEditView from './CicloEditView';
 import CicloAddView from './CicloAddView';
+import SprintBuilderView from './SprintBuilderView';
+import SprintRunnerView from './SprintRunnerView';
 import { useBackButton } from '../hooks/useBackButton';
 
 function getGreeting(): string {
@@ -21,20 +22,27 @@ const CicloView: React.FC<Props> = ({ userName }) => {
   const [subjects, setSubjects] = useState<Subject[]>(() => {
     try {
       const saved = localStorage.getItem('sprint_ciclo_subjects');
-      return saved ? JSON.parse(saved) : [];
-    } catch {
+      if (saved) {
+        // migrate old pixelCount/completedPixels → blockCount/completedBlocks
+        return (JSON.parse(saved) as any[]).map(s => ({
+          id: s.id, title: s.title, color: s.color, duration: s.duration,
+          blockCount: s.blockCount ?? s.pixelCount ?? 20,
+          completedBlocks: s.completedBlocks ?? s.completedPixels ?? [],
+        }));
+      }
       return [];
-    }
+    } catch { return []; }
   });
 
   const [isAdding, setIsAdding] = useState(false);
   const [editingSubject, setEditingSubject] = useState<Subject | null>(null);
+  const [isSprintBuilderOpen, setIsSprintBuilderOpen] = useState(false);
+  const [sprintItems, setSprintItems] = useState<SprintResolvedItem[] | null>(null);
 
   // Confirm dialogs
   const [confirmReset, setConfirmReset] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
 
-  const [activeCycle, setActiveCycle] = useState<{ subjectIds: string[]; currentIndex: number } | null>(null);
 
   useEffect(() => {
     try {
@@ -44,17 +52,17 @@ const CicloView: React.FC<Props> = ({ userName }) => {
     }
   }, [subjects]);
 
-  const handleAddSave = (data: Pick<Subject, 'title' | 'color' | 'duration' | 'pixelCount'>) => {
+  const handleAddSave = (data: Pick<Subject, 'title' | 'color' | 'duration' | 'blockCount'>) => {
     const newSubject: Subject = {
       id: Math.random().toString(36).substring(2, 11) + Date.now().toString(36),
       ...data,
-      completedPixels: [],
+      completedBlocks: [],
     };
     setSubjects(prev => [...prev, newSubject]);
     setIsAdding(false);
   };
 
-  const handleEditSave = (data: Pick<Subject, 'title' | 'color' | 'duration' | 'pixelCount'>) => {
+  const handleEditSave = (data: Pick<Subject, 'title' | 'color' | 'duration' | 'blockCount'>) => {
     if (!editingSubject) return;
     setSubjects(prev =>
       prev.map(s => s.id === editingSubject.id ? { ...s, ...data } : s)
@@ -67,42 +75,29 @@ const CicloView: React.FC<Props> = ({ userName }) => {
     setConfirmDelete(null);
   };
 
-  const resetPixels = (id: string) => {
+  const resetBlocks = (id: string) => {
     setSubjects(prev =>
-      prev.map(s => s.id === id ? { ...s, completedPixels: [] } : s)
+      prev.map(s => s.id === id ? { ...s, completedBlocks: [] } : s)
     );
     setConfirmReset(null);
   };
 
-  const startCycle = () => {
-    if (subjects.length === 0) return;
-    setActiveCycle({ subjectIds: subjects.map(s => s.id), currentIndex: 0 });
-  };
-
-  const handlePixelComplete = (subjectId: string) => {
+  const handleBlockComplete = (subjectId: string) => {
     setSubjects(prev =>
       prev.map(s => {
-        if (s.id === subjectId && s.completedPixels.length < s.pixelCount) {
-          return { ...s, completedPixels: [...s.completedPixels, Date.now()] };
+        if (s.id === subjectId && s.completedBlocks.length < s.blockCount) {
+          return { ...s, completedBlocks: [...s.completedBlocks, Date.now()] };
         }
         return s;
       })
     );
   };
 
-  const handleAdvanceCycle = () => {
-    if (!activeCycle) return;
-    const nextIndex = activeCycle.currentIndex + 1;
-    if (nextIndex >= activeCycle.subjectIds.length) {
-      setActiveCycle(null);
-    } else {
-      setActiveCycle({ ...activeCycle, currentIndex: nextIndex });
-    }
+  const startQuickCycle = () => {
+    if (subjects.length === 0) return;
+    const items: SprintResolvedItem[] = subjects.map(s => ({ type: 'study', subject: s }));
+    setSprintItems(items);
   };
-
-  const currentSubject = activeCycle
-    ? subjects.find(s => s.id === activeCycle.subjectIds[activeCycle.currentIndex]) ?? null
-    : null;
 
   const subjectToReset = confirmReset ? subjects.find(s => s.id === confirmReset) : null;
   const subjectToDelete = confirmDelete ? subjects.find(s => s.id === confirmDelete) : null;
@@ -112,6 +107,7 @@ const CicloView: React.FC<Props> = ({ userName }) => {
     if (confirmReset) { setConfirmReset(null); return; }
     setConfirmDelete(null);
   }, hasOverlay);
+
 
   return (
     <div className="space-y-4">
@@ -140,7 +136,7 @@ const CicloView: React.FC<Props> = ({ userName }) => {
           </div>
           <h3 className="text-gray-700 dark:text-gray-200 font-medium text-lg">Nenhuma matéria ainda</h3>
           <p className="text-gray-500 dark:text-gray-400 mt-2">
-            Adicione suas matérias e comece a construir seu mapa de pixels de estudo.
+            Adicione suas matérias e comece a construir seu mapa de blocos de estudo.
           </p>
           <button
             onClick={() => setIsAdding(true)}
@@ -153,8 +149,8 @@ const CicloView: React.FC<Props> = ({ userName }) => {
         <>
           <div className="grid gap-4">
             {subjects.map(subject => {
-              const completed = subject.completedPixels.length;
-              const total = subject.pixelCount;
+              const completed = subject.completedBlocks.length;
+              const total = subject.blockCount;
               const pct = total > 0 ? Math.round((completed / total) * 100) : 0;
               const allDone = completed >= total;
               const isResetting = confirmReset === subject.id;
@@ -189,7 +185,7 @@ const CicloView: React.FC<Props> = ({ userName }) => {
                               ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-500'
                               : 'bg-gray-100 dark:bg-gray-800 text-gray-400'
                           }`}
-                          title="Resetar pixels"
+                          title="Resetar blocos"
                         >
                           <i className="fas fa-rotate-left text-[10px]" />
                         </button>
@@ -233,7 +229,7 @@ const CicloView: React.FC<Props> = ({ userName }) => {
                             {completed} / {total}
                           </p>
                           <p className="text-[9px] font-bold text-gray-300 dark:text-gray-700 uppercase tracking-wider mt-0.5">
-                            pixels
+                            blocos
                           </p>
                         </div>
                       </div>
@@ -268,13 +264,22 @@ const CicloView: React.FC<Props> = ({ userName }) => {
             })}
           </div>
 
-          <button
-            onClick={startCycle}
-            className="w-full py-4 bg-indigo-600 text-white rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-lg shadow-indigo-500/20 hover:bg-indigo-700 active:scale-[0.98] transition-all flex items-center justify-center gap-3"
-          >
-            <i className="fas fa-rotate" />
-            Iniciar Ciclo · {subjects.length} {subjects.length === 1 ? 'matéria' : 'matérias'}
-          </button>
+          <div className="space-y-2">
+            <button
+              onClick={() => setIsSprintBuilderOpen(true)}
+              className="w-full py-4 bg-indigo-600 text-white rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-lg shadow-indigo-500/20 hover:bg-indigo-700 active:scale-[0.98] transition-all flex items-center justify-center gap-3"
+            >
+              <i className="fas fa-list-ul" />
+              Montar Sprint
+            </button>
+            <button
+              onClick={startQuickCycle}
+              className="w-full py-3 text-gray-400 dark:text-gray-600 font-black text-[10px] uppercase tracking-widest hover:text-indigo-500 transition-colors flex items-center justify-center gap-2"
+            >
+              <i className="fas fa-rotate text-[10px]" />
+              Ciclo Rápido · {subjects.length} {subjects.length === 1 ? 'matéria' : 'matérias'}
+            </button>
+          </div>
         </>
       )}
 
@@ -295,22 +300,22 @@ const CicloView: React.FC<Props> = ({ userName }) => {
             </div>
             <div className="space-y-2">
               <h3 className="text-lg font-black text-gray-800 dark:text-white uppercase tracking-tight">
-                Resetar Pixels?
+                Resetar Blocos?
               </h3>
               <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
-                Todo o progresso de{' '}
+                Todos os blocos concluídos de{' '}
                 <span className="font-bold" style={{ color: subjectToReset.color }}>
                   {subjectToReset.title}
                 </span>{' '}
-                será apagado. Esta ação não pode ser desfeita.
+                serão apagados. Esta ação não pode ser desfeita.
               </p>
             </div>
             <div className="space-y-3 pt-2">
               <button
-                onClick={() => resetPixels(confirmReset)}
+                onClick={() => resetBlocks(confirmReset)}
                 className="w-full py-4 bg-amber-500 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-amber-600 transition-colors active:scale-[0.98]"
               >
-                Sim, resetar pixels
+                Sim, resetar blocos
               </button>
               <button
                 onClick={() => setConfirmReset(null)}
@@ -338,7 +343,7 @@ const CicloView: React.FC<Props> = ({ userName }) => {
                 <span className="font-bold" style={{ color: subjectToDelete.color }}>
                   {subjectToDelete.title}
                 </span>{' '}
-                e todos os seus pixels serão excluídos permanentemente.
+                e todos os seus blocos serão excluídos permanentemente.
               </p>
             </div>
             <div className="space-y-3 pt-2">
@@ -368,16 +373,21 @@ const CicloView: React.FC<Props> = ({ userName }) => {
         />
       )}
 
-      {/* Active cycle timer */}
-      {activeCycle && currentSubject && (
-        <CicloTimerView
-          key={`${activeCycle.currentIndex}-${currentSubject.id}`}
-          subject={currentSubject}
-          cycleIndex={activeCycle.currentIndex}
-          cycleTotal={activeCycle.subjectIds.length}
-          onClose={() => setActiveCycle(null)}
-          onComplete={() => handlePixelComplete(currentSubject.id)}
-          onNext={handleAdvanceCycle}
+      {/* Sprint Builder */}
+      {isSprintBuilderOpen && (
+        <SprintBuilderView
+          subjects={subjects}
+          onStart={items => { setIsSprintBuilderOpen(false); setSprintItems(items); }}
+          onClose={() => setIsSprintBuilderOpen(false)}
+        />
+      )}
+
+      {/* Sprint Runner */}
+      {sprintItems && (
+        <SprintRunnerView
+          items={sprintItems}
+          onBlockComplete={handleBlockComplete}
+          onClose={() => setSprintItems(null)}
         />
       )}
     </div>

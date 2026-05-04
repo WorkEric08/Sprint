@@ -27,7 +27,15 @@ export interface Subject {
   id: string;
   title: string;
   color: string;
-  duration: number;
-  pixelCount: number;
-  completedPixels: number[];
+  duration: number;   // minutes per block
+  blockCount: number;
+  completedBlocks: number[];
 }
+
+export type SprintQueueItem =
+  | { id: string; type: 'study'; subjectId: string }
+  | { id: string; type: 'break'; duration: number }
+
+export type SprintResolvedItem =
+  | { type: 'study'; subject: Subject }
+  | { type: 'break'; duration: number }

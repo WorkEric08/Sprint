@@ -52,8 +52,7 @@ const CicloTimerView: React.FC<Props> = ({ subject, cycleIndex, cycleTotal, onCl
     }
   }, !isFinished);
 
-  const pixelsGained = subject.completedPixels.length;
-  const pixelsLeft = subject.pixelCount - pixelsGained;
+  const blocksCompleted = subject.completedBlocks.length;
 
   return (
     <div className="fixed inset-0 z-[60] bg-white dark:bg-gray-950 flex flex-col items-center justify-between p-8 animate-in fade-in zoom-in duration-300">
@@ -98,7 +97,7 @@ const CicloTimerView: React.FC<Props> = ({ subject, cycleIndex, cycleTotal, onCl
             {isFinished ? (
               <div className="flex flex-col items-center animate-bounce">
                 <i className="fas fa-check-circle text-6xl text-green-500 mb-2" />
-                <span className="text-lg font-black text-gray-800 dark:text-white uppercase tracking-tighter">Pixel Ganho!</span>
+                <span className="text-lg font-black text-gray-800 dark:text-white uppercase tracking-tighter">Bloco Concluído!</span>
               </div>
             ) : (
               <>
@@ -114,25 +113,25 @@ const CicloTimerView: React.FC<Props> = ({ subject, cycleIndex, cycleTotal, onCl
         {/* Mini pixel progress */}
         <div className="flex items-center gap-2">
           <div className="flex gap-1">
-            {Array.from({ length: Math.min(subject.pixelCount, 12) }).map((_, i) => (
+            {Array.from({ length: Math.min(subject.blockCount, 12) }).map((_, i) => (
               <div
                 key={i}
                 className="w-3 h-3 rounded-sm transition-all"
                 style={
-                  i < Math.min(pixelsGained, 12)
+                  i < Math.min(blocksCompleted, 12)
                     ? { backgroundColor: subject.color }
                     : { backgroundColor: 'transparent', border: `1.5px solid ${subject.color}`, opacity: 0.3 }
                 }
               />
             ))}
-            {subject.pixelCount > 12 && (
+            {subject.blockCount > 12 && (
               <span className="text-[10px] font-black text-gray-400 dark:text-gray-600 self-center ml-1">
-                +{subject.pixelCount - 12}
+                +{subject.blockCount - 12}
               </span>
             )}
           </div>
           <span className="text-xs font-bold text-gray-400 dark:text-gray-600">
-            {pixelsGained}/{subject.pixelCount}
+            {blocksCompleted}/{subject.blockCount}
           </span>
         </div>
       </div>
