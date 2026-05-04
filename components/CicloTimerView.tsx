@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Subject } from '../types';
+import { useBackButton } from '../hooks/useBackButton';
 
 interface Props {
   subject: Subject;
@@ -42,6 +43,14 @@ const CicloTimerView: React.FC<Props> = ({ subject, cycleIndex, cycleTotal, onCl
   const progress = (secondsLeft / totalSeconds) * 100;
   const strokeDasharray = 283;
   const strokeDashoffset = strokeDasharray - (progress / 100) * strokeDasharray;
+
+  useBackButton(() => {
+    if (showExitConfirm) {
+      setShowExitConfirm(false);
+    } else {
+      setShowExitConfirm(true);
+    }
+  }, !isFinished);
 
   const pixelsGained = subject.completedPixels.length;
   const pixelsLeft = subject.pixelCount - pixelsGained;

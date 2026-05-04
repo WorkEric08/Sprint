@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Subject } from '../types';
 import CicloTimerView from './CicloTimerView';
 import CicloEditView from './CicloEditView';
+import { useBackButton } from '../hooks/useBackButton';
 
 const COLORS = ['#4f46e5', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4'];
 
@@ -122,6 +123,13 @@ const CicloView: React.FC = () => {
 
   const subjectToReset = confirmReset ? subjects.find(s => s.id === confirmReset) : null;
   const subjectToDelete = confirmDelete ? subjects.find(s => s.id === confirmDelete) : null;
+
+  const hasOverlay = isModalOpen || !!confirmReset || !!confirmDelete;
+  useBackButton(() => {
+    if (confirmReset) { setConfirmReset(null); return; }
+    if (confirmDelete) { setConfirmDelete(null); return; }
+    closeModal();
+  }, hasOverlay);
 
   return (
     <div className="space-y-4">

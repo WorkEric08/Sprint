@@ -79,10 +79,15 @@ html, body {
   }
 }
 
-/* Utilitários de UI */
-button, nav, header {
-  user-select: none;
+/* Comportamento de app nativo: sem seleção de texto */
+*, *::before, *::after {
   -webkit-user-select: none;
+  user-select: none;
+}
+
+input, textarea, [contenteditable] {
+  -webkit-user-select: text;
+  user-select: text;
 }
 
 /* Ocultar setas de inputs numéricos */

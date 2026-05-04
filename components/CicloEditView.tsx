@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Subject } from '../types';
 import { HexColorPicker } from "react-colorful";
+import { useBackButton } from '../hooks/useBackButton';
 
 const FAST_COLORS = [
   '#ff5d15', '#eb761d', '#d8a800', '#8ec81c', '#22b77a', '#1aa9a5', '#09a9d1',
@@ -18,6 +19,8 @@ const CicloEditView: React.FC<Props> = ({ subject, onSave, onClose }) => {
   const [color, setColor] = useState(subject.color);
   const [duration, setDuration] = useState(subject.duration);
   const [pixelCount, setPixelCount] = useState(subject.pixelCount);
+
+  useBackButton(onClose);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
