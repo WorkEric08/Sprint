@@ -68,18 +68,6 @@ const StatsOverview: React.FC<Props> = () => {
     return { totalBlocks, completedBlocks, percent: isNaN(percent) ? 0 : percent };
   }, [subjects]);
 
-  const todayMetrics = useMemo(() => {
-    const start = getPeriodStart('day');
-    let sprints = 0;
-    let minutes = 0;
-    subjects.forEach(s => {
-      const blocks = s.completedBlocks.filter(t => t >= start).length;
-      sprints += blocks;
-      minutes += blocks * s.duration;
-    });
-    return { sprints, minutes };
-  }, [subjects]);
-
   const periodMetrics = useMemo(() => {
     const start = getPeriodStart(activePeriod);
     let totalSprints = 0;
@@ -142,33 +130,6 @@ const StatsOverview: React.FC<Props> = () => {
             {subjects.length === 0
               ? 'Nenhuma matéria cadastrada'
               : `${overallProgress.completedBlocks} de ${overallProgress.totalBlocks} blocos concluídos`}
-          </p>
-        </div>
-      </div>
-
-      {/* Métricas de Hoje */}
-      <div className="grid grid-cols-2 gap-4 px-2">
-        <div className="bg-white dark:bg-gray-900 rounded-2xl p-4 border border-gray-100 dark:border-gray-800/50 flex flex-col items-center justify-center text-center">
-          <div className="w-8 h-8 rounded-full bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center text-indigo-500 text-xs mb-2">
-            <i className="fas fa-bolt"></i>
-          </div>
-          <span className="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1">
-            Sprints Hoje
-          </span>
-          <p className="text-xl font-black text-gray-800 dark:text-white leading-none">
-            {todayMetrics.sprints === 0 ? '—' : todayMetrics.sprints}
-          </p>
-        </div>
-
-        <div className="bg-white dark:bg-gray-900 rounded-2xl p-4 border border-gray-100 dark:border-gray-800/50 flex flex-col items-center justify-center text-center">
-          <div className="w-8 h-8 rounded-full bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center text-indigo-500 text-xs mb-2">
-            <i className="fas fa-hourglass-half"></i>
-          </div>
-          <span className="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1">
-            Tempo Hoje
-          </span>
-          <p className="text-xl font-black text-gray-800 dark:text-white leading-none">
-            {formatTime(todayMetrics.minutes)}
           </p>
         </div>
       </div>
