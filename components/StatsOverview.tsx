@@ -176,7 +176,7 @@ const StatsOverview: React.FC<Props> = () => {
       {/* Métricas por período */}
       <div className="space-y-4 px-2">
         <div className="relative flex items-center justify-end">
-          <h3 className="absolute inset-x-0 text-center text-sm font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest pointer-events-none">
+          <h3 className="absolute left-0 right-1/2 text-center text-sm font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest pointer-events-none">
             Métricas
           </h3>
           <div className="flex bg-gray-100 dark:bg-gray-800/80 rounded-xl p-0.5">
