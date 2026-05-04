@@ -90,7 +90,7 @@ const StatsOverview: React.FC<Props> = () => {
         const minutes = blocks * s.duration;
         totalSprints += blocks;
         totalMinutes += minutes;
-        return { id: s.id, title: s.title, color: s.color, blocks, minutes };
+        return { id: s.id, title: s.title, color: s.color, blocks, minutes, blockCount: s.blockCount };
       })
       .filter(s => s.blocks > 0)
       .sort((a, b) => b.minutes - a.minutes);
@@ -245,7 +245,7 @@ const StatsOverview: React.FC<Props> = () => {
                     </span>
                   </div>
                   <div className="flex items-center gap-1.5 text-[10px] font-black text-gray-400 dark:text-gray-600 shrink-0 ml-2">
-                    <span>{s.blocks} {s.blocks === 1 ? 'bloco' : 'blocos'}</span>
+                    <span>{s.blocks} / {s.blockCount} blocos</span>
                     <span>·</span>
                     <span>{formatTime(s.minutes)}</span>
                   </div>
@@ -254,8 +254,8 @@ const StatsOverview: React.FC<Props> = () => {
                   <div
                     className="h-full rounded-full transition-all duration-700 ease-out"
                     style={{
-                      width: periodMetrics.totalMinutes > 0
-                        ? `${(s.minutes / periodMetrics.totalMinutes) * 100}%`
+                      width: s.blockCount > 0
+                        ? `${Math.min((s.blocks / s.blockCount) * 100, 100)}%`
                         : '0%',
                       backgroundColor: s.color,
                     }}
