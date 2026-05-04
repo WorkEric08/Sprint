@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
 import { Subject } from '../types';
+import { HexColorPicker } from "react-colorful";
 
-const COLORS = ['#4f46e5', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4'];
+const FAST_COLORS = [
+  '#ff5d15', '#eb761d', '#d8a800', '#8ec81c', '#22b77a', '#1aa9a5', '#09a9d1',
+  '#0997e5', '#3170e5', '#635bd6', '#934de5', '#c942c7', '#dc437e', '#e3445e'
+];
 
 interface Props {
   subject: Subject;
@@ -100,26 +104,51 @@ const CicloEditView: React.FC<Props> = ({ subject, onSave, onClose }) => {
           </div>
         </div>
 
-        <div className="space-y-4">
-          <label className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest block">
-            Cor da Matéria
-          </label>
-          <div className="flex flex-wrap gap-3 items-center justify-center py-2">
-            {COLORS.map(c => (
-              <button
-                key={c}
-                type="button"
-                onClick={() => setColor(c)}
-                className={`w-9 h-9 rounded-full transition-all duration-300 border-2 flex items-center justify-center ${
-                  color === c
-                    ? 'scale-110 border-gray-400 dark:border-white ring-4 ring-indigo-500/20'
-                    : 'border-transparent opacity-60 hover:opacity-100'
-                }`}
-                style={{ backgroundColor: c }}
-              >
-                {color === c && <i className="fas fa-check text-[10px] text-white" />}
-              </button>
-            ))}
+        <div className="space-y-6">
+          <div className="bg-[#1a1c23] dark:bg-[#1a1c23] rounded-xl p-4 shadow-sm border border-gray-200 dark:border-transparent">
+            <div className="flex justify-between items-center mb-4">
+              <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
+                Personalizada
+              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-gray-600 dark:text-gray-200 uppercase">
+                  {color}
+                </span>
+                <div 
+                  className="w-4 h-4 rounded-md shadow-sm border border-gray-200 dark:border-gray-700" 
+                  style={{ backgroundColor: color }}
+                />
+              </div>
+            </div>
+            <HexColorPicker 
+              color={color} 
+              onChange={setColor} 
+              style={{ width: '100%', height: '160px' }} 
+            />
+          </div>
+
+          <div className="space-y-3">
+            <span className="text-sm font-medium text-gray-600 dark:text-gray-400 block px-1">
+              Cores Rápidas
+            </span>
+            <div className="grid grid-cols-7 gap-y-4 gap-x-2 justify-items-center">
+              {FAST_COLORS.map(c => (
+                <button
+                  key={c}
+                  type="button"
+                  onClick={() => setColor(c)}
+                  className={`w-9 h-9 rounded-full transition-all flex items-center justify-center ${
+                    color.toLowerCase() === c.toLowerCase()
+                      ? 'outline outline-2 outline-offset-[3px] scale-105'
+                      : 'hover:scale-110 opacity-90 hover:opacity-100'
+                  }`}
+                  style={{ 
+                    backgroundColor: c,
+                    outlineColor: color.toLowerCase() === c.toLowerCase() ? c : 'transparent'
+                  }}
+                />
+              ))}
+            </div>
           </div>
         </div>
 
