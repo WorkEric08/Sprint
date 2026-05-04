@@ -1,73 +1,112 @@
 
-import React, { useMemo, useState, useEffect } from 'react';
-import { Objective } from '../types';
+import React, { useMemo, useState } from 'react';
+import { Objective, Subject } from '../types';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 
 interface Props {
   objectives: Objective[];
 }
 
-const StatsOverview: React.FC<Props> = ({ objectives }) => {
+type Period = 'day' | 'week' | 'month';
+
+const PERIOD_LABELS: Record<Period, string> = {
+  day: 'Dia',
+  week: 'Semana',
+  month: 'Mês',
+};
+
+function getPeriodStart(period: Period): number {
+  const d = new Date();
+  if (period === 'day') {
+    d.setHours(0, 0, 0, 0);
+  } else if (period === 'week') {
+    const day = d.getDay();
+    const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+    d.setDate(diff);
+    d.setHours(0, 0, 0, 0);
+  } else {
+    d.setDate(1);
+    d.setHours(0, 0, 0, 0);
+  }
+  return d.getTime();
+}
+
+function formatTime(minutes: number): string {
+  if (minutes === 0) return '—';
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  if (h > 0 && m > 0) return `${h}h ${m}m`;
+  if (h > 0) return `${h}h`;
+  return `${m}m`;
+}
+
+const StatsOverview: React.FC<Props> = () => {
   const isDarkMode = document.documentElement.classList.contains('dark');
-  
-  const [isObjectivesExpanded, setIsObjectivesExpanded] = useState<boolean>(() => {
-    const saved = localStorage.getItem('sprint_stats_expanded');
-    return saved === null ? true : saved === 'true';
-  });
+  const [activePeriod, setActivePeriod] = useState<Period>('day');
 
-  useEffect(() => {
-    localStorage.setItem('sprint_stats_expanded', String(isObjectivesExpanded));
-  }, [isObjectivesExpanded]);
-
-  const stats = useMemo(() => {
-    const totalSprints = objectives.reduce((acc, obj) => acc + obj.completions.length, 0);
-    const totalMinutes = objectives.reduce((acc, obj) => acc + (obj.completions.length * (obj.duration || 0)), 0);
-    
-    const objectivesProgress = objectives.map(obj => {
-      const startOfPeriod = new Date();
-      if (obj.frequency === 'daily') startOfPeriod.setHours(0, 0, 0, 0);
-      else if (obj.frequency === 'weekly') {
-        const day = startOfPeriod.getDay();
-        const diff = startOfPeriod.getDate() - day + (day === 0 ? -6 : 1);
-        startOfPeriod.setDate(diff);
-        startOfPeriod.setHours(0, 0, 0, 0);
-      } else if (obj.frequency === 'monthly') {
-        startOfPeriod.setDate(1);
-        startOfPeriod.setHours(0, 0, 0, 0);
-      } else {
-        startOfPeriod.setMonth(0, 1);
-        startOfPeriod.setHours(0, 0, 0, 0);
+  const subjects = useMemo<Subject[]>(() => {
+    try {
+      const saved = localStorage.getItem('sprint_ciclo_subjects');
+      if (saved) {
+        return (JSON.parse(saved) as any[]).map(s => ({
+          id: s.id,
+          title: s.title,
+          color: s.color,
+          duration: s.duration,
+          blockCount: s.blockCount ?? s.pixelCount ?? 20,
+          completedBlocks: s.completedBlocks ?? s.completedPixels ?? [],
+        }));
       }
-      
-      const count = obj.completions.filter(c => c.timestamp >= startOfPeriod.getTime()).length;
-      // Proteção contra divisão por zero
-      const target = obj.targetCount > 0 ? obj.targetCount : 1;
-      const percent = Math.min((count / target) * 100, 100);
-      
-      return { ...obj, currentCount: count, percent };
+    } catch {}
+    return [];
+  }, []);
+
+  const overallProgress = useMemo(() => {
+    const totalBlocks = subjects.reduce((a, s) => a + s.blockCount, 0);
+    const completedBlocks = subjects.reduce((a, s) => a + s.completedBlocks.length, 0);
+    const percent = totalBlocks > 0 ? Math.round((completedBlocks / totalBlocks) * 100) : 0;
+    return { totalBlocks, completedBlocks, percent: isNaN(percent) ? 0 : percent };
+  }, [subjects]);
+
+  const todayMetrics = useMemo(() => {
+    const start = getPeriodStart('day');
+    let sprints = 0;
+    let minutes = 0;
+    subjects.forEach(s => {
+      const blocks = s.completedBlocks.filter(t => t >= start).length;
+      sprints += blocks;
+      minutes += blocks * s.duration;
     });
+    return { sprints, minutes };
+  }, [subjects]);
 
-    const avgSuccessRate = objectivesProgress.length > 0 
-      ? Math.round(objectivesProgress.reduce((a, b) => a + b.percent, 0) / objectivesProgress.length) 
-      : 0;
+  const periodMetrics = useMemo(() => {
+    const start = getPeriodStart(activePeriod);
+    let totalSprints = 0;
+    let totalMinutes = 0;
+    const subjectBreakdown = subjects
+      .map(s => {
+        const blocks = s.completedBlocks.filter(t => t >= start).length;
+        const minutes = blocks * s.duration;
+        totalSprints += blocks;
+        totalMinutes += minutes;
+        return { id: s.id, title: s.title, color: s.color, blocks, minutes };
+      })
+      .filter(s => s.blocks > 0)
+      .sort((a, b) => b.minutes - a.minutes);
 
-    const hours = Math.floor(totalMinutes / 60);
-    const mins = totalMinutes % 60;
+    return { totalSprints, totalMinutes, subjectBreakdown };
+  }, [subjects, activePeriod]);
 
-    return { totalSprints, hours, mins, avgSuccessRate, objectivesProgress };
-  }, [objectives]);
-
-  // Garante que o gráfico sempre tenha dados válidos
-  const safeRate = isNaN(stats.avgSuccessRate) ? 0 : stats.avgSuccessRate;
   const pieData = [
-    { value: safeRate },
-    { value: 100 - safeRate }
+    { value: overallProgress.percent },
+    { value: 100 - overallProgress.percent },
   ];
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-700 pb-12">
-      
-      {/* Visão Geral - Anel de Conclusão */}
+
+      {/* Anel de Progresso Geral */}
       <div className="flex flex-col items-center justify-center pt-4">
         <div className="relative w-48 h-48">
           <ResponsiveContainer width="100%" height="100%">
@@ -89,82 +128,148 @@ const StatsOverview: React.FC<Props> = ({ objectives }) => {
             </PieChart>
           </ResponsiveContainer>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="text-4xl font-black text-gray-800 dark:text-white leading-none">{safeRate}%</span>
-            <span className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mt-1">Concluído</span>
+            <span className="text-4xl font-black text-gray-800 dark:text-white leading-none">
+              {overallProgress.percent}%
+            </span>
+            <span className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mt-1">
+              Concluído
+            </span>
           </div>
         </div>
         <div className="mt-6 text-center">
-          <h2 className="text-lg font-bold text-gray-800 dark:text-gray-100">Foco Geral</h2>
-          <p className="text-sm text-gray-400 dark:text-gray-500">Média de progresso do período atual</p>
+          <h2 className="text-lg font-bold text-gray-800 dark:text-gray-100">Progresso Geral</h2>
+          <p className="text-sm text-gray-400 dark:text-gray-500">
+            {subjects.length === 0
+              ? 'Nenhuma matéria cadastrada'
+              : `${overallProgress.completedBlocks} de ${overallProgress.totalBlocks} blocos concluídos`}
+          </p>
         </div>
       </div>
 
-      {/* Métricas Rápidas */}
+      {/* Métricas de Hoje */}
       <div className="grid grid-cols-2 gap-4 px-2">
         <div className="bg-white dark:bg-gray-900 rounded-2xl p-4 border border-gray-100 dark:border-gray-800/50 flex flex-col items-center justify-center text-center">
           <div className="w-8 h-8 rounded-full bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center text-indigo-500 text-xs mb-2">
             <i className="fas fa-bolt"></i>
           </div>
-          <span className="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1">Sprints</span>
-          <p className="text-xl font-black text-gray-800 dark:text-white leading-none">{stats.totalSprints}</p>
+          <span className="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1">
+            Sprints Hoje
+          </span>
+          <p className="text-xl font-black text-gray-800 dark:text-white leading-none">
+            {todayMetrics.sprints === 0 ? '—' : todayMetrics.sprints}
+          </p>
         </div>
-        
+
         <div className="bg-white dark:bg-gray-900 rounded-2xl p-4 border border-gray-100 dark:border-gray-800/50 flex flex-col items-center justify-center text-center">
           <div className="w-8 h-8 rounded-full bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center text-indigo-500 text-xs mb-2">
             <i className="fas fa-hourglass-half"></i>
           </div>
-          <span className="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1">Tempo</span>
-          <p className="text-xl font-black text-gray-800 dark:text-white leading-none">{stats.hours}h {stats.mins}m</p>
+          <span className="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1">
+            Tempo Hoje
+          </span>
+          <p className="text-xl font-black text-gray-800 dark:text-white leading-none">
+            {formatTime(todayMetrics.minutes)}
+          </p>
         </div>
       </div>
 
-      {/* Lista de Objetivos Individuais */}
-      <div className="space-y-4 px-2 transition-all duration-300">
-        <button 
-          onClick={() => setIsObjectivesExpanded(!isObjectivesExpanded)}
-          className="w-full flex items-center justify-between mb-2 group focus:outline-none"
-        >
-          <div className="flex items-center gap-2">
-            <h3 className="text-sm font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest group-hover:text-indigo-500 transition-colors">Objetivos Individuais</h3>
-            <span className="text-[10px] font-medium text-gray-300 dark:text-gray-700">({objectives.length})</span>
+      {/* Métricas por período */}
+      <div className="space-y-4 px-2">
+        <div className="flex items-center justify-between">
+          <h3 className="text-sm font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">
+            Métricas
+          </h3>
+          <div className="flex bg-gray-100 dark:bg-gray-800/80 rounded-xl p-0.5">
+            {(Object.keys(PERIOD_LABELS) as Period[]).map(p => (
+              <button
+                key={p}
+                onClick={() => setActivePeriod(p)}
+                className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all duration-200 ${
+                  activePeriod === p
+                    ? 'bg-white dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                    : 'text-gray-400 dark:text-gray-500'
+                }`}
+              >
+                {PERIOD_LABELS[p]}
+              </button>
+            ))}
           </div>
-          <i className={`fas fa-chevron-down text-gray-300 dark:text-gray-700 transition-transform duration-300 ${isObjectivesExpanded ? 'rotate-180' : ''}`}></i>
-        </button>
+        </div>
 
-        {isObjectivesExpanded && (
-          <div className="space-y-5 animate-in slide-in-from-top-2 duration-300">
-            {stats.objectivesProgress.length === 0 ? (
-              <div className="py-12 text-center text-gray-400 dark:text-gray-600 text-sm border border-gray-100 dark:border-gray-800 rounded-2xl shadow-sm">
-                Nenhum objetivo para analisar
+        {/* Cards do período */}
+        <div className="grid grid-cols-2 gap-3">
+          <div className="bg-white dark:bg-gray-900 rounded-2xl p-4 border border-gray-100 dark:border-gray-800/50">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-6 h-6 rounded-full bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center">
+                <i className="fas fa-hourglass-half text-indigo-500 text-[9px]"></i>
               </div>
-            ) : (
-              stats.objectivesProgress.map((obj) => (
-                <div key={obj.id} className="group">
-                  <div className="flex justify-between items-end mb-2">
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full" style={{ backgroundColor: obj.color }}></div>
-                      <span className="text-sm font-bold text-gray-700 dark:text-gray-200">{obj.title}</span>
-                    </div>
-                    <span className="text-xs font-black text-gray-400 dark:text-gray-600">
-                      {obj.currentCount} / {obj.targetCount}
+              <span className="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">
+                Tempo
+              </span>
+            </div>
+            <p className="text-2xl font-black text-gray-800 dark:text-white leading-none">
+              {formatTime(periodMetrics.totalMinutes)}
+            </p>
+          </div>
+
+          <div className="bg-white dark:bg-gray-900 rounded-2xl p-4 border border-gray-100 dark:border-gray-800/50">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-6 h-6 rounded-full bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center">
+                <i className="fas fa-bolt text-indigo-500 text-[9px]"></i>
+              </div>
+              <span className="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">
+                Sprints
+              </span>
+            </div>
+            <p className="text-2xl font-black text-gray-800 dark:text-white leading-none">
+              {periodMetrics.totalSprints === 0 ? '—' : periodMetrics.totalSprints}
+              {periodMetrics.totalSprints > 0 && (
+                <span className="text-sm font-bold text-gray-400 ml-1">
+                  {periodMetrics.totalSprints === 1 ? 'bloco' : 'blocos'}
+                </span>
+              )}
+            </p>
+          </div>
+        </div>
+
+        {/* Breakdown por matéria */}
+        {periodMetrics.subjectBreakdown.length > 0 ? (
+          <div className="space-y-4 pt-1">
+            {periodMetrics.subjectBreakdown.map(s => (
+              <div key={s.id}>
+                <div className="flex justify-between items-center mb-1.5">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: s.color }} />
+                    <span className="text-sm font-bold text-gray-700 dark:text-gray-200 truncate">
+                      {s.title}
                     </span>
                   </div>
-                  <div className="h-1.5 w-full bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
-                    <div 
-                      className="h-full rounded-full transition-all duration-1000 ease-out"
-                      style={{ 
-                        width: `${obj.percent}%`,
-                        backgroundColor: obj.color
-                      }}
-                    ></div>
+                  <div className="flex items-center gap-1.5 text-[10px] font-black text-gray-400 dark:text-gray-600 shrink-0 ml-2">
+                    <span>{s.blocks} {s.blocks === 1 ? 'bloco' : 'blocos'}</span>
+                    <span>·</span>
+                    <span>{formatTime(s.minutes)}</span>
                   </div>
                 </div>
-              ))
-            )}
+                <div className="h-1.5 w-full bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+                  <div
+                    className="h-full rounded-full transition-all duration-700 ease-out"
+                    style={{
+                      width: periodMetrics.totalMinutes > 0
+                        ? `${(s.minutes / periodMetrics.totalMinutes) * 100}%`
+                        : '0%',
+                      backgroundColor: s.color,
+                    }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="py-10 text-center text-gray-400 dark:text-gray-600 text-sm border border-dashed border-gray-200 dark:border-gray-800 rounded-2xl">
+            Nenhuma atividade neste período
           </div>
         )}
       </div>
-
     </div>
   );
 };

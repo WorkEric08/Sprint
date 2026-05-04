@@ -16,7 +16,9 @@
       "Bash(git commit -m ' *)",
       "Bash(git push *)",
       "Bash(git commit --allow-empty -m ' *)",
-      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\Pichau\\\\Desktop\\\\Sprint\" -Recurse -Name)"
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\Pichau\\\\Desktop\\\\Sprint\" -Recurse -Name)",
+      "Bash(Get-ChildItem -Force)",
+      "Bash(Select-Object Name, Mode)"
     ]
   }
 }
