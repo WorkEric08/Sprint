@@ -107,7 +107,7 @@ const StatsOverview: React.FC<Props> = () => {
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-700 pb-12">
 
       {/* Anel de Progresso Geral */}
-      <div className="flex flex-col items-center justify-center pt-4">
+      <div className="flex flex-col items-center justify-center py-3">
         <div className="relative w-48 h-48">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
@@ -136,7 +136,7 @@ const StatsOverview: React.FC<Props> = () => {
             </span>
           </div>
         </div>
-        <div className="mt-6 text-center">
+        <div className="mt-3 text-center">
           <h2 className="text-lg font-bold text-gray-800 dark:text-gray-100">Progresso Geral</h2>
           <p className="text-sm text-gray-400 dark:text-gray-500">
             {subjects.length === 0
@@ -175,8 +175,8 @@ const StatsOverview: React.FC<Props> = () => {
 
       {/* Métricas por período */}
       <div className="space-y-4 px-2">
-        <div className="flex items-center justify-between">
-          <h3 className="text-sm font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">
+        <div className="relative flex items-center justify-end">
+          <h3 className="absolute inset-x-0 text-center text-sm font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest pointer-events-none">
             Métricas
           </h3>
           <div className="flex bg-gray-100 dark:bg-gray-800/80 rounded-xl p-0.5">
