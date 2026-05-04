@@ -61,18 +61,18 @@ const SettingsPanel: React.FC<Props> = ({ theme, onToggleTheme, onUpdateStart, u
   const installDisabled = isInstalled || isInstalling || !canInstall;
 
   return (
-    <div className="space-y-6">
-      <h2 className="text-xl font-black text-gray-800 dark:text-gray-100 uppercase tracking-tight">
+    <div className="space-y-4">
+      <h2 className="text-lg font-black text-gray-800 dark:text-gray-100 uppercase tracking-tight">
         Configurações
       </h2>
 
       {/* Perfil */}
-      <div className="space-y-3">
+      <div className="space-y-2">
         <label className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">
           Perfil
         </label>
-        <div className="bg-gray-50 dark:bg-gray-800/40 border border-gray-100 dark:border-gray-800 rounded-2xl p-4 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center shrink-0">
+        <div className="bg-gray-50 dark:bg-gray-800/40 border border-gray-100 dark:border-gray-800 rounded-2xl p-3 flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center shrink-0">
             <i className="fas fa-user text-sm text-indigo-600 dark:text-indigo-400" />
           </div>
           <input
@@ -87,7 +87,7 @@ const SettingsPanel: React.FC<Props> = ({ theme, onToggleTheme, onUpdateStart, u
       </div>
 
       {/* Aparência */}
-      <div className="space-y-3">
+      <div className="space-y-2">
         <label className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">
           Aparência
         </label>
@@ -118,14 +118,14 @@ const SettingsPanel: React.FC<Props> = ({ theme, onToggleTheme, onUpdateStart, u
       </div>
 
       {/* Aplicativo */}
-      <div className="space-y-3">
+      <div className="space-y-2">
         <label className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">
           Aplicativo
         </label>
         <button
           onClick={install}
           disabled={installDisabled}
-          className={`w-full flex items-center justify-between p-4 rounded-2xl border transition-all active:scale-[0.98] ${
+          className={`w-full flex items-center justify-between p-3 rounded-2xl border transition-all active:scale-[0.98] ${
             isInstalled
               ? 'bg-green-50 dark:bg-green-900/20 border-green-100 dark:border-green-900/30 cursor-default'
               : !canInstall
@@ -134,7 +134,7 @@ const SettingsPanel: React.FC<Props> = ({ theme, onToggleTheme, onUpdateStart, u
           }`}
         >
           <div className="flex items-center gap-3">
-            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+            <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${
               isInstalled
                 ? 'bg-green-100 dark:bg-green-900/40'
                 : 'bg-indigo-100 dark:bg-indigo-900/30'
@@ -171,15 +171,15 @@ const SettingsPanel: React.FC<Props> = ({ theme, onToggleTheme, onUpdateStart, u
       </div>
 
       {/* Sistema */}
-      <div className="space-y-3">
+      <div className="space-y-2">
         <label className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">
           Sistema
         </label>
 
         {/* Versão / último commit */}
-        <div className="w-full flex items-center justify-between p-4 rounded-2xl border bg-gray-50 dark:bg-gray-800/40 border-gray-100 dark:border-gray-800">
+        <div className="w-full flex items-center justify-between p-3 rounded-2xl border bg-gray-50 dark:bg-gray-800/40 border-gray-100 dark:border-gray-800">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-gray-100 dark:bg-gray-800 shrink-0">
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-gray-100 dark:bg-gray-800 shrink-0">
               <i className="fas fa-code-branch text-sm text-gray-500 dark:text-gray-400" />
             </div>
             <div className="text-left">
@@ -197,7 +197,7 @@ const SettingsPanel: React.FC<Props> = ({ theme, onToggleTheme, onUpdateStart, u
         <button
           onClick={handleForceUpdate}
           disabled={updateStatus !== 'idle'}
-          className={`w-full flex items-center justify-between p-4 rounded-2xl border transition-all ${
+          className={`w-full flex items-center justify-between p-3 rounded-2xl border transition-all ${
             updateStatus === 'error'
               ? 'bg-red-50 dark:bg-red-900/20 border-red-100 dark:border-red-900/30'
               : updateStatus !== 'idle'
@@ -206,7 +206,7 @@ const SettingsPanel: React.FC<Props> = ({ theme, onToggleTheme, onUpdateStart, u
           }`}
         >
           <div className="flex items-center gap-3">
-            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+            <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${
               updateStatus === 'error'
                 ? 'bg-red-100 dark:bg-red-900/40'
                 : updateStatus !== 'idle'

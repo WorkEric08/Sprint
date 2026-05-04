@@ -185,19 +185,30 @@ const SprintBuilderView: React.FC<Props> = ({ subjects, onStart, onClose }) => {
         {/* Subject + break chips */}
         <div className="flex gap-2 px-4 pt-3 pb-2 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
           {subjects.map(subject => {
-            const remaining = subject.blockCount - subject.completedBlocks.length;
+            const done = subject.completedBlocks.length;
+            const inQueue = queue.filter(i => i.type === 'study' && i.subjectId === subject.id).length;
+            const available = Math.max(0, subject.blockCount - done - inQueue);
+            const exhausted = available === 0;
             return (
               <button
                 key={subject.id}
                 onClick={() => addStudy(subject.id)}
-                className="flex items-center gap-1.5 px-3 py-2 rounded-full border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/60 active:scale-95 transition-transform shrink-0"
+                disabled={exhausted}
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-full border active:scale-95 transition-transform shrink-0 ${
+                  exhausted
+                    ? 'border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/30 opacity-40 cursor-not-allowed'
+                    : 'border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/60'
+                }`}
               >
                 <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: subject.color }} />
                 <span className="text-[11px] font-black text-gray-700 dark:text-gray-300 uppercase tracking-tight whitespace-nowrap">
                   {subject.title}
                 </span>
-                <span className="text-[10px] font-bold text-gray-400 dark:text-gray-600 whitespace-nowrap">
-                  {remaining}/{subject.blockCount}
+                <span
+                  className="text-[10px] font-bold whitespace-nowrap"
+                  style={{ color: exhausted ? undefined : subject.color }}
+                >
+                  {available}/{subject.blockCount - done}
                 </span>
               </button>
             );
