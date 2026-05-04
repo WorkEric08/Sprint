@@ -65,14 +65,6 @@ const CicloTimerView: React.FC<Props> = ({ subject, cycleIndex, cycleTotal, onCl
         <span className="text-xs font-black text-gray-300 dark:text-gray-700 uppercase tracking-widest">
           {cycleIndex + 1} / {cycleTotal}
         </span>
-        {!isFinished && !showExitConfirm && (
-          <button
-            onClick={() => setShowExitConfirm(true)}
-            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
-          >
-            <i className="fas fa-times text-xl" />
-          </button>
-        )}
       </div>
 
       {/* Timer Circle */}
