@@ -1,7 +1,7 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { Subject } from '../types';
 import CicloTimerView from './CicloTimerView';
+import CicloEditView from './CicloEditView';
 
 const COLORS = ['#4f46e5', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4'];
 
@@ -18,13 +18,16 @@ const CicloView: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingSubject, setEditingSubject] = useState<Subject | null>(null);
 
-  // Modal form state
+  // Confirm dialogs
+  const [confirmReset, setConfirmReset] = useState<string | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+
+  // Add modal form state
   const [title, setTitle] = useState('');
   const [color, setColor] = useState(COLORS[0]);
   const [duration, setDuration] = useState(25);
   const [pixelCount, setPixelCount] = useState(20);
 
-  // Active cycle: ordered list of subject IDs + current position
   const [activeCycle, setActiveCycle] = useState<{ subjectIds: string[]; currentIndex: number } | null>(null);
 
   useEffect(() => {
@@ -43,64 +46,48 @@ const CicloView: React.FC = () => {
   }, []);
 
   const openAddModal = () => {
-    setEditingSubject(null);
     resetModalForm();
-    setIsModalOpen(true);
-  };
-
-  const openEditModal = (subject: Subject) => {
-    setEditingSubject(subject);
-    setTitle(subject.title);
-    setColor(subject.color);
-    setDuration(subject.duration);
-    setPixelCount(subject.pixelCount);
     setIsModalOpen(true);
   };
 
   const closeModal = () => {
     setIsModalOpen(false);
-    setEditingSubject(null);
     resetModalForm();
   };
 
   const handleModalSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) return;
-
-    if (editingSubject) {
-      setSubjects(prev =>
-        prev.map(s =>
-          s.id === editingSubject.id
-            ? { ...s, title, color, duration, pixelCount }
-            : s
-        )
-      );
-    } else {
-      const newSubject: Subject = {
-        id: Math.random().toString(36).substring(2, 11) + Date.now().toString(36),
-        title,
-        color,
-        duration,
-        pixelCount,
-        completedPixels: [],
-      };
-      setSubjects(prev => [...prev, newSubject]);
-    }
+    const newSubject: Subject = {
+      id: Math.random().toString(36).substring(2, 11) + Date.now().toString(36),
+      title,
+      color,
+      duration,
+      pixelCount,
+      completedPixels: [],
+    };
+    setSubjects(prev => [...prev, newSubject]);
     closeModal();
   };
 
+  const handleEditSave = (data: Pick<Subject, 'title' | 'color' | 'duration' | 'pixelCount'>) => {
+    if (!editingSubject) return;
+    setSubjects(prev =>
+      prev.map(s => s.id === editingSubject.id ? { ...s, ...data } : s)
+    );
+    setEditingSubject(null);
+  };
+
   const deleteSubject = (id: string) => {
-    if (confirm('Deseja excluir esta matéria e todos seus pixels?')) {
-      setSubjects(prev => prev.filter(s => s.id !== id));
-    }
+    setSubjects(prev => prev.filter(s => s.id !== id));
+    setConfirmDelete(null);
   };
 
   const resetPixels = (id: string) => {
-    if (confirm('Deseja resetar todos os pixels desta matéria?')) {
-      setSubjects(prev =>
-        prev.map(s => s.id === id ? { ...s, completedPixels: [] } : s)
-      );
-    }
+    setSubjects(prev =>
+      prev.map(s => s.id === id ? { ...s, completedPixels: [] } : s)
+    );
+    setConfirmReset(null);
   };
 
   const startCycle = () => {
@@ -132,6 +119,9 @@ const CicloView: React.FC = () => {
   const currentSubject = activeCycle
     ? subjects.find(s => s.id === activeCycle.subjectIds[activeCycle.currentIndex]) ?? null
     : null;
+
+  const subjectToReset = confirmReset ? subjects.find(s => s.id === confirmReset) : null;
+  const subjectToDelete = confirmDelete ? subjects.find(s => s.id === confirmDelete) : null;
 
   return (
     <div className="space-y-4">
@@ -173,17 +163,17 @@ const CicloView: React.FC = () => {
               const total = subject.pixelCount;
               const pct = total > 0 ? Math.round((completed / total) * 100) : 0;
               const allDone = completed >= total;
+              const isResetting = confirmReset === subject.id;
+              const isDeleting = confirmDelete === subject.id;
 
               return (
                 <div
                   key={subject.id}
                   className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden"
                 >
-                  {/* Color accent bar */}
                   <div className="h-1 w-full" style={{ backgroundColor: subject.color }} />
 
                   <div className="p-4 space-y-3">
-                    {/* Header row */}
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2 min-w-0">
                         <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: subject.color }} />
@@ -199,28 +189,35 @@ const CicloView: React.FC = () => {
                       <div className="flex items-center gap-1.5 shrink-0 ml-2">
                         <span className="text-[10px] font-bold text-gray-400 dark:text-gray-600 uppercase">{subject.duration}min</span>
                         <button
-                          onClick={() => resetPixels(subject.id)}
-                          className="w-7 h-7 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-gray-400 hover:text-amber-500 transition-colors"
+                          onClick={() => setConfirmReset(subject.id)}
+                          className={`w-7 h-7 flex items-center justify-center rounded-full transition-colors ${
+                            isResetting
+                              ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-500'
+                              : 'bg-gray-100 dark:bg-gray-800 text-gray-400'
+                          }`}
                           title="Resetar pixels"
                         >
                           <i className="fas fa-rotate-left text-[10px]" />
                         </button>
                         <button
-                          onClick={() => openEditModal(subject)}
+                          onClick={() => setEditingSubject(subject)}
                           className="w-7 h-7 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-gray-400 hover:text-indigo-500 transition-colors"
                         >
                           <i className="fas fa-pencil text-[10px]" />
                         </button>
                         <button
-                          onClick={() => deleteSubject(subject.id)}
-                          className="w-7 h-7 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-gray-400 hover:text-red-500 transition-colors"
+                          onClick={() => setConfirmDelete(subject.id)}
+                          className={`w-7 h-7 flex items-center justify-center rounded-full transition-colors ${
+                            isDeleting
+                              ? 'bg-red-100 dark:bg-red-900/30 text-red-500'
+                              : 'bg-gray-100 dark:bg-gray-800 text-gray-400'
+                          }`}
                         >
                           <i className="fas fa-trash text-[10px]" />
                         </button>
                       </div>
                     </div>
 
-                    {/* Progress display */}
                     <div className="space-y-2">
                       <div className="flex items-end justify-between">
                         <div className="flex items-baseline gap-0.5">
@@ -258,7 +255,6 @@ const CicloView: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* Pixel grid */}
                     <div className="flex flex-wrap gap-1">
                       {Array.from({ length: total }).map((_, i) => (
                         <div
@@ -278,7 +274,6 @@ const CicloView: React.FC = () => {
             })}
           </div>
 
-          {/* Start cycle */}
           <button
             onClick={startCycle}
             className="w-full py-4 bg-indigo-600 text-white rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-lg shadow-indigo-500/20 hover:bg-indigo-700 active:scale-[0.98] transition-all flex items-center justify-center gap-3"
@@ -289,13 +284,13 @@ const CicloView: React.FC = () => {
         </>
       )}
 
-      {/* Add/Edit Modal */}
+      {/* Add Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-300">
           <div className="bg-white dark:bg-gray-900 w-full max-w-lg rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl animate-in slide-in-from-bottom duration-500 border-t border-gray-100 dark:border-gray-800">
             <div className="flex justify-between items-center mb-6 px-1">
               <h2 className="text-xl font-black text-gray-800 dark:text-gray-100 tracking-tight uppercase">
-                {editingSubject ? 'Editar Matéria' : 'Nova Matéria'}
+                Nova Matéria
               </h2>
               <button
                 onClick={closeModal}
@@ -306,7 +301,6 @@ const CicloView: React.FC = () => {
             </div>
 
             <form onSubmit={handleModalSubmit} className="space-y-7 overflow-y-auto max-h-[70vh] px-1 no-scrollbar pb-2">
-              {/* Title */}
               <div className="space-y-2">
                 <label className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">
                   Nome da Matéria
@@ -320,7 +314,6 @@ const CicloView: React.FC = () => {
                 />
               </div>
 
-              {/* Duration */}
               <div className="space-y-3">
                 <label className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest block">
                   Tempo por Sessão
@@ -339,7 +332,6 @@ const CicloView: React.FC = () => {
                 </div>
               </div>
 
-              {/* Pixel count */}
               <div className="space-y-3">
                 <label className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest block">
                   Pixels de Estudo
@@ -356,7 +348,6 @@ const CicloView: React.FC = () => {
                 <div className="text-sm font-black text-indigo-600 dark:text-indigo-400 tracking-tighter text-center">
                   {pixelCount} pixels
                 </div>
-                {/* Pixel preview */}
                 <div className="flex flex-wrap gap-1 pt-1 justify-center max-h-20 overflow-hidden">
                   {Array.from({ length: Math.min(pixelCount, 35) }).map((_, i) => (
                     <div
@@ -373,7 +364,6 @@ const CicloView: React.FC = () => {
                 </div>
               </div>
 
-              {/* Color picker */}
               <div className="space-y-4">
                 <label className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest block">
                   Cor da Matéria
@@ -401,14 +391,96 @@ const CicloView: React.FC = () => {
                 type="submit"
                 className="w-full bg-indigo-600 text-white py-5 rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-2xl shadow-indigo-500/20 dark:shadow-none hover:bg-indigo-700 active:scale-[0.98] transition-all mt-4"
               >
-                {editingSubject ? 'Salvar Alterações' : 'Criar Matéria'}
+                Criar Matéria
               </button>
             </form>
           </div>
         </div>
       )}
 
-      {/* Active cycle timer overlay */}
+      {/* Reset confirm dialog */}
+      {confirmReset && subjectToReset && (
+        <div className="fixed inset-0 z-[60] bg-white/80 dark:bg-gray-950/80 backdrop-blur-md flex items-center justify-center p-6 animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-gray-900 w-full max-w-sm rounded-3xl p-8 shadow-2xl border border-gray-100 dark:border-gray-800 text-center space-y-6">
+            <div className="w-16 h-16 bg-amber-50 dark:bg-amber-900/20 rounded-full flex items-center justify-center mx-auto">
+              <i className="fas fa-rotate-left text-2xl text-amber-500" />
+            </div>
+            <div className="space-y-2">
+              <h3 className="text-lg font-black text-gray-800 dark:text-white uppercase tracking-tight">
+                Resetar Pixels?
+              </h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
+                Todo o progresso de{' '}
+                <span className="font-bold" style={{ color: subjectToReset.color }}>
+                  {subjectToReset.title}
+                </span>{' '}
+                será apagado. Esta ação não pode ser desfeita.
+              </p>
+            </div>
+            <div className="space-y-3 pt-2">
+              <button
+                onClick={() => resetPixels(confirmReset)}
+                className="w-full py-4 bg-amber-500 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-amber-600 transition-colors active:scale-[0.98]"
+              >
+                Sim, resetar pixels
+              </button>
+              <button
+                onClick={() => setConfirmReset(null)}
+                className="w-full py-4 bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete confirm dialog */}
+      {confirmDelete && subjectToDelete && (
+        <div className="fixed inset-0 z-[60] bg-white/80 dark:bg-gray-950/80 backdrop-blur-md flex items-center justify-center p-6 animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-gray-900 w-full max-w-sm rounded-3xl p-8 shadow-2xl border border-gray-100 dark:border-gray-800 text-center space-y-6">
+            <div className="w-16 h-16 bg-red-50 dark:bg-red-900/20 rounded-full flex items-center justify-center mx-auto">
+              <i className="fas fa-trash text-2xl text-red-500" />
+            </div>
+            <div className="space-y-2">
+              <h3 className="text-lg font-black text-gray-800 dark:text-white uppercase tracking-tight">
+                Excluir Matéria?
+              </h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
+                <span className="font-bold" style={{ color: subjectToDelete.color }}>
+                  {subjectToDelete.title}
+                </span>{' '}
+                e todos os seus pixels serão excluídos permanentemente.
+              </p>
+            </div>
+            <div className="space-y-3 pt-2">
+              <button
+                onClick={() => deleteSubject(confirmDelete)}
+                className="w-full py-4 bg-red-500 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-red-600 transition-colors active:scale-[0.98]"
+              >
+                Sim, excluir matéria
+              </button>
+              <button
+                onClick={() => setConfirmDelete(null)}
+                className="w-full py-4 bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit full-screen */}
+      {editingSubject && (
+        <CicloEditView
+          subject={editingSubject}
+          onSave={handleEditSave}
+          onClose={() => setEditingSubject(null)}
+        />
+      )}
+
+      {/* Active cycle timer */}
       {activeCycle && currentSubject && (
         <CicloTimerView
           key={`${activeCycle.currentIndex}-${currentSubject.id}`}
