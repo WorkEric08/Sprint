@@ -28,11 +28,12 @@ const CicloAddView: React.FC<Props> = ({ onSave, onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-gray-50 dark:bg-gray-950 flex flex-col animate-in fade-in duration-200">
-      <div className="flex items-center gap-3 px-4 pt-4 pb-3 border-b border-gray-100 dark:border-gray-800">
+    <div className="fixed inset-0 z-50 flex flex-col md:items-center md:justify-center md:bg-black/50 md:backdrop-blur-sm animate-in fade-in duration-200">
+      <div className="bg-gray-50 dark:bg-gray-950 flex flex-col w-full h-full md:h-auto md:max-h-[90vh] md:max-w-lg md:rounded-3xl md:overflow-hidden md:shadow-2xl">
+      <div className="flex items-center gap-3 px-4 pt-4 pb-3 border-b border-gray-100 dark:border-gray-800 md:px-6">
         <button
           onClick={onClose}
-          className="w-9 h-9 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 active:scale-90 transition-transform"
+          className="w-9 h-9 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 active:scale-90 transition-transform hover:bg-gray-200 dark:hover:bg-gray-700"
         >
           <i className="fas fa-arrow-left text-sm" />
         </button>
@@ -41,7 +42,7 @@ const CicloAddView: React.FC<Props> = ({ onSave, onClose }) => {
         </h2>
       </div>
 
-      <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-4 space-y-7 pb-8">
+      <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-4 md:p-6 space-y-7 pb-8">
         <div className="space-y-2">
           <label className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">
             Nome da Matéria
@@ -161,6 +162,7 @@ const CicloAddView: React.FC<Props> = ({ onSave, onClose }) => {
           Criar Matéria
         </button>
       </form>
+      </div>
     </div>
   );
 };

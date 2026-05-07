@@ -130,24 +130,24 @@ const CicloView: React.FC<Props> = ({ userName }) => {
       </div>
 
       {subjects.length === 0 ? (
-        <div className="text-center py-12 px-6 bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm">
-          <div className="bg-indigo-50 dark:bg-indigo-900/30 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-            <i className="fas fa-book-open text-indigo-400 text-2xl" />
+        <div className="text-center py-16 px-6 bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm md:max-w-lg md:mx-auto">
+          <div className="bg-indigo-50 dark:bg-indigo-900/30 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i className="fas fa-book-open text-indigo-400 text-3xl" />
           </div>
-          <h3 className="text-gray-700 dark:text-gray-200 font-medium text-lg">Nenhuma matéria ainda</h3>
-          <p className="text-gray-500 dark:text-gray-400 mt-2">
+          <h3 className="text-gray-700 dark:text-gray-200 font-medium text-xl">Nenhuma matéria ainda</h3>
+          <p className="text-gray-500 dark:text-gray-400 mt-2 text-sm">
             Adicione suas matérias e comece a construir seu mapa de blocos de estudo.
           </p>
           <button
             onClick={() => setIsAdding(true)}
-            className="mt-6 px-6 py-2 bg-indigo-600 text-white rounded-lg font-semibold active:scale-95 transition-transform"
+            className="mt-6 px-8 py-3 bg-indigo-600 text-white rounded-xl font-semibold active:scale-95 transition-transform hover:bg-indigo-700"
           >
             Adicionar Matéria
           </button>
         </div>
       ) : (
         <>
-          <div className="grid gap-4">
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {subjects.map(subject => {
               const completed = subject.completedBlocks.length;
               const total = subject.blockCount;
@@ -259,17 +259,17 @@ const CicloView: React.FC<Props> = ({ userName }) => {
             })}
           </div>
 
-          <div className="space-y-2">
+          <div className="md:flex md:items-center md:gap-3 space-y-2 md:space-y-0">
             <button
               onClick={() => setIsSprintBuilderOpen(true)}
-              className="w-full py-4 bg-indigo-600 text-white rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-lg shadow-indigo-500/20 hover:bg-indigo-700 active:scale-[0.98] transition-all flex items-center justify-center gap-3"
+              className="w-full md:flex-1 py-4 bg-indigo-600 text-white rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-lg shadow-indigo-500/20 hover:bg-indigo-700 active:scale-[0.98] transition-all flex items-center justify-center gap-3"
             >
               <i className="fas fa-list-ul" />
               Montar Sprint
             </button>
             <button
               onClick={startQuickCycle}
-              className="w-full py-3 text-gray-400 dark:text-gray-600 font-black text-[10px] uppercase tracking-widest hover:text-indigo-500 transition-colors flex items-center justify-center gap-2"
+              className="w-full md:w-auto md:px-6 py-3 md:py-4 text-gray-400 dark:text-gray-600 font-black text-[10px] uppercase tracking-widest hover:text-indigo-500 transition-colors flex items-center justify-center gap-2 md:bg-gray-100 md:dark:bg-gray-800 md:rounded-2xl md:text-gray-500 md:dark:text-gray-400"
             >
               <i className="fas fa-rotate text-[10px]" />
               Ciclo Rápido · {subjects.length} {subjects.length === 1 ? 'matéria' : 'matérias'}

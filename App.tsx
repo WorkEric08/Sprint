@@ -5,11 +5,14 @@ import StatsOverview from './components/StatsOverview';
 import CicloView from './components/CicloView';
 import SettingsPanel from './components/SettingsPanel';
 
+const NAV_ITEMS = [
+  { id: 'stats' as const, icon: 'fa-chart-line', label: 'Progresso' },
+  { id: 'ciclo' as const, icon: 'fa-rotate', label: 'Ciclo' },
+  { id: 'settings' as const, icon: 'fa-gear', label: 'Configurações' },
+];
+
 const App: React.FC = () => {
   const [objectives, setObjectives] = useState<Objective[]>([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingObjective, setEditingObjective] = useState<Objective | null>(null);
-  const [activeSprint, setActiveSprint] = useState<Objective | null>(null);
   const [activeTab, setActiveTab] = useState<'stats' | 'ciclo' | 'settings'>(() => {
     try {
       if (sessionStorage.getItem('pwa-force-update') === '1') return 'settings';
@@ -34,7 +37,6 @@ const App: React.FC = () => {
   });
 
   useEffect(() => {
-    // Remove overlay de atualização assim que o app estiver renderizado
     if (sessionStorage.getItem('pwa-force-update') === '1') {
       sessionStorage.removeItem('pwa-force-update');
       const overlay = document.getElementById('pwa-update-overlay');
@@ -65,11 +67,9 @@ const App: React.FC = () => {
   useEffect(() => {
     try {
       const saved = localStorage.getItem('sprint_objectives');
-      if (saved) {
-        setObjectives(JSON.parse(saved));
-      }
+      if (saved) setObjectives(JSON.parse(saved));
     } catch (e) {
-      console.error("Failed to parse objectives", e);
+      console.error('Failed to parse objectives', e);
     }
   }, []);
 
@@ -88,115 +88,106 @@ const App: React.FC = () => {
     try { localStorage.setItem('sprint_user_name', name); } catch {}
   };
 
-  const handleModalSubmit = (data: Omit<Objective, 'id' | 'createdAt' | 'completions'>) => {
-    if (editingObjective) {
-      setObjectives(prev => prev.map(obj => 
-        obj.id === editingObjective.id ? { ...obj, ...data } : obj
-      ));
-    } else {
-      const obj: Objective = {
-        ...data,
-        id: Math.random().toString(36).substring(2, 11) + Date.now().toString(36),
-        createdAt: Date.now(),
-        completions: []
-      };
-      setObjectives(prev => [...prev, obj]);
-    }
-    closeModal();
-  };
-
-  const openAddModal = () => {
-    setEditingObjective(null);
-    setIsModalOpen(true);
-  };
-
-  const openEditModal = (obj: Objective) => {
-    setEditingObjective(obj);
-    setIsModalOpen(true);
-  };
-
-  const closeModal = () => {
-    setIsModalOpen(false);
-    setEditingObjective(null);
-  };
-
-  const deleteObjective = (id: string) => {
-    if (confirm('Deseja realmente excluir este objetivo?')) {
-      setObjectives(prev => prev.filter(o => o.id !== id));
-    }
-  };
-
-  const completeSprint = (id: string) => {
-    setObjectives(prev => prev.map(obj => {
-      if (obj.id === id) {
-        return {
-          ...obj,
-          completions: [...obj.completions, { timestamp: Date.now() }]
-        };
-      }
-      return obj;
-    }));
-  };
-
-  const startSprintTimer = (obj: Objective) => {
-    setActiveSprint(obj);
-  };
-
   return (
     <>
-    {isUpdating && (
-      <div
-        className="fixed inset-0 z-[9998] flex items-center justify-center"
-        style={{ background: theme === 'dark' ? '#030712' : '#f9fafb' }}
-      >
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-10 h-10 rounded-full border-[3px] border-indigo-500 border-t-transparent animate-spin" />
-          <span
-            className="text-[11px] font-black uppercase tracking-[0.1em]"
-            style={{ color: theme === 'dark' ? '#6b7280' : '#9ca3af' }}
-          >
-            Atualizando...
-          </span>
+      {isUpdating && (
+        <div
+          className="fixed inset-0 z-[9998] flex items-center justify-center"
+          style={{ background: theme === 'dark' ? '#030712' : '#f9fafb' }}
+        >
+          <div className="flex flex-col items-center gap-4">
+            <div className="w-10 h-10 rounded-full border-[3px] border-indigo-500 border-t-transparent animate-spin" />
+            <span
+              className="text-[11px] font-black uppercase tracking-[0.1em]"
+              style={{ color: theme === 'dark' ? '#6b7280' : '#9ca3af' }}
+            >
+              Atualizando...
+            </span>
+          </div>
         </div>
-      </div>
-    )}
-    <div className="flex flex-col h-full bg-gray-50 dark:bg-gray-950 max-w-2xl mx-auto shadow-xl dark:shadow-none w-full relative overflow-hidden transition-theme">
-      <main
-        className="scroll-container p-4 space-y-6"
-        style={{ paddingBottom: 'calc(6rem + env(safe-area-inset-bottom, 0px))' }}
-      >
+      )}
+
+      <div className="flex flex-col md:flex-row h-full bg-gray-50 dark:bg-gray-950 w-full relative overflow-hidden transition-theme">
+
+        {/* ── Sidebar (tablet / desktop) ── */}
+        <aside className="hidden md:flex flex-col bg-white dark:bg-gray-900 border-r border-gray-100 dark:border-gray-800 w-16 lg:w-60 shrink-0">
+          {/* Brand */}
+          <div className="h-16 flex items-center justify-center lg:justify-start lg:px-5 gap-3 border-b border-gray-100 dark:border-gray-800 shrink-0">
+            <div className="w-8 h-8 bg-indigo-600 rounded-xl flex items-center justify-center shrink-0 shadow-md shadow-indigo-500/30">
+              <i className="fas fa-rotate text-white text-sm" />
+            </div>
+            <span className="hidden lg:block font-black text-gray-800 dark:text-white text-sm uppercase tracking-[0.15em]">
+              Sprint
+            </span>
+          </div>
+
+          {/* Nav */}
+          <nav className="flex-1 p-2 space-y-1 pt-4">
+            {NAV_ITEMS.map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`w-full flex items-center justify-center lg:justify-start gap-3 py-3 lg:px-3 rounded-xl transition-all ${
+                  activeTab === tab.id
+                    ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400'
+                    : 'text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/60'
+                }`}
+              >
+                <i className={`fas ${tab.icon} text-[15px] w-5 text-center`} />
+                <span className="hidden lg:block text-[11px] font-black uppercase tracking-widest">
+                  {tab.label}
+                </span>
+              </button>
+            ))}
+          </nav>
+
+          {/* User info */}
+          <div className="p-3 border-t border-gray-100 dark:border-gray-800 shrink-0">
+            <div className="flex items-center justify-center lg:justify-start gap-2.5 py-1">
+              <div className="w-7 h-7 rounded-lg bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center shrink-0">
+                <i className="fas fa-user text-[10px] text-indigo-600 dark:text-indigo-400" />
+              </div>
+              <span className="hidden lg:block text-xs font-bold text-gray-500 dark:text-gray-500 truncate max-w-[140px]">
+                {userName || 'Estudante'}
+              </span>
+            </div>
+          </div>
+        </aside>
+
+        {/* ── Conteúdo principal ── */}
+        <main className="scroll-container flex-1 p-4 md:p-6 lg:p-8 main-content">
           {activeTab === 'stats' && <StatsOverview objectives={objectives} />}
           {activeTab === 'ciclo' && <CicloView userName={userName} />}
-          {activeTab === 'settings' && <SettingsPanel theme={theme} onToggleTheme={toggleTheme} onUpdateStart={() => setIsUpdating(true)} userName={userName} onUserNameChange={handleUserNameChange} />}
+          {activeTab === 'settings' && (
+            <SettingsPanel
+              theme={theme}
+              onToggleTheme={toggleTheme}
+              onUpdateStart={() => setIsUpdating(true)}
+              userName={userName}
+              onUserNameChange={handleUserNameChange}
+            />
+          )}
         </main>
 
+        {/* ── Nav inferior (mobile only) ── */}
         <nav
-          className="fixed bottom-0 left-0 right-0 mx-auto max-w-2xl w-full bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-t border-gray-100 dark:border-gray-800 pt-3 flex items-center z-40"
+          className="md:hidden fixed bottom-0 left-0 right-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-t border-gray-100 dark:border-gray-800 pt-3 flex items-center z-40"
           style={{ paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom, 0px))' }}
         >
-          <button
-            onClick={() => setActiveTab('stats')}
-            className={`flex-1 flex flex-col items-center gap-1 transition-colors ${activeTab === 'stats' ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-400 dark:text-gray-600'}`}
-          >
-            <i className="fas fa-chart-line text-xl"></i>
-            <span className="text-[10px] font-semibold">Progresso</span>
-          </button>
-          <button
-            onClick={() => setActiveTab('ciclo')}
-            className={`flex-1 flex flex-col items-center gap-1 transition-colors ${activeTab === 'ciclo' ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-400 dark:text-gray-600'}`}
-          >
-            <i className="fas fa-rotate text-xl"></i>
-            <span className="text-[10px] font-semibold">Ciclo</span>
-          </button>
-          <button
-            onClick={() => setActiveTab('settings')}
-            className={`flex-1 flex flex-col items-center gap-1 transition-colors ${activeTab === 'settings' ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-400 dark:text-gray-600'}`}
-          >
-            <i className="fas fa-gear text-xl"></i>
-            <span className="text-[10px] font-semibold">Configurações</span>
-          </button>
+          {NAV_ITEMS.map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex-1 flex flex-col items-center gap-1 transition-colors ${
+                activeTab === tab.id ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-400 dark:text-gray-600'
+              }`}
+            >
+              <i className={`fas ${tab.icon} text-xl`} />
+              <span className="text-[10px] font-semibold">{tab.label}</span>
+            </button>
+          ))}
         </nav>
-    </div>
+      </div>
     </>
   );
 };
