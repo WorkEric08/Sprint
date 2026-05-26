@@ -70,7 +70,7 @@ const App: React.FC = () => {
   const {
     theme, setTheme, userName, setUserName,
     examDate, setExamDate, selectedEditalId, setSelectedEditalId,
-    notificationSettings, setNotificationSettings,
+    notificationSettings,
     targetBanca, setTargetBanca,
     loading: settingsLoading,
   } = useSettings();
@@ -288,8 +288,6 @@ const App: React.FC = () => {
               examDate={examDate}
               onOpenEditalPicker={() => setShowEditalPicker(true)}
               onSetExamDate={setExamDate}
-              notificationSettings={notificationSettings}
-              onSetNotificationSettings={setNotificationSettings}
               targetBanca={targetBanca}
               onSetTargetBanca={setTargetBanca}
             />

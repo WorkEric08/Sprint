@@ -1,8 +1,8 @@
 import React, { useState, useRef } from 'react';
 import { usePWAInstall } from '../hooks/usePWAInstall';
 import { EDITAIS } from '../data/editais';
-import { BANCAS, NotificationSettings } from '../types';
-import NotificationSettingsCard from './NotificationSettingsCard';
+import { BANCAS } from '../types';
+import DatePickerModal from './DatePickerModal';
 
 interface Props {
   theme: 'light' | 'dark';
@@ -16,8 +16,6 @@ interface Props {
   onOpenEditalPicker: () => void;
   onSetExamDate: (date: string | null) => void;
   // Fase 5
-  notificationSettings: NotificationSettings;
-  onSetNotificationSettings: (s: NotificationSettings) => Promise<void>;
   targetBanca: string | null;
   onSetTargetBanca: (banca: string | null) => Promise<void>;
 }
@@ -27,10 +25,10 @@ type UpdateStatus = 'idle' | 'clearing' | 'reloading' | 'error';
 const SettingsPanel: React.FC<Props> = ({
   theme, onToggleTheme, onUpdateStart, userName, onUserNameChange,
   selectedEditalId, examDate, onOpenEditalPicker, onSetExamDate,
-  notificationSettings, onSetNotificationSettings,
   targetBanca, onSetTargetBanca,
 }) => {
   const [showBancaPicker, setShowBancaPicker] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const { canInstall, isInstalled, isInstalling, install } = usePWAInstall();
   const [updateStatus, setUpdateStatus] = useState<UpdateStatus>('idle');
   const [toast, setToast] = useState<{ msg: string; type: 'on' | 'off' } | null>(null);
@@ -68,8 +66,6 @@ const SettingsPanel: React.FC<Props> = ({
         const regs = await navigator.serviceWorker.getRegistrations();
         await Promise.all(regs.map(r => r.update()));
 
-        // Ativa o novo SW imediatamente para que o cache fresco esteja
-        // disponível antes do reload — evita tela branca durante o reload.
         const waiting = regs.map(r => r.waiting).find(Boolean);
         if (waiting) {
           await new Promise<void>((resolve) => {
@@ -82,10 +78,7 @@ const SettingsPanel: React.FC<Props> = ({
         }
       }
       setUpdateStatus('reloading');
-      // Marca antes do reload — o script inline em index.html lê isso
-      // e mostra o overlay com nav fake assim que a nova página renderiza.
       sessionStorage.setItem('pwa-force-update', '1');
-      // Pequena pausa para React pintar "Aplicando atualização..."
       await new Promise(r => setTimeout(r, 250));
       window.location.reload();
     } catch (e) {
@@ -94,6 +87,16 @@ const SettingsPanel: React.FC<Props> = ({
       setUpdateStatus('error');
       setTimeout(() => setUpdateStatus('idle'), 3000);
     }
+  };
+
+  // Formata a data para exibição em pt-BR
+  const formatExamDate = (date: string | null) => {
+    if (!date) return 'Não definida';
+    return new Date(date + 'T12:00:00').toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric',
+    });
   };
 
   const installDisabled = isInstalled || isInstalling || !canInstall;
@@ -188,38 +191,31 @@ const SettingsPanel: React.FC<Props> = ({
           <i className="fas fa-chevron-right text-gray-300 dark:text-gray-700 text-xs" />
         </button>
 
-        {/* Data da prova */}
-        <div className="flex items-center gap-3 p-3 rounded-2xl border bg-gray-50 dark:bg-gray-800/40 border-gray-100 dark:border-gray-800">
-          <div className="w-9 h-9 rounded-xl bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center shrink-0">
-            <i className="fas fa-calendar-day text-sm text-amber-600 dark:text-amber-400" />
+        {/* Data da prova — abre DatePickerModal */}
+        <button
+          onClick={() => setShowDatePicker(true)}
+          className="w-full flex items-center justify-between p-3 rounded-2xl border bg-gray-50 dark:bg-gray-800/40 border-gray-100 dark:border-gray-800 hover:border-indigo-200 dark:hover:border-indigo-900/50 transition-all active:scale-[0.98]"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center shrink-0">
+              <i className="fas fa-calendar-day text-sm text-amber-600 dark:text-amber-400" />
+            </div>
+            <div className="text-left">
+              <p className="text-sm font-black text-gray-800 dark:text-gray-100">Data da prova</p>
+              <p className={`text-[10px] font-bold uppercase tracking-wider mt-0.5 ${
+                examDate
+                  ? 'text-indigo-500 dark:text-indigo-400'
+                  : 'text-gray-400 dark:text-gray-600'
+              }`}>
+                {formatExamDate(examDate)}
+              </p>
+            </div>
           </div>
-          <div className="flex-1 text-left">
-            <p className="text-sm font-black text-gray-800 dark:text-gray-100">Data da prova</p>
-            <p className="text-[10px] font-bold text-gray-400 dark:text-gray-600 uppercase tracking-wider mt-0.5">
-              {examDate ? new Date(examDate + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' }) : 'Não definida'}
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <input
-              type="date"
-              value={examDate ?? ''}
-              onChange={e => onSetExamDate(e.target.value || null)}
-              className="text-xs font-bold text-indigo-600 dark:text-indigo-400 bg-transparent focus:outline-none cursor-pointer"
-              style={{ colorScheme: 'auto' }}
-            />
-            {examDate && (
-              <button
-                onClick={() => onSetExamDate(null)}
-                className="w-5 h-5 flex items-center justify-center rounded-full bg-gray-200 dark:bg-gray-700 text-gray-400"
-              >
-                <i className="fas fa-times text-[8px]" />
-              </button>
-            )}
-          </div>
-        </div>
+          <i className="fas fa-chevron-right text-gray-300 dark:text-gray-700 text-xs" />
+        </button>
       </div>
 
-      {/* ── Fase 5: Banca alvo (Feature 2) ── */}
+      {/* ── Fase 5: Banca alvo ── */}
       <div className="space-y-2">
         <label className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">
           Banca alvo <span className="font-normal normal-case tracking-normal opacity-60">(opcional)</span>
@@ -267,12 +263,6 @@ const SettingsPanel: React.FC<Props> = ({
           )}
         </div>
       </div>
-
-      {/* ── Fase 5: Notificações (Feature 3) ── */}
-      <NotificationSettingsCard
-        settings={notificationSettings}
-        onChange={onSetNotificationSettings}
-      />
 
       {/* Aplicativo */}
       <div className="space-y-2">
@@ -328,90 +318,92 @@ const SettingsPanel: React.FC<Props> = ({
       </div>
 
       {/* Sistema — visível apenas em modo desenvolvedor */}
-      {isDevMode && <div className="space-y-2">
-        <label className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">
-          Sistema
-        </label>
+      {isDevMode && (
+        <div className="space-y-2">
+          <label className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">
+            Sistema
+          </label>
 
-        {/* Versão / último commit */}
-        <div className="w-full flex items-center justify-between p-3 rounded-2xl border bg-gray-50 dark:bg-gray-800/40 border-gray-100 dark:border-gray-800">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-gray-100 dark:bg-gray-800 shrink-0">
-              <i className="fas fa-code-branch text-sm text-gray-500 dark:text-gray-400" />
-            </div>
-            <div className="text-left">
-              <p className="text-sm font-black text-gray-800 dark:text-gray-100">
-                {commitHash !== 'unknown' ? `Commit ${commitHash}` : 'Versão desconhecida'}
-              </p>
-              <p className="text-[10px] font-bold text-gray-400 dark:text-gray-600 uppercase tracking-wider mt-0.5">
-                {commitHash !== 'unknown' ? commitMsg : 'Não disponível'}
-              </p>
+          {/* Versão / último commit */}
+          <div className="w-full flex items-center justify-between p-3 rounded-2xl border bg-gray-50 dark:bg-gray-800/40 border-gray-100 dark:border-gray-800">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-gray-100 dark:bg-gray-800 shrink-0">
+                <i className="fas fa-code-branch text-sm text-gray-500 dark:text-gray-400" />
+              </div>
+              <div className="text-left">
+                <p className="text-sm font-black text-gray-800 dark:text-gray-100">
+                  {commitHash !== 'unknown' ? `Commit ${commitHash}` : 'Versão desconhecida'}
+                </p>
+                <p className="text-[10px] font-bold text-gray-400 dark:text-gray-600 uppercase tracking-wider mt-0.5">
+                  {commitHash !== 'unknown' ? commitMsg : 'Não disponível'}
+                </p>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Forçar atualização */}
-        <button
-          onClick={handleForceUpdate}
-          disabled={updateStatus !== 'idle'}
-          className={`w-full flex items-center justify-between p-3 rounded-2xl border transition-all ${
-            updateStatus === 'error'
-              ? 'bg-red-50 dark:bg-red-900/20 border-red-100 dark:border-red-900/30'
-              : updateStatus !== 'idle'
-              ? 'bg-indigo-50 dark:bg-indigo-900/20 border-indigo-100 dark:border-indigo-900/30'
-              : 'bg-gray-50 dark:bg-gray-800/40 border-gray-100 dark:border-gray-800 hover:border-indigo-200 dark:hover:border-indigo-900/50 active:scale-[0.98]'
-          }`}
-        >
-          <div className="flex items-center gap-3">
-            <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${
+          {/* Forçar atualização */}
+          <button
+            onClick={handleForceUpdate}
+            disabled={updateStatus !== 'idle'}
+            className={`w-full flex items-center justify-between p-3 rounded-2xl border transition-all ${
               updateStatus === 'error'
-                ? 'bg-red-100 dark:bg-red-900/40'
+                ? 'bg-red-50 dark:bg-red-900/20 border-red-100 dark:border-red-900/30'
                 : updateStatus !== 'idle'
-                ? 'bg-indigo-100 dark:bg-indigo-900/30'
-                : 'bg-gray-100 dark:bg-gray-800'
-            }`}>
-              <i className={`fas text-sm ${
+                ? 'bg-indigo-50 dark:bg-indigo-900/20 border-indigo-100 dark:border-indigo-900/30'
+                : 'bg-gray-50 dark:bg-gray-800/40 border-gray-100 dark:border-gray-800 hover:border-indigo-200 dark:hover:border-indigo-900/50 active:scale-[0.98]'
+            }`}
+          >
+            <div className="flex items-center gap-3">
+              <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${
                 updateStatus === 'error'
-                  ? 'fa-exclamation-triangle text-red-500'
+                  ? 'bg-red-100 dark:bg-red-900/40'
                   : updateStatus !== 'idle'
-                  ? 'fa-circle-notch fa-spin text-indigo-600 dark:text-indigo-400'
-                  : 'fa-cloud-arrow-down text-gray-500 dark:text-gray-400'
-              }`} />
+                  ? 'bg-indigo-100 dark:bg-indigo-900/30'
+                  : 'bg-gray-100 dark:bg-gray-800'
+              }`}>
+                <i className={`fas text-sm ${
+                  updateStatus === 'error'
+                    ? 'fa-exclamation-triangle text-red-500'
+                    : updateStatus !== 'idle'
+                    ? 'fa-circle-notch fa-spin text-indigo-600 dark:text-indigo-400'
+                    : 'fa-cloud-arrow-down text-gray-500 dark:text-gray-400'
+                }`} />
+              </div>
+              <div className="text-left">
+                <p className="text-sm font-black text-gray-800 dark:text-gray-100">
+                  {updateStatus === 'idle' && 'Forçar Atualização'}
+                  {updateStatus === 'clearing' && 'Limpando cache...'}
+                  {updateStatus === 'reloading' && 'Aplicando atualização...'}
+                  {updateStatus === 'error' && 'Falha na atualização'}
+                </p>
+                <p className="text-[10px] font-bold text-gray-400 dark:text-gray-600 uppercase tracking-wider mt-0.5">
+                  {updateStatus === 'idle' && 'Busca o último deploy na Vercel'}
+                  {updateStatus === 'clearing' && 'Removendo dados em cache...'}
+                  {updateStatus === 'reloading' && 'Carregando nova versão...'}
+                  {updateStatus === 'error' && 'Tente novamente mais tarde'}
+                </p>
+              </div>
             </div>
-            <div className="text-left">
-              <p className="text-sm font-black text-gray-800 dark:text-gray-100">
-                {updateStatus === 'idle' && 'Forçar Atualização'}
-                {updateStatus === 'clearing' && 'Limpando cache...'}
-                {updateStatus === 'reloading' && 'Aplicando atualização...'}
-                {updateStatus === 'error' && 'Falha na atualização'}
-              </p>
-              <p className="text-[10px] font-bold text-gray-400 dark:text-gray-600 uppercase tracking-wider mt-0.5">
-                {updateStatus === 'idle' && 'Busca o último deploy na Vercel'}
-                {updateStatus === 'clearing' && 'Removendo dados em cache...'}
-                {updateStatus === 'reloading' && 'Carregando nova versão...'}
-                {updateStatus === 'error' && 'Tente novamente mais tarde'}
-              </p>
-            </div>
-          </div>
-          {updateStatus === 'idle' && (
-            <i className="fas fa-chevron-right text-gray-300 dark:text-gray-700 text-xs" />
-          )}
-        </button>
+            {updateStatus === 'idle' && (
+              <i className="fas fa-chevron-right text-gray-300 dark:text-gray-700 text-xs" />
+            )}
+          </button>
 
-        {(updateStatus === 'clearing' || updateStatus === 'reloading') && (
-          <div className="w-full bg-indigo-50 dark:bg-indigo-900/20 rounded-2xl px-4 py-3 flex items-center gap-3">
-            <div className="flex-1 h-1.5 bg-indigo-100 dark:bg-indigo-900/50 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-indigo-500 rounded-full transition-all duration-700"
-                style={{ width: updateStatus === 'clearing' ? '50%' : '95%' }}
-              />
+          {(updateStatus === 'clearing' || updateStatus === 'reloading') && (
+            <div className="w-full bg-indigo-50 dark:bg-indigo-900/20 rounded-2xl px-4 py-3 flex items-center gap-3">
+              <div className="flex-1 h-1.5 bg-indigo-100 dark:bg-indigo-900/50 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-indigo-500 rounded-full transition-all duration-700"
+                  style={{ width: updateStatus === 'clearing' ? '50%' : '95%' }}
+                />
+              </div>
+              <span className="text-[10px] font-black text-indigo-500 uppercase tracking-widest shrink-0">
+                {updateStatus === 'clearing' ? '50%' : '95%'}
+              </span>
             </div>
-            <span className="text-[10px] font-black text-indigo-500 uppercase tracking-widest shrink-0">
-              {updateStatus === 'clearing' ? '50%' : '95%'}
-            </span>
-          </div>
-        )}
-      </div>}
+          )}
+        </div>
+      )}
 
       {/* Toast de modo desenvolvedor */}
       {toast && (
@@ -427,6 +419,16 @@ const SettingsPanel: React.FC<Props> = ({
             </span>
           </div>
         </div>
+      )}
+
+      {/* DatePickerModal — centralizado com blur */}
+      {showDatePicker && (
+        <DatePickerModal
+          value={examDate}
+          onSelect={onSetExamDate}
+          onClear={() => onSetExamDate(null)}
+          onClose={() => setShowDatePicker(false)}
+        />
       )}
     </div>
   );
