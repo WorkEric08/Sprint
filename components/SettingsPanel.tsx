@@ -18,6 +18,9 @@ interface Props {
   // Fase 5
   targetBanca: string | null;
   onSetTargetBanca: (banca: string | null) => Promise<void>;
+  // Ofensiva
+  streakEnabled: boolean;
+  onSetStreakEnabled: (enabled: boolean) => Promise<void>;
 }
 
 type UpdateStatus = 'idle' | 'clearing' | 'reloading' | 'error';
@@ -26,6 +29,7 @@ const SettingsPanel: React.FC<Props> = ({
   theme, onToggleTheme, onUpdateStart, userName, onUserNameChange,
   selectedEditalId, examDate, onOpenEditalPicker, onSetExamDate,
   targetBanca, onSetTargetBanca,
+  streakEnabled, onSetStreakEnabled,
 }) => {
   const [showBancaPicker, setShowBancaPicker] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -260,6 +264,67 @@ const SettingsPanel: React.FC<Props> = ({
                 </button>
               ))}
             </div>
+          )}
+        </div>
+      </div>
+
+      {/* ── Ofensiva ── */}
+      <div className="space-y-2">
+        <label className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">
+          Ofensiva
+        </label>
+
+        <div className={`rounded-2xl border p-4 transition-all ${
+          streakEnabled
+            ? 'bg-orange-50 dark:bg-orange-900/10 border-orange-100 dark:border-orange-900/30'
+            : 'bg-gray-50 dark:bg-gray-800/40 border-gray-100 dark:border-gray-800'
+        }`}>
+          <div className="flex items-center gap-3">
+            {/* Ícone */}
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
+              streakEnabled
+                ? 'bg-orange-100 dark:bg-orange-900/30'
+                : 'bg-gray-100 dark:bg-gray-800'
+            }`}>
+              <i className={`fas fa-fire text-base transition-colors ${
+                streakEnabled ? 'text-orange-500' : 'text-gray-400 dark:text-gray-600'
+              }`} />
+            </div>
+
+            {/* Texto */}
+            <div className="flex-1 min-w-0">
+              <p className={`text-sm font-black transition-colors ${
+                streakEnabled ? 'text-orange-800 dark:text-orange-300' : 'text-gray-800 dark:text-gray-100'
+              }`}>
+                Sequência de dias
+              </p>
+              <p className="text-[10px] font-bold text-gray-400 dark:text-gray-600 uppercase tracking-wider mt-0.5">
+                {streakEnabled
+                  ? 'Streak, bônus e card de boas-vindas ativos'
+                  : 'Oculto em toda a interface'}
+              </p>
+            </div>
+
+            {/* Toggle switch */}
+            <button
+              onClick={() => onSetStreakEnabled(!streakEnabled)}
+              className={`w-12 h-6 rounded-full transition-colors shrink-0 relative ${
+                streakEnabled ? 'bg-orange-500' : 'bg-gray-200 dark:bg-gray-700'
+              }`}
+              aria-label={streakEnabled ? 'Desativar ofensiva' : 'Ativar ofensiva'}
+            >
+              <div className={`w-4 h-4 bg-white rounded-full absolute top-1 transition-transform shadow-sm ${
+                streakEnabled ? 'translate-x-7' : 'translate-x-1'
+              }`} />
+            </button>
+          </div>
+
+          {/* Nota quando desativado */}
+          {!streakEnabled && (
+            <p className="text-[10px] text-gray-400 dark:text-gray-600 mt-3 leading-relaxed animate-in fade-in duration-200">
+              O registro de dias estudados continua acontecendo internamente.
+              Ao reativar, sua sequência será recalculada normalmente.
+            </p>
           )}
         </div>
       </div>

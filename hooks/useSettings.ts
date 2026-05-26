@@ -18,6 +18,9 @@ interface UseSettingsReturn {
   setNotificationSettings: (s: NotificationSettings) => Promise<void>;
   targetBanca: string | null;
   setTargetBanca: (banca: string | null) => Promise<void>;
+  // Ofensiva
+  streakEnabled: boolean;
+  setStreakEnabled: (enabled: boolean) => Promise<void>;
   loading: boolean;
 }
 
@@ -30,6 +33,7 @@ export function useSettings(): UseSettingsReturn {
   const [selectedEditalId, setSelectedEditalIdState] = useState<string | null>(null);
   const [notificationSettings, setNotificationSettingsState] = useState<NotificationSettings>(DEFAULT_NOTIFICATION_SETTINGS);
   const [targetBanca, setTargetBancaState] = useState<string | null>(null);
+  const [streakEnabled, setStreakEnabledState] = useState(true);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -40,8 +44,9 @@ export function useSettings(): UseSettingsReturn {
       db.settings.get('selected_edital_id'),
       db.settings.get('notification_settings'),
       db.settings.get('target_banca'),
+      db.settings.get('streak_enabled'),
     ])
-      .then(([themeR, userR, examR, editalR, notifR, bancaR]) => {
+      .then(([themeR, userR, examR, editalR, notifR, bancaR, streakR]) => {
         if (themeR && (themeR.value === 'light' || themeR.value === 'dark')) setThemeState(themeR.value);
         if (userR) setUserNameState(userR.value);
         if (examR?.value) setExamDateState(examR.value);
@@ -50,6 +55,7 @@ export function useSettings(): UseSettingsReturn {
           try { setNotificationSettingsState(JSON.parse(notifR.value)); } catch {}
         }
         if (bancaR?.value) setTargetBancaState(bancaR.value);
+        if (streakR?.value !== undefined) setStreakEnabledState(streakR.value !== 'false');
       })
       .catch(e => console.error('Failed to load settings', e))
       .finally(() => setLoading(false));
@@ -96,6 +102,13 @@ export function useSettings(): UseSettingsReturn {
     } catch (e) { console.error('Failed to save target_banca', e); }
   };
 
+  const setStreakEnabled = async (value: boolean): Promise<void> => {
+    try {
+      await db.settings.put({ key: 'streak_enabled', value: String(value) });
+      setStreakEnabledState(value);
+    } catch (e) { console.error('Failed to save streak_enabled', e); }
+  };
+
   return {
     theme, setTheme,
     userName, setUserName,
@@ -103,6 +116,7 @@ export function useSettings(): UseSettingsReturn {
     selectedEditalId, setSelectedEditalId,
     notificationSettings, setNotificationSettings,
     targetBanca, setTargetBanca,
+    streakEnabled, setStreakEnabled,
     loading,
   };
 }

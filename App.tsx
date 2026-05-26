@@ -72,6 +72,7 @@ const App: React.FC = () => {
     examDate, setExamDate, selectedEditalId, setSelectedEditalId,
     notificationSettings,
     targetBanca, setTargetBanca,
+    streakEnabled, setStreakEnabled,
     loading: settingsLoading,
   } = useSettings();
   const { subjects, setSubjects, loading: subjectsLoading } = useSubjects();
@@ -251,6 +252,7 @@ const App: React.FC = () => {
               streakState={streakState}
               achievements={achievements}
               userName={userName}
+              streakEnabled={streakEnabled}
             />
           )}
           {activeTab === 'ciclo' && (
@@ -264,6 +266,7 @@ const App: React.FC = () => {
               examDate={examDate}
               onEditExamDate={() => setActiveTab('settings')}
               streakState={streakState}
+              streakEnabled={streakEnabled}
             />
           )}
           {activeTab === 'reviews' && (
@@ -290,6 +293,8 @@ const App: React.FC = () => {
               onSetExamDate={setExamDate}
               targetBanca={targetBanca}
               onSetTargetBanca={setTargetBanca}
+              streakEnabled={streakEnabled}
+              onSetStreakEnabled={setStreakEnabled}
             />
           )}
         </main>
@@ -329,8 +334,8 @@ const App: React.FC = () => {
         />
       )}
 
-      {/* Fase 6: Welcome back */}
-      {showWelcomeBack && (
+      {/* Fase 6: Welcome back — só aparece se ofensiva habilitada */}
+      {streakEnabled && showWelcomeBack && (
         <WelcomeBackCard
           state={streakState}
           userName={userName}

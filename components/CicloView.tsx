@@ -41,6 +41,7 @@ interface Props {
   examDate: string | null;
   onEditExamDate: () => void;
   streakState: StreakState;
+  streakEnabled?: boolean;
 }
 
 const CicloView: React.FC<Props> = ({
@@ -53,6 +54,7 @@ const CicloView: React.FC<Props> = ({
   examDate,
   onEditExamDate,
   streakState,
+  streakEnabled = true,
 }) => {
   const [isAdding, setIsAdding] = useState(false);
   const [editingSubject, setEditingSubject] = useState<Subject | null>(null);
@@ -153,7 +155,7 @@ const CicloView: React.FC<Props> = ({
           </h2>
         </div>
         <div className="flex items-center gap-2">
-          <StreakWidget state={streakState} compact />
+          {streakEnabled && <StreakWidget state={streakState} compact />}
           <button
             onClick={() => setIsAdding(true)}
             className="bg-indigo-600 text-white w-10 h-10 rounded-full flex items-center justify-center shadow-lg hover:bg-indigo-700 transition-colors active:scale-90"

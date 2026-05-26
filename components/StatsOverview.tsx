@@ -24,6 +24,7 @@ interface Props {
   streakState: StreakState;
   achievements: AchievementRecord[];
   userName: string;
+  streakEnabled?: boolean;
 }
 
 type Period = 'day' | 'week' | 'month';
@@ -107,7 +108,7 @@ function useSubtopicStats() {
   return stats;
 }
 
-const StatsOverview: React.FC<Props> = ({ subjects, onOpenErrorNotebook, edital, blockLogs, targetBanca, streakState, achievements, userName }) => {
+const StatsOverview: React.FC<Props> = ({ subjects, onOpenErrorNotebook, edital, blockLogs, targetBanca, streakState, achievements, userName, streakEnabled = true }) => {
   const [showSimuladoHistory, setShowSimuladoHistory] = useState(false);
   const [showShare, setShowShare] = useState(false);
   const { records: simuladoRecords } = useSimulados();
@@ -239,8 +240,8 @@ const StatsOverview: React.FC<Props> = ({ subjects, onOpenErrorNotebook, edital,
 
         {/* ── Coluna direita: métricas por período ── */}
         <div className="flex-1 space-y-4 px-2 md:px-0 md:pt-6 mt-4 md:mt-0">
-          {/* ── Fase 6: Streak widget ── */}
-          <StreakWidget state={streakState} />
+          {/* ── Fase 6: Streak widget — só mostra se ofensiva habilitada ── */}
+          {streakEnabled && <StreakWidget state={streakState} />}
 
           {/* ── Fase 6: Conquistas ── */}
           <AchievementsList unlocked={achievements} />
