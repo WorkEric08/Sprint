@@ -5,6 +5,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 
 interface Props {
   objectives: Objective[];
+  subjects: Subject[];
 }
 
 type Period = 'day' | 'week' | 'month';
@@ -40,26 +41,9 @@ function formatTime(minutes: number): string {
   return `${m}m`;
 }
 
-const StatsOverview: React.FC<Props> = () => {
+const StatsOverview: React.FC<Props> = ({ subjects }) => {
   const isDarkMode = document.documentElement.classList.contains('dark');
   const [activePeriod, setActivePeriod] = useState<Period>('day');
-
-  const subjects = useMemo<Subject[]>(() => {
-    try {
-      const saved = localStorage.getItem('sprint_ciclo_subjects');
-      if (saved) {
-        return (JSON.parse(saved) as any[]).map(s => ({
-          id: s.id,
-          title: s.title,
-          color: s.color,
-          duration: s.duration,
-          blockCount: s.blockCount ?? s.pixelCount ?? 20,
-          completedBlocks: s.completedBlocks ?? s.completedPixels ?? [],
-        }));
-      }
-    } catch {}
-    return [];
-  }, []);
 
   const overallProgress = useMemo(() => {
     const totalBlocks = subjects.reduce((a, s) => a + s.blockCount, 0);

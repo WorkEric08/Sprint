@@ -28,7 +28,9 @@
       "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\Pichau\\\\Desktop\\\\Sprint\" -Force | Select-Object Name, @{Name=\"Type\"; Expression={if \\($_.PSIsContainer\\) { \"Directory\" } else { \"File\" }}} | Format-Table -AutoSize)",
       "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\Pichau\\\\Desktop\\\\Sprint\\\\components\\\\\" | ForEach-Object { $_.Name })",
       "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\Pichau\\\\Desktop\\\\Sprint\\\\hooks\\\\\" | ForEach-Object { $_.Name })",
-      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\Pichau\\\\Desktop\\\\Sprint\\\\services\\\\\" | ForEach-Object { $_.Name })"
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\Pichau\\\\Desktop\\\\Sprint\\\\services\\\\\" | ForEach-Object { $_.Name })",
+      "Bash(node -e \"const p = require\\('./package.json'\\); console.log\\(p.dependencies.dexie\\)\")",
+      "Bash(git commit -m 'feat\\(phase-0/f1\\): migrate localStorage to IndexedDB via Dexie.js *)"
     ]
   }
 }

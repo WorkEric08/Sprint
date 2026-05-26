@@ -1,9 +1,12 @@
 
-import React, { useState, useEffect } from 'react';
-import { Objective } from './types';
+import React, { useEffect, useState } from 'react';
 import StatsOverview from './components/StatsOverview';
 import CicloView from './components/CicloView';
 import SettingsPanel from './components/SettingsPanel';
+import { useSettings } from './hooks/useSettings';
+import { useSubjects } from './hooks/useSubjects';
+import { useObjectives } from './hooks/useObjectives';
+import { runMigrationIfNeeded } from './services/migration';
 
 const NAV_ITEMS = [
   { id: 'stats' as const, icon: 'fa-chart-line', label: 'Progresso' },
@@ -11,31 +14,62 @@ const NAV_ITEMS = [
   { id: 'settings' as const, icon: 'fa-gear', label: 'Configurações' },
 ];
 
+// ── AppLoader ──────────────────────────────────────────────────────────────
+// Runs migration BEFORE mounting App so hooks read from an already-populated
+// IndexedDB. Prevents race condition on first open after localStorage → IDB.
+const AppLoader: React.FC = () => {
+  const [migrationReady, setMigrationReady] = useState(false);
+
+  useEffect(() => {
+    runMigrationIfNeeded().finally(() => setMigrationReady(true));
+  }, []);
+
+  if (!migrationReady) {
+    const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches ||
+      document.documentElement.classList.contains('dark');
+    return (
+      <div
+        className="fixed inset-0 flex items-center justify-center"
+        style={{ background: isDark ? '#030712' : '#f9fafb' }}
+      >
+        <div className="w-10 h-10 rounded-full border-[3px] border-indigo-500 border-t-transparent animate-spin" />
+      </div>
+    );
+  }
+
+  return <App />;
+};
+
+// ── App ────────────────────────────────────────────────────────────────────
 const App: React.FC = () => {
-  const [objectives, setObjectives] = useState<Objective[]>([]);
-  const [activeTab, setActiveTab] = useState<'stats' | 'ciclo' | 'settings'>(() => {
+  const [activeTab, setActiveTab] = React.useState<'stats' | 'ciclo' | 'settings'>(() => {
     try {
       if (sessionStorage.getItem('pwa-force-update') === '1') return 'settings';
     } catch {}
     return 'ciclo';
   });
 
-  const [userName, setUserName] = useState<string>(() => {
-    try { return localStorage.getItem('sprint_user_name') ?? ''; } catch { return ''; }
-  });
+  const [isUpdating, setIsUpdating] = React.useState(false);
 
-  const [isUpdating, setIsUpdating] = useState(false);
+  const { theme, setTheme, userName, setUserName, loading: settingsLoading } = useSettings();
+  const { subjects, setSubjects, loading: subjectsLoading } = useSubjects();
+  const { objectives, loading: objectivesLoading } = useObjectives();
 
-  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
-    try {
-      const saved = localStorage.getItem('sprint_theme');
-      if (saved === 'light' || saved === 'dark') return saved;
-    } catch (e) {
-      console.warn('LocalStorage access failed', e);
+  const isLoading = settingsLoading || subjectsLoading || objectivesLoading;
+
+  // Apply theme to document
+  useEffect(() => {
+    const themeColor = document.querySelector('meta[name="theme-color"]');
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+      themeColor?.setAttribute('content', '#030712');
+    } else {
+      document.documentElement.classList.remove('dark');
+      themeColor?.setAttribute('content', '#f9fafb');
     }
-    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-  });
+  }, [theme]);
 
+  // Handle PWA force-update flag
   useEffect(() => {
     if (sessionStorage.getItem('pwa-force-update') === '1') {
       sessionStorage.removeItem('pwa-force-update');
@@ -48,45 +82,23 @@ const App: React.FC = () => {
     }
   }, []);
 
-  useEffect(() => {
-    const themeColor = document.querySelector('meta[name="theme-color"]');
-    if (theme === 'dark') {
-      document.documentElement.classList.add('dark');
-      themeColor?.setAttribute('content', '#030712');
-    } else {
-      document.documentElement.classList.remove('dark');
-      themeColor?.setAttribute('content', '#f9fafb');
-    }
-    try {
-      localStorage.setItem('sprint_theme', theme);
-    } catch (e) {
-      console.warn('Failed to save theme', e);
-    }
-  }, [theme]);
-
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem('sprint_objectives');
-      if (saved) setObjectives(JSON.parse(saved));
-    } catch (e) {
-      console.error('Failed to parse objectives', e);
-    }
-  }, []);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('sprint_objectives', JSON.stringify(objectives));
-    } catch (e) {
-      console.warn('Failed to save objectives', e);
-    }
-  }, [objectives]);
-
-  const toggleTheme = () => setTheme(prev => prev === 'light' ? 'dark' : 'light');
+  const toggleTheme = () => setTheme(theme === 'light' ? 'dark' : 'light');
 
   const handleUserNameChange = (name: string) => {
     setUserName(name);
-    try { localStorage.setItem('sprint_user_name', name); } catch {}
   };
+
+  // Minimal loading screen while IndexedDB loads
+  if (isLoading) {
+    return (
+      <div
+        className="fixed inset-0 flex items-center justify-center"
+        style={{ background: theme === 'dark' ? '#030712' : '#f9fafb' }}
+      >
+        <div className="w-10 h-10 rounded-full border-[3px] border-indigo-500 border-t-transparent animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <>
@@ -156,8 +168,14 @@ const App: React.FC = () => {
 
         {/* ── Conteúdo principal ── */}
         <main className="scroll-container flex-1 p-4 md:p-6 lg:p-8 main-content">
-          {activeTab === 'stats' && <StatsOverview objectives={objectives} />}
-          {activeTab === 'ciclo' && <CicloView userName={userName} />}
+          {activeTab === 'stats' && <StatsOverview objectives={objectives} subjects={subjects} />}
+          {activeTab === 'ciclo' && (
+            <CicloView
+              userName={userName}
+              subjects={subjects}
+              onSubjectsChange={setSubjects}
+            />
+          )}
           {activeTab === 'settings' && (
             <SettingsPanel
               theme={theme}
@@ -192,4 +210,4 @@ const App: React.FC = () => {
   );
 };
 
-export default App;
+export default AppLoader;

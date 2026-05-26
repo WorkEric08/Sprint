@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Subject, SprintResolvedItem } from '../types';
 import CicloEditView from './CicloEditView';
 import CicloAddView from './CicloAddView';
@@ -16,23 +16,11 @@ function getGreeting(): string {
 
 interface Props {
   userName: string;
+  subjects: Subject[];
+  onSubjectsChange: (subjects: Subject[]) => void;
 }
 
-const CicloView: React.FC<Props> = ({ userName }) => {
-  const [subjects, setSubjects] = useState<Subject[]>(() => {
-    try {
-      const saved = localStorage.getItem('sprint_ciclo_subjects');
-      if (saved) {
-        // migrate old pixelCount/completedPixels → blockCount/completedBlocks
-        return (JSON.parse(saved) as any[]).map(s => ({
-          id: s.id, title: s.title, color: s.color, duration: s.duration,
-          blockCount: s.blockCount ?? s.pixelCount ?? 20,
-          completedBlocks: s.completedBlocks ?? s.completedPixels ?? [],
-        }));
-      }
-      return [];
-    } catch { return []; }
-  });
+const CicloView: React.FC<Props> = ({ userName, subjects, onSubjectsChange }) => {
 
   const [isAdding, setIsAdding] = useState(false);
   const [editingSubject, setEditingSubject] = useState<Subject | null>(null);
@@ -44,47 +32,35 @@ const CicloView: React.FC<Props> = ({ userName }) => {
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
 
 
-  useEffect(() => {
-    try {
-      localStorage.setItem('sprint_ciclo_subjects', JSON.stringify(subjects));
-    } catch (e) {
-      console.warn('Failed to save subjects', e);
-    }
-  }, [subjects]);
-
   const handleAddSave = (data: Pick<Subject, 'title' | 'color' | 'duration' | 'blockCount'>) => {
     const newSubject: Subject = {
       id: Math.random().toString(36).substring(2, 11) + Date.now().toString(36),
       ...data,
       completedBlocks: [],
     };
-    setSubjects(prev => [...prev, newSubject]);
+    onSubjectsChange([...subjects, newSubject]);
     setIsAdding(false);
   };
 
   const handleEditSave = (data: Pick<Subject, 'title' | 'color' | 'duration' | 'blockCount'>) => {
     if (!editingSubject) return;
-    setSubjects(prev =>
-      prev.map(s => s.id === editingSubject.id ? { ...s, ...data } : s)
-    );
+    onSubjectsChange(subjects.map(s => s.id === editingSubject.id ? { ...s, ...data } : s));
     setEditingSubject(null);
   };
 
   const deleteSubject = (id: string) => {
-    setSubjects(prev => prev.filter(s => s.id !== id));
+    onSubjectsChange(subjects.filter(s => s.id !== id));
     setConfirmDelete(null);
   };
 
   const resetBlocks = (id: string) => {
-    setSubjects(prev =>
-      prev.map(s => s.id === id ? { ...s, completedBlocks: [] } : s)
-    );
+    onSubjectsChange(subjects.map(s => s.id === id ? { ...s, completedBlocks: [] } : s));
     setConfirmReset(null);
   };
 
   const handleBlockComplete = (subjectId: string) => {
-    setSubjects(prev =>
-      prev.map(s => {
+    onSubjectsChange(
+      subjects.map(s => {
         if (s.id === subjectId && s.completedBlocks.length < s.blockCount) {
           return { ...s, completedBlocks: [...s.completedBlocks, Date.now()] };
         }
