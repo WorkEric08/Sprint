@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Subject, SprintResolvedItem } from '../types';
+import { Subject, SprintResolvedItem, BlockType, ReviewItem, BLOCK_TYPE_COLORS } from '../types';
 import CicloEditView from './CicloEditView';
 import CicloAddView from './CicloAddView';
 import SprintBuilderView from './SprintBuilderView';
@@ -14,23 +14,33 @@ function getGreeting(): string {
   return 'Boa noite';
 }
 
+// Block color: study → subject.color, review → amber, questions → green
+function blockColor(type: BlockType, subjectColor: string): string {
+  if (type === 'study') return subjectColor;
+  return BLOCK_TYPE_COLORS[type];
+}
+
 interface Props {
   userName: string;
   subjects: Subject[];
   onSubjectsChange: (subjects: Subject[]) => void;
+  pendingReviewCount: number;
+  reviewItems: ReviewItem[];
 }
 
-const CicloView: React.FC<Props> = ({ userName, subjects, onSubjectsChange }) => {
-
+const CicloView: React.FC<Props> = ({
+  userName,
+  subjects,
+  onSubjectsChange,
+  pendingReviewCount,
+  reviewItems,
+}) => {
   const [isAdding, setIsAdding] = useState(false);
   const [editingSubject, setEditingSubject] = useState<Subject | null>(null);
   const [isSprintBuilderOpen, setIsSprintBuilderOpen] = useState(false);
   const [sprintItems, setSprintItems] = useState<SprintResolvedItem[] | null>(null);
-
-  // Confirm dialogs
   const [confirmReset, setConfirmReset] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
-
 
   const handleAddSave = (data: Pick<Subject, 'title' | 'color' | 'duration' | 'blockCount'>) => {
     const newSubject: Subject = {
@@ -58,11 +68,15 @@ const CicloView: React.FC<Props> = ({ userName, subjects, onSubjectsChange }) =>
     setConfirmReset(null);
   };
 
-  const handleBlockComplete = (subjectId: string) => {
+  // Feature 4: blockType is now tracked per completed block
+  const handleBlockComplete = (subjectId: string, blockType: BlockType = 'study') => {
     onSubjectsChange(
       subjects.map(s => {
         if (s.id === subjectId && s.completedBlocks.length < s.blockCount) {
-          return { ...s, completedBlocks: [...s.completedBlocks, Date.now()] };
+          return {
+            ...s,
+            completedBlocks: [...s.completedBlocks, { timestamp: Date.now(), type: blockType }],
+          };
         }
         return s;
       })
@@ -71,7 +85,11 @@ const CicloView: React.FC<Props> = ({ userName, subjects, onSubjectsChange }) =>
 
   const startQuickCycle = () => {
     if (subjects.length === 0) return;
-    const items: SprintResolvedItem[] = subjects.map(s => ({ type: 'study', subject: s }));
+    const items: SprintResolvedItem[] = subjects.map(s => ({
+      type: 'study',
+      subject: s,
+      blockType: 'study' as BlockType,
+    }));
     setSprintItems(items);
   };
 
@@ -83,7 +101,6 @@ const CicloView: React.FC<Props> = ({ userName, subjects, onSubjectsChange }) =>
     if (confirmReset) { setConfirmReset(null); return; }
     setConfirmDelete(null);
   }, hasOverlay);
-
 
   return (
     <div className="space-y-4">
@@ -152,9 +169,7 @@ const CicloView: React.FC<Props> = ({ userName, subjects, onSubjectsChange }) =>
                         <button
                           onClick={() => setConfirmReset(subject.id)}
                           className={`w-7 h-7 flex items-center justify-center rounded-full transition-colors ${
-                            isResetting
-                              ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-500'
-                              : 'bg-gray-100 dark:bg-gray-800 text-gray-400'
+                            isResetting ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-500' : 'bg-gray-100 dark:bg-gray-800 text-gray-400'
                           }`}
                           title="Resetar blocos"
                         >
@@ -169,9 +184,7 @@ const CicloView: React.FC<Props> = ({ userName, subjects, onSubjectsChange }) =>
                         <button
                           onClick={() => setConfirmDelete(subject.id)}
                           className={`w-7 h-7 flex items-center justify-center rounded-full transition-colors ${
-                            isDeleting
-                              ? 'bg-red-100 dark:bg-red-900/30 text-red-500'
-                              : 'bg-gray-100 dark:bg-gray-800 text-gray-400'
+                            isDeleting ? 'bg-red-100 dark:bg-red-900/30 text-red-500' : 'bg-gray-100 dark:bg-gray-800 text-gray-400'
                           }`}
                         >
                           <i className="fas fa-trash text-[10px]" />
@@ -182,26 +195,16 @@ const CicloView: React.FC<Props> = ({ userName, subjects, onSubjectsChange }) =>
                     <div className="space-y-2">
                       <div className="flex items-end justify-between">
                         <div className="flex items-baseline gap-0.5">
-                          <span
-                            className="text-3xl font-black tracking-tighter leading-none"
-                            style={{ color: allDone ? '#22c55e' : subject.color }}
-                          >
+                          <span className="text-3xl font-black tracking-tighter leading-none" style={{ color: allDone ? '#22c55e' : subject.color }}>
                             {pct}
                           </span>
-                          <span
-                            className="text-base font-black leading-none"
-                            style={{ color: allDone ? '#22c55e' : subject.color }}
-                          >
-                            %
-                          </span>
+                          <span className="text-base font-black leading-none" style={{ color: allDone ? '#22c55e' : subject.color }}>%</span>
                         </div>
                         <div className="text-right">
                           <p className="text-[10px] font-black text-gray-400 dark:text-gray-600 uppercase tracking-widest">
                             {completed} / {total}
                           </p>
-                          <p className="text-[9px] font-bold text-gray-300 dark:text-gray-700 uppercase tracking-wider mt-0.5">
-                            blocos
-                          </p>
+                          <p className="text-[9px] font-bold text-gray-300 dark:text-gray-700 uppercase tracking-wider mt-0.5">blocos</p>
                         </div>
                       </div>
                       <div className="h-2 w-full bg-gray-100 dark:bg-gray-800/80 rounded-full overflow-hidden">
@@ -216,18 +219,23 @@ const CicloView: React.FC<Props> = ({ userName, subjects, onSubjectsChange }) =>
                       </div>
                     </div>
 
+                    {/* Feature 4: quadradinhos coloridos por tipo */}
                     <div className="flex flex-wrap gap-1">
-                      {Array.from({ length: total }).map((_, i) => (
-                        <div
-                          key={i}
-                          className="w-4 h-4 rounded-sm transition-all duration-500"
-                          style={
-                            i < completed
-                              ? { backgroundColor: subject.color, boxShadow: `0 0 0 1px ${subject.color}22` }
-                              : { backgroundColor: 'transparent', border: '1.5px solid', borderColor: 'currentColor', opacity: 0.15 }
-                          }
-                        />
-                      ))}
+                      {Array.from({ length: total }).map((_, i) => {
+                        const block = subject.completedBlocks[i];
+                        const color = block ? blockColor(block.type, subject.color) : undefined;
+                        return (
+                          <div
+                            key={i}
+                            className="w-4 h-4 rounded-sm transition-all duration-500"
+                            style={
+                              block
+                                ? { backgroundColor: color, boxShadow: `0 0 0 1px ${color}22` }
+                                : { backgroundColor: 'transparent', border: '1.5px solid', borderColor: 'currentColor', opacity: 0.15 }
+                            }
+                          />
+                        );
+                      })}
                     </div>
                   </div>
                 </div>
@@ -254,15 +262,9 @@ const CicloView: React.FC<Props> = ({ userName, subjects, onSubjectsChange }) =>
         </>
       )}
 
-      {/* Add full-screen */}
-      {isAdding && (
-        <CicloAddView
-          onSave={handleAddSave}
-          onClose={() => setIsAdding(false)}
-        />
-      )}
+      {isAdding && <CicloAddView onSave={handleAddSave} onClose={() => setIsAdding(false)} />}
 
-      {/* Reset confirm dialog */}
+      {/* Reset confirm */}
       {confirmReset && subjectToReset && (
         <div className="fixed inset-0 z-[60] bg-white/80 dark:bg-gray-950/80 backdrop-blur-md flex items-center justify-center p-6 animate-in fade-in duration-200">
           <div className="bg-white dark:bg-gray-900 w-full max-w-sm rounded-3xl p-8 shadow-2xl border border-gray-100 dark:border-gray-800 text-center space-y-6">
@@ -270,28 +272,18 @@ const CicloView: React.FC<Props> = ({ userName, subjects, onSubjectsChange }) =>
               <i className="fas fa-rotate-left text-2xl text-amber-500" />
             </div>
             <div className="space-y-2">
-              <h3 className="text-lg font-black text-gray-800 dark:text-white uppercase tracking-tight">
-                Resetar Blocos?
-              </h3>
+              <h3 className="text-lg font-black text-gray-800 dark:text-white uppercase tracking-tight">Resetar Blocos?</h3>
               <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
                 Todos os blocos concluídos de{' '}
-                <span className="font-bold" style={{ color: subjectToReset.color }}>
-                  {subjectToReset.title}
-                </span>{' '}
+                <span className="font-bold" style={{ color: subjectToReset.color }}>{subjectToReset.title}</span>{' '}
                 serão apagados. Esta ação não pode ser desfeita.
               </p>
             </div>
             <div className="space-y-3 pt-2">
-              <button
-                onClick={() => resetBlocks(confirmReset)}
-                className="w-full py-4 bg-amber-500 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-amber-600 transition-colors active:scale-[0.98]"
-              >
+              <button onClick={() => resetBlocks(confirmReset)} className="w-full py-4 bg-amber-500 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-amber-600 transition-colors active:scale-[0.98]">
                 Sim, resetar blocos
               </button>
-              <button
-                onClick={() => setConfirmReset(null)}
-                className="w-full py-4 bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-              >
+              <button onClick={() => setConfirmReset(null)} className="w-full py-4 bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded-2xl font-black text-[10px] uppercase tracking-widest">
                 Cancelar
               </button>
             </div>
@@ -299,7 +291,7 @@ const CicloView: React.FC<Props> = ({ userName, subjects, onSubjectsChange }) =>
         </div>
       )}
 
-      {/* Delete confirm dialog */}
+      {/* Delete confirm */}
       {confirmDelete && subjectToDelete && (
         <div className="fixed inset-0 z-[60] bg-white/80 dark:bg-gray-950/80 backdrop-blur-md flex items-center justify-center p-6 animate-in fade-in duration-200">
           <div className="bg-white dark:bg-gray-900 w-full max-w-sm rounded-3xl p-8 shadow-2xl border border-gray-100 dark:border-gray-800 text-center space-y-6">
@@ -307,27 +299,17 @@ const CicloView: React.FC<Props> = ({ userName, subjects, onSubjectsChange }) =>
               <i className="fas fa-trash text-2xl text-red-500" />
             </div>
             <div className="space-y-2">
-              <h3 className="text-lg font-black text-gray-800 dark:text-white uppercase tracking-tight">
-                Excluir Matéria?
-              </h3>
+              <h3 className="text-lg font-black text-gray-800 dark:text-white uppercase tracking-tight">Excluir Matéria?</h3>
               <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
-                <span className="font-bold" style={{ color: subjectToDelete.color }}>
-                  {subjectToDelete.title}
-                </span>{' '}
+                <span className="font-bold" style={{ color: subjectToDelete.color }}>{subjectToDelete.title}</span>{' '}
                 e todos os seus blocos serão excluídos permanentemente.
               </p>
             </div>
             <div className="space-y-3 pt-2">
-              <button
-                onClick={() => deleteSubject(confirmDelete)}
-                className="w-full py-4 bg-red-500 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-red-600 transition-colors active:scale-[0.98]"
-              >
+              <button onClick={() => deleteSubject(confirmDelete)} className="w-full py-4 bg-red-500 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-red-600 transition-colors active:scale-[0.98]">
                 Sim, excluir matéria
               </button>
-              <button
-                onClick={() => setConfirmDelete(null)}
-                className="w-full py-4 bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-              >
+              <button onClick={() => setConfirmDelete(null)} className="w-full py-4 bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded-2xl font-black text-[10px] uppercase tracking-widest">
                 Cancelar
               </button>
             </div>
@@ -335,25 +317,22 @@ const CicloView: React.FC<Props> = ({ userName, subjects, onSubjectsChange }) =>
         </div>
       )}
 
-      {/* Edit full-screen */}
       {editingSubject && (
-        <CicloEditView
-          subject={editingSubject}
-          onSave={handleEditSave}
-          onClose={() => setEditingSubject(null)}
-        />
+        <CicloEditView subject={editingSubject} onSave={handleEditSave} onClose={() => setEditingSubject(null)} />
       )}
 
-      {/* Sprint Builder */}
+      {/* Sprint Builder — Feature 3: banner de revisões via prop */}
       {isSprintBuilderOpen && (
         <SprintBuilderView
           subjects={subjects}
+          pendingReviewCount={pendingReviewCount}
+          pendingReviewItems={reviewItems.filter(i => !i.consolidated)}
           onStart={items => { setIsSprintBuilderOpen(false); setSprintItems(items); }}
           onClose={() => setIsSprintBuilderOpen(false)}
         />
       )}
 
-      {/* Sprint Runner */}
+      {/* Sprint Runner — Feature 4: blockType propagado via handleBlockComplete */}
       {sprintItems && (
         <SprintRunnerView
           items={sprintItems}

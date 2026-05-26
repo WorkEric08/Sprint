@@ -32,7 +32,8 @@
       "Bash(node -e \"const p = require\\('./package.json'\\); console.log\\(p.dependencies.dexie\\)\")",
       "Bash(git commit -m 'feat\\(phase-0/f1\\): migrate localStorage to IndexedDB via Dexie.js *)",
       "Bash(git config *)",
-      "Bash(git commit -m 'feat\\(phase-1\\): implement block log modal, error notebook, subtopic stats and heatmap *)"
+      "Bash(git commit -m 'feat\\(phase-1\\): implement block log modal, error notebook, subtopic stats and heatmap *)",
+      "Bash(git commit -m 'feat\\(phase-2\\): implement spaced repetition, review queue, sprint banner and block types *)"
     ]
   }
 }

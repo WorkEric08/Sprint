@@ -4,21 +4,24 @@ import StatsOverview from './components/StatsOverview';
 import CicloView from './components/CicloView';
 import SettingsPanel from './components/SettingsPanel';
 import ErrorNotebookView from './components/ErrorNotebookView';
+import ReviewQueueView from './components/ReviewQueueView';
 import { useSettings } from './hooks/useSettings';
 import { useSubjects } from './hooks/useSubjects';
 import { useObjectives } from './hooks/useObjectives';
 import { useBlockLogs } from './hooks/useBlockLogs';
+import { useReviews } from './hooks/useReviews';
 import { runMigrationIfNeeded } from './services/migration';
 
-const NAV_ITEMS = [
-  { id: 'stats' as const, icon: 'fa-chart-line', label: 'Progresso' },
-  { id: 'ciclo' as const, icon: 'fa-rotate', label: 'Ciclo' },
-  { id: 'settings' as const, icon: 'fa-gear', label: 'Configurações' },
+type TabId = 'stats' | 'ciclo' | 'reviews' | 'settings';
+
+const NAV_ITEMS: { id: TabId; icon: string; label: string }[] = [
+  { id: 'stats',    icon: 'fa-chart-line', label: 'Progresso' },
+  { id: 'ciclo',    icon: 'fa-rotate',     label: 'Ciclo' },
+  { id: 'reviews',  icon: 'fa-bookmark',   label: 'Revisões' },
+  { id: 'settings', icon: 'fa-gear',       label: 'Config' },
 ];
 
 // ── AppLoader ──────────────────────────────────────────────────────────────
-// Runs migration BEFORE mounting App so hooks read from an already-populated
-// IndexedDB. Prevents race condition on first open after localStorage → IDB.
 const AppLoader: React.FC = () => {
   const [migrationReady, setMigrationReady] = useState(false);
 
@@ -44,21 +47,21 @@ const AppLoader: React.FC = () => {
 
 // ── App ────────────────────────────────────────────────────────────────────
 const App: React.FC = () => {
-  const [activeTab, setActiveTab] = React.useState<'stats' | 'ciclo' | 'settings'>(() => {
+  const [activeTab, setActiveTab] = useState<TabId>(() => {
     try {
       if (sessionStorage.getItem('pwa-force-update') === '1') return 'settings';
     } catch {}
     return 'ciclo';
   });
 
-  const [isUpdating, setIsUpdating] = React.useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [showErrorNotebook, setShowErrorNotebook] = useState(false);
 
   const { theme, setTheme, userName, setUserName, loading: settingsLoading } = useSettings();
   const { subjects, setSubjects, loading: subjectsLoading } = useSubjects();
   const { objectives, loading: objectivesLoading } = useObjectives();
   const { errorEntries, updateErrorNote } = useBlockLogs();
-
-  const [showErrorNotebook, setShowErrorNotebook] = useState(false);
+  const { reviewItems, pendingCount, createOrUpdateItem, applyResult } = useReviews();
 
   const isLoading = settingsLoading || subjectsLoading || objectivesLoading;
 
@@ -89,11 +92,6 @@ const App: React.FC = () => {
 
   const toggleTheme = () => setTheme(theme === 'light' ? 'dark' : 'light');
 
-  const handleUserNameChange = (name: string) => {
-    setUserName(name);
-  };
-
-  // Minimal loading screen while IndexedDB loads
   if (isLoading) {
     return (
       <div
@@ -128,7 +126,6 @@ const App: React.FC = () => {
 
         {/* ── Sidebar (tablet / desktop) ── */}
         <aside className="hidden md:flex flex-col bg-white dark:bg-gray-900 border-r border-gray-100 dark:border-gray-800 w-16 lg:w-60 shrink-0">
-          {/* Brand */}
           <div className="h-16 flex items-center justify-center lg:justify-start lg:px-5 gap-3 border-b border-gray-100 dark:border-gray-800 shrink-0">
             <div className="w-8 h-8 bg-indigo-600 rounded-xl flex items-center justify-center shrink-0 shadow-md shadow-indigo-500/30">
               <i className="fas fa-rotate text-white text-sm" />
@@ -138,19 +135,25 @@ const App: React.FC = () => {
             </span>
           </div>
 
-          {/* Nav */}
           <nav className="flex-1 p-2 space-y-1 pt-4">
             {NAV_ITEMS.map(tab => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`w-full flex items-center justify-center lg:justify-start gap-3 py-3 lg:px-3 rounded-xl transition-all ${
+                className={`w-full flex items-center justify-center lg:justify-start gap-3 py-3 lg:px-3 rounded-xl transition-all relative ${
                   activeTab === tab.id
                     ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400'
                     : 'text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/60'
                 }`}
               >
-                <i className={`fas ${tab.icon} text-[15px] w-5 text-center`} />
+                <div className="relative">
+                  <i className={`fas ${tab.icon} text-[15px] w-5 text-center`} />
+                  {tab.id === 'reviews' && pendingCount > 0 && (
+                    <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-amber-500 text-white rounded-full text-[8px] font-black flex items-center justify-center">
+                      {pendingCount > 9 ? '9+' : pendingCount}
+                    </span>
+                  )}
+                </div>
                 <span className="hidden lg:block text-[11px] font-black uppercase tracking-widest">
                   {tab.label}
                 </span>
@@ -158,7 +161,6 @@ const App: React.FC = () => {
             ))}
           </nav>
 
-          {/* User info */}
           <div className="p-3 border-t border-gray-100 dark:border-gray-800 shrink-0">
             <div className="flex items-center justify-center lg:justify-start gap-2.5 py-1">
               <div className="w-7 h-7 rounded-lg bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center shrink-0">
@@ -185,7 +187,20 @@ const App: React.FC = () => {
               userName={userName}
               subjects={subjects}
               onSubjectsChange={setSubjects}
+              pendingReviewCount={pendingCount}
+              reviewItems={reviewItems}
             />
+          )}
+          {activeTab === 'reviews' && (
+            <>
+              <h2 className="text-lg font-black text-gray-800 dark:text-gray-100 uppercase tracking-tight mb-4">
+                Revisões
+              </h2>
+              <ReviewQueueView
+                reviewItems={reviewItems}
+                onApplyResult={applyResult}
+              />
+            </>
           )}
           {activeTab === 'settings' && (
             <SettingsPanel
@@ -193,7 +208,7 @@ const App: React.FC = () => {
               onToggleTheme={toggleTheme}
               onUpdateStart={() => setIsUpdating(true)}
               userName={userName}
-              onUserNameChange={handleUserNameChange}
+              onUserNameChange={setUserName}
             />
           )}
         </main>
@@ -207,18 +222,25 @@ const App: React.FC = () => {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex-1 flex flex-col items-center gap-1 transition-colors ${
+              className={`flex-1 flex flex-col items-center gap-1 transition-colors relative ${
                 activeTab === tab.id ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-400 dark:text-gray-600'
               }`}
             >
-              <i className={`fas ${tab.icon} text-xl`} />
-              <span className="text-[10px] font-semibold">{tab.label}</span>
+              <div className="relative">
+                <i className={`fas ${tab.icon} text-xl`} />
+                {tab.id === 'reviews' && pendingCount > 0 && (
+                  <span className="absolute -top-1 -right-1.5 w-4 h-4 bg-amber-500 text-white rounded-full text-[8px] font-black flex items-center justify-center">
+                    {pendingCount > 9 ? '9+' : pendingCount}
+                  </span>
+                )}
+              </div>
+              <span className="text-[9px] font-semibold">{tab.label}</span>
             </button>
           ))}
         </nav>
       </div>
 
-      {/* Caderno de Erros — full-screen overlay */}
+      {/* Caderno de Erros */}
       {showErrorNotebook && (
         <ErrorNotebookView
           errorEntries={errorEntries}

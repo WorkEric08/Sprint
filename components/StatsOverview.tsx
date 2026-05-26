@@ -1,6 +1,6 @@
 
 import React, { useMemo, useState } from 'react';
-import { Objective, Subject, BlockLog } from '../types';
+import { Objective, Subject, BlockLog, BlockType, BLOCK_TYPE_LABELS, BLOCK_TYPE_COLORS } from '../types';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import { db } from '../db';
 import HeatmapView from './HeatmapView';
@@ -109,18 +109,22 @@ const StatsOverview: React.FC<Props> = ({ subjects, onOpenErrorNotebook }) => {
     const start = getPeriodStart(activePeriod);
     let totalSprints = 0;
     let totalMinutes = 0;
+    const typeCounts: Record<BlockType, number> = { study: 0, review: 0, questions: 0 };
+
     const subjectBreakdown = subjects
       .map(s => {
-        const blocks = s.completedBlocks.filter(t => t >= start).length;
+        const periodBlocks = s.completedBlocks.filter(b => b.timestamp >= start);
+        const blocks = periodBlocks.length;
         const minutes = blocks * s.duration;
         totalSprints += blocks;
         totalMinutes += minutes;
+        periodBlocks.forEach(b => { typeCounts[b.type] = (typeCounts[b.type] ?? 0) + 1; });
         return { id: s.id, title: s.title, color: s.color, blocks, minutes, blockCount: s.blockCount };
       })
       .filter(s => s.blocks > 0)
       .sort((a, b) => b.minutes - a.minutes);
 
-    return { totalSprints, totalMinutes, subjectBreakdown };
+    return { totalSprints, totalMinutes, subjectBreakdown, typeCounts };
   }, [subjects, activePeriod]);
 
   // Feature 3: Top strong/weak subtopics (min 3 questions to count)
@@ -274,6 +278,34 @@ const StatsOverview: React.FC<Props> = ({ subjects, onOpenErrorNotebook }) => {
               </p>
             </div>
           </div>
+
+          {/* Feature 4: Distribuição de tipos de bloco */}
+          {periodMetrics.totalSprints > 0 && (
+            (() => {
+              const types: BlockType[] = ['study', 'review', 'questions'];
+              const hasMultiple = types.filter(t => periodMetrics.typeCounts[t] > 0).length > 1;
+              if (!hasMultiple) return null;
+              return (
+                <div className="bg-white dark:bg-gray-900 rounded-2xl p-4 border border-gray-100 dark:border-gray-800/50 space-y-2">
+                  <p className="text-[9px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">Distribuição</p>
+                  {types.filter(t => periodMetrics.typeCounts[t] > 0).map(t => {
+                    const pct = Math.round((periodMetrics.typeCounts[t] / periodMetrics.totalSprints) * 100);
+                    return (
+                      <div key={t} className="space-y-1">
+                        <div className="flex justify-between items-center">
+                          <span className="text-[10px] font-bold text-gray-600 dark:text-gray-400">{BLOCK_TYPE_LABELS[t]}</span>
+                          <span className="text-[10px] font-black" style={{ color: BLOCK_TYPE_COLORS[t] }}>{pct}%</span>
+                        </div>
+                        <div className="h-1 w-full bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+                          <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: BLOCK_TYPE_COLORS[t] }} />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })()
+          )}
 
           {/* Breakdown por matéria */}
           {periodMetrics.subjectBreakdown.length > 0 ? (

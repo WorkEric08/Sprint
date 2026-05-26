@@ -1,11 +1,12 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Subject, PostBlockData } from '../types';
+import { Subject, PostBlockData, BlockType, BLOCK_TYPE_COLORS, BLOCK_TYPE_LABELS } from '../types';
 import { useBackButton } from '../hooks/useBackButton';
 import PostBlockModal from './PostBlockModal';
 
 interface Props {
   subject: Subject;
+  blockType?: BlockType;
   cycleIndex: number;
   cycleTotal: number;
   onClose: () => void;
@@ -15,7 +16,9 @@ interface Props {
   isDevMode?: boolean;
 }
 
-const CicloTimerView: React.FC<Props> = ({ subject, cycleIndex, cycleTotal, onClose, onComplete, onNext, onBlockLogSave, isDevMode }) => {
+const CicloTimerView: React.FC<Props> = ({ subject, blockType = 'study', cycleIndex, cycleTotal, onClose, onComplete, onNext, onBlockLogSave, isDevMode }) => {
+  // Resolve display color: study uses subject color, others use type color
+  const displayColor = blockType === 'study' ? subject.color : BLOCK_TYPE_COLORS[blockType];
   const [secondsLeft, setSecondsLeft] = useState(subject.duration * 60);
   const [isActive, setIsActive] = useState(true);
   const [isFinished, setIsFinished] = useState(false);
@@ -64,8 +67,13 @@ const CicloTimerView: React.FC<Props> = ({ subject, cycleIndex, cycleTotal, onCl
       {/* Header */}
       <div className="w-full flex justify-between items-center">
         <div className="flex items-center gap-3">
-          <div className="w-3 h-3 rounded-full animate-pulse" style={{ backgroundColor: subject.color }} />
+          <div className="w-3 h-3 rounded-full animate-pulse" style={{ backgroundColor: displayColor }} />
           <h2 className="text-sm font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">{subject.title}</h2>
+          {blockType !== 'study' && (
+            <span className="text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full" style={{ backgroundColor: displayColor + '20', color: displayColor }}>
+              {BLOCK_TYPE_LABELS[blockType]}
+            </span>
+          )}
         </div>
         <span className="text-xs font-black text-gray-300 dark:text-gray-700 uppercase tracking-widest">
           {cycleIndex + 1} / {cycleTotal}
@@ -79,7 +87,7 @@ const CicloTimerView: React.FC<Props> = ({ subject, cycleIndex, cycleTotal, onCl
             <circle className="text-gray-100 dark:text-gray-900 stroke-current" strokeWidth="4" fill="transparent" r="45" cx="50" cy="50" />
             <circle
               className="transition-all duration-1000 ease-linear"
-              stroke={subject.color}
+              stroke={displayColor}
               strokeWidth="4"
               strokeDasharray={strokeDasharray}
               strokeDashoffset={strokeDashoffset}
@@ -116,8 +124,8 @@ const CicloTimerView: React.FC<Props> = ({ subject, cycleIndex, cycleTotal, onCl
                 className="w-3 h-3 rounded-sm transition-all"
                 style={
                   i < Math.min(blocksCompleted, 12)
-                    ? { backgroundColor: subject.color }
-                    : { backgroundColor: 'transparent', border: `1.5px solid ${subject.color}`, opacity: 0.3 }
+                    ? { backgroundColor: displayColor }
+                    : { backgroundColor: 'transparent', border: `1.5px solid ${displayColor}`, opacity: 0.3 }
                 }
               />
             ))}
@@ -140,7 +148,7 @@ const CicloTimerView: React.FC<Props> = ({ subject, cycleIndex, cycleTotal, onCl
             <button
               onClick={() => setIsActive(!isActive)}
               className="w-full py-5 rounded-3xl font-black text-xs uppercase tracking-[0.2em] shadow-xl transition-all active:scale-95 flex items-center justify-center gap-3"
-              style={{ backgroundColor: subject.color, color: '#fff' }}
+              style={{ backgroundColor: displayColor, color: '#fff' }}
             >
               <i className={`fas ${isActive ? 'fa-pause' : 'fa-play'}`} />
               {isActive ? 'Pausar' : 'Retomar'}
@@ -195,7 +203,7 @@ const CicloTimerView: React.FC<Props> = ({ subject, cycleIndex, cycleTotal, onCl
       {/* Background decoration */}
       <div
         className="absolute -bottom-24 -left-24 w-64 h-64 rounded-full opacity-5 blur-3xl pointer-events-none"
-        style={{ backgroundColor: subject.color }}
+        style={{ backgroundColor: displayColor }}
       />
 
       {/* Post-block modal */}

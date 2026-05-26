@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { BlockLog, ErrorEntry, PostBlockData } from '../types';
+import { BlockLog, ErrorEntry, PostBlockData, BlockType } from '../types';
 import { db } from '../db';
 
 function uid(): string {
@@ -11,7 +11,7 @@ interface UseBlockLogsReturn {
   errorEntries: ErrorEntry[];
   saveBlockLog: (
     subject: { id: string; title: string; color: string },
-    data: PostBlockData
+    data: PostBlockData & { blockType?: BlockType }
   ) => Promise<void>;
   updateErrorNote: (entryId: string, note: string) => Promise<void>;
   reload: () => Promise<void>;
@@ -40,7 +40,7 @@ export function useBlockLogs(): UseBlockLogsReturn {
 
   const saveBlockLog = async (
     subject: { id: string; title: string; color: string },
-    data: PostBlockData
+    data: PostBlockData & { blockType?: BlockType }
   ): Promise<void> => {
     try {
       const log: BlockLog = {
@@ -54,6 +54,7 @@ export function useBlockLogs(): UseBlockLogsReturn {
         subtopic: data.subtopic,
         selfScore: data.selfScore,
         flaggedForReview: data.flaggedForReview,
+        blockType: data.blockType ?? 'study',
       };
 
       await db.blockLogs.put(log);

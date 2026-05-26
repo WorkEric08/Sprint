@@ -1,22 +1,30 @@
 import { db } from '../db';
-import { Subject, Objective } from '../types';
+import { Subject, Objective, CompletedBlock } from '../types';
 
 export async function runMigrationIfNeeded(): Promise<void> {
   if (localStorage.getItem('sprint_migrated_v1') === 'true') return;
 
   try {
-    // Migrate subjects
+    // Migrate subjects — write CompletedBlock[] (v3 format) directly
     const subjectsRaw = localStorage.getItem('sprint_ciclo_subjects');
     if (subjectsRaw) {
       const parsed = JSON.parse(subjectsRaw) as any[];
-      const normalized: Subject[] = parsed.map(s => ({
-        id: s.id,
-        title: s.title,
-        color: s.color,
-        duration: s.duration,
-        blockCount: s.blockCount ?? s.pixelCount ?? 20,
-        completedBlocks: s.completedBlocks ?? s.completedPixels ?? [],
-      }));
+      const normalized: Subject[] = parsed.map(s => {
+        const rawBlocks: any[] = s.completedBlocks ?? s.completedPixels ?? [];
+        const completedBlocks: CompletedBlock[] = rawBlocks.map(b =>
+          typeof b === 'number'
+            ? { timestamp: b, type: 'study' as const }
+            : { timestamp: b.timestamp ?? b, type: b.type ?? 'study' }
+        );
+        return {
+          id: s.id,
+          title: s.title,
+          color: s.color,
+          duration: s.duration,
+          blockCount: s.blockCount ?? s.pixelCount ?? 20,
+          completedBlocks,
+        };
+      });
       await db.subjects.bulkPut(normalized);
     }
 
@@ -42,6 +50,5 @@ export async function runMigrationIfNeeded(): Promise<void> {
     localStorage.setItem('sprint_migrated_v1', 'true');
   } catch (e) {
     console.error('Sprint migration failed', e);
-    // Flag not set — will retry on next app open
   }
 }
