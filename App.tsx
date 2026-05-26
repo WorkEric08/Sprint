@@ -3,9 +3,11 @@ import React, { useEffect, useState } from 'react';
 import StatsOverview from './components/StatsOverview';
 import CicloView from './components/CicloView';
 import SettingsPanel from './components/SettingsPanel';
+import ErrorNotebookView from './components/ErrorNotebookView';
 import { useSettings } from './hooks/useSettings';
 import { useSubjects } from './hooks/useSubjects';
 import { useObjectives } from './hooks/useObjectives';
+import { useBlockLogs } from './hooks/useBlockLogs';
 import { runMigrationIfNeeded } from './services/migration';
 
 const NAV_ITEMS = [
@@ -54,6 +56,9 @@ const App: React.FC = () => {
   const { theme, setTheme, userName, setUserName, loading: settingsLoading } = useSettings();
   const { subjects, setSubjects, loading: subjectsLoading } = useSubjects();
   const { objectives, loading: objectivesLoading } = useObjectives();
+  const { errorEntries, updateErrorNote } = useBlockLogs();
+
+  const [showErrorNotebook, setShowErrorNotebook] = useState(false);
 
   const isLoading = settingsLoading || subjectsLoading || objectivesLoading;
 
@@ -168,7 +173,13 @@ const App: React.FC = () => {
 
         {/* ── Conteúdo principal ── */}
         <main className="scroll-container flex-1 p-4 md:p-6 lg:p-8 main-content">
-          {activeTab === 'stats' && <StatsOverview objectives={objectives} subjects={subjects} />}
+          {activeTab === 'stats' && (
+            <StatsOverview
+              objectives={objectives}
+              subjects={subjects}
+              onOpenErrorNotebook={() => setShowErrorNotebook(true)}
+            />
+          )}
           {activeTab === 'ciclo' && (
             <CicloView
               userName={userName}
@@ -206,6 +217,15 @@ const App: React.FC = () => {
           ))}
         </nav>
       </div>
+
+      {/* Caderno de Erros — full-screen overlay */}
+      {showErrorNotebook && (
+        <ErrorNotebookView
+          errorEntries={errorEntries}
+          onUpdateNote={updateErrorNote}
+          onClose={() => setShowErrorNotebook(false)}
+        />
+      )}
     </>
   );
 };

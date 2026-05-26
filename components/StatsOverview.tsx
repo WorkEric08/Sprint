@@ -1,11 +1,14 @@
 
 import React, { useMemo, useState } from 'react';
-import { Objective, Subject } from '../types';
+import { Objective, Subject, BlockLog } from '../types';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
+import { db } from '../db';
+import HeatmapView from './HeatmapView';
 
 interface Props {
   objectives: Objective[];
   subjects: Subject[];
+  onOpenErrorNotebook: () => void;
 }
 
 type Period = 'day' | 'week' | 'month';
@@ -41,9 +44,59 @@ function formatTime(minutes: number): string {
   return `${m}m`;
 }
 
-const StatsOverview: React.FC<Props> = ({ subjects }) => {
+// ── Feature 3: Taxa de acerto por subtópico ───────────────────────────────
+
+interface SubtopicStat {
+  subjectId: string;
+  subjectTitle: string;
+  subjectColor: string;
+  subtopic: string;
+  totalQuestions: number;
+  totalCorrect: number;
+  accuracy: number; // 0-100
+}
+
+function useSubtopicStats() {
+  const [stats, setStats] = useState<SubtopicStat[]>([]);
+
+  useMemo(() => {
+    db.blockLogs
+      .filter(log => log.questionsTotal > 0)
+      .toArray()
+      .then((logs: BlockLog[]) => {
+        const map = new Map<string, SubtopicStat>();
+        logs.forEach(log => {
+          const key = `${log.subjectId}::${log.subtopic || '__none__'}`;
+          const existing = map.get(key);
+          if (existing) {
+            existing.totalQuestions += log.questionsTotal;
+            existing.totalCorrect += log.questionsCorrect;
+            existing.accuracy = Math.round((existing.totalCorrect / existing.totalQuestions) * 100);
+          } else {
+            map.set(key, {
+              subjectId: log.subjectId,
+              subjectTitle: log.subjectTitle,
+              subjectColor: log.subjectColor,
+              subtopic: log.subtopic || '(sem subtópico)',
+              totalQuestions: log.questionsTotal,
+              totalCorrect: log.questionsCorrect,
+              accuracy: Math.round((log.questionsCorrect / log.questionsTotal) * 100),
+            });
+          }
+        });
+        setStats([...map.values()]);
+      })
+      .catch(() => {});
+  }, []);
+
+  return stats;
+}
+
+const StatsOverview: React.FC<Props> = ({ subjects, onOpenErrorNotebook }) => {
   const isDarkMode = document.documentElement.classList.contains('dark');
   const [activePeriod, setActivePeriod] = useState<Period>('day');
+  const [expandedSubtopic, setExpandedSubtopic] = useState<string | null>(null);
+  const subtopicStats = useSubtopicStats();
 
   const overallProgress = useMemo(() => {
     const totalBlocks = subjects.reduce((a, s) => a + s.blockCount, 0);
@@ -69,6 +122,16 @@ const StatsOverview: React.FC<Props> = ({ subjects }) => {
 
     return { totalSprints, totalMinutes, subjectBreakdown };
   }, [subjects, activePeriod]);
+
+  // Feature 3: Top strong/weak subtopics (min 3 questions to count)
+  const { strongPoints, weakPoints } = useMemo(() => {
+    const qualified = subtopicStats.filter(s => s.totalQuestions >= 3);
+    const sorted = [...qualified].sort((a, b) => b.accuracy - a.accuracy);
+    return {
+      strongPoints: sorted.slice(0, 5),
+      weakPoints: [...sorted].reverse().slice(0, 5),
+    };
+  }, [subtopicStats]);
 
   const pieData = [
     { value: overallProgress.percent },
@@ -249,7 +312,124 @@ const StatsOverview: React.FC<Props> = ({ subjects }) => {
               Nenhuma atividade neste período
             </div>
           )}
+
+          {/* ── Feature 3: Pontos Fortes / Fracos ── */}
+          {(strongPoints.length > 0 || weakPoints.length > 0) && (
+            <div className="space-y-3 pt-2">
+              <SubtopicCard
+                title="Pontos Fortes"
+                icon="fa-arrow-trend-up"
+                iconColor="text-green-500"
+                bgColor="bg-green-50 dark:bg-green-900/10"
+                borderColor="border-green-100 dark:border-green-900/30"
+                items={strongPoints}
+                expandedKey={expandedSubtopic}
+                onToggle={setExpandedSubtopic}
+              />
+              <SubtopicCard
+                title="Pontos Fracos"
+                icon="fa-arrow-trend-down"
+                iconColor="text-red-500"
+                bgColor="bg-red-50 dark:bg-red-900/10"
+                borderColor="border-red-100 dark:border-red-900/30"
+                items={weakPoints}
+                expandedKey={expandedSubtopic}
+                onToggle={setExpandedSubtopic}
+              />
+            </div>
+          )}
+
+          {/* ── Feature 4: Heatmap ── */}
+          <div className="pt-2">
+            <h3 className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
+              Histórico · 52 semanas
+            </h3>
+            <HeatmapView />
+          </div>
+
+          {/* ── Caderno de Erros entry point ── */}
+          <button
+            onClick={onOpenErrorNotebook}
+            className="w-full flex items-center justify-between p-3.5 bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 hover:border-indigo-200 dark:hover:border-indigo-900/50 transition-all active:scale-[0.98] group"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-red-50 dark:bg-red-900/20 flex items-center justify-center">
+                <i className="fas fa-book text-red-500 text-sm" />
+              </div>
+              <div className="text-left">
+                <p className="text-sm font-black text-gray-800 dark:text-gray-100">Caderno de Erros</p>
+                <p className="text-[10px] font-bold text-gray-400 dark:text-gray-600 uppercase tracking-wider mt-0.5">
+                  Ver registros e anotações
+                </p>
+              </div>
+            </div>
+            <i className="fas fa-chevron-right text-gray-300 dark:text-gray-700 text-xs group-hover:text-indigo-400 transition-colors" />
+          </button>
         </div>
+      </div>
+    </div>
+  );
+};
+
+// ── SubtopicCard helper component ─────────────────────────────────────────
+
+interface SubtopicCardProps {
+  title: string;
+  icon: string;
+  iconColor: string;
+  bgColor: string;
+  borderColor: string;
+  items: SubtopicStat[];
+  expandedKey: string | null;
+  onToggle: (key: string | null) => void;
+}
+
+const SubtopicCard: React.FC<SubtopicCardProps> = ({
+  title, icon, iconColor, bgColor, borderColor, items, expandedKey, onToggle
+}) => {
+  if (items.length === 0) return null;
+
+  return (
+    <div className={`rounded-2xl border ${bgColor} ${borderColor} overflow-hidden`}>
+      <div className="px-4 py-3 flex items-center gap-2">
+        <i className={`fas ${icon} ${iconColor} text-sm`} />
+        <span className="text-[10px] font-black text-gray-600 dark:text-gray-400 uppercase tracking-widest">
+          {title}
+        </span>
+      </div>
+      <div className="divide-y divide-gray-100 dark:divide-gray-800/60">
+        {items.map(item => {
+          const key = `${item.subjectId}::${item.subtopic}`;
+          const isExpanded = expandedKey === key;
+          return (
+            <button
+              key={key}
+              onClick={() => onToggle(isExpanded ? null : key)}
+              className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-white/60 dark:hover:bg-gray-800/30 transition-colors text-left"
+            >
+              <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: item.subjectColor }} />
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-bold text-gray-700 dark:text-gray-300 truncate">
+                  {item.subtopic}
+                </p>
+                {isExpanded && (
+                  <p className="text-[10px] text-gray-400 dark:text-gray-600 mt-0.5">
+                    {item.subjectTitle} · {item.totalCorrect}/{item.totalQuestions} certas
+                  </p>
+                )}
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <span
+                  className="text-sm font-black"
+                  style={{ color: item.accuracy >= 70 ? '#22c55e' : item.accuracy >= 50 ? '#f97316' : '#ef4444' }}
+                >
+                  {item.accuracy}%
+                </span>
+                <i className={`fas fa-chevron-${isExpanded ? 'up' : 'down'} text-[9px] text-gray-300 dark:text-gray-700`} />
+              </div>
+            </button>
+          );
+        })}
       </div>
     </div>
   );

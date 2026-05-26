@@ -1,6 +1,45 @@
 
 export type Frequency = 'daily' | 'weekly' | 'monthly' | 'yearly';
 
+// ── Feature 1: Modal pós-bloco ────────────────────────────────────────────
+
+export interface PostBlockData {
+  questionsTotal: number;
+  questionsCorrect: number;
+  subtopic: string;
+  selfScore: 1 | 2 | 3 | 4 | 5;
+  flaggedForReview: boolean;
+}
+
+export interface BlockLog {
+  id: string;
+  subjectId: string;
+  subjectTitle: string;
+  subjectColor: string;
+  timestamp: number;
+  questionsTotal: number;
+  questionsCorrect: number;
+  subtopic: string;
+  selfScore: 1 | 2 | 3 | 4 | 5;
+  flaggedForReview: boolean;
+}
+
+// ── Feature 2: Caderno de Erros ───────────────────────────────────────────
+
+export interface ErrorEntry {
+  id: string;
+  blockLogId: string;
+  subjectId: string;
+  subjectTitle: string;
+  subjectColor: string;
+  subtopic: string;
+  timestamp: number;
+  questionsTotal: number;
+  questionsCorrect: number;
+  questionsWrong: number;
+  note: string;
+}
+
 export interface Completion {
   timestamp: number;
 }

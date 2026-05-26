@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Subject, SprintResolvedItem } from '../types';
+import { Subject, SprintResolvedItem, PostBlockData } from '../types';
 import CicloTimerView from './CicloTimerView';
 import BreakTimerView from './BreakTimerView';
+import { useBlockLogs } from '../hooks/useBlockLogs';
 
 interface Props {
   items: SprintResolvedItem[];
@@ -12,6 +13,7 @@ interface Props {
 
 const SprintRunnerView: React.FC<Props> = ({ items, onBlockComplete, onClose, isDevMode }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const { saveBlockLog } = useBlockLogs();
 
   const advance = () => {
     const next = currentIndex + 1;
@@ -38,6 +40,13 @@ const SprintRunnerView: React.FC<Props> = ({ items, onBlockComplete, onClose, is
     (i): i is { type: 'study'; subject: Subject } => i.type === 'study'
   )?.subject ?? null;
 
+  const handleBlockLogSave = (subject: Subject) => (data: PostBlockData) => {
+    saveBlockLog(
+      { id: subject.id, title: subject.title, color: subject.color },
+      data
+    );
+  };
+
   if (current.type === 'break') {
     return (
       <BreakTimerView
@@ -61,6 +70,7 @@ const SprintRunnerView: React.FC<Props> = ({ items, onBlockComplete, onClose, is
       onClose={onClose}
       onComplete={() => onBlockComplete(current.subject.id)}
       onNext={advance}
+      onBlockLogSave={handleBlockLogSave(current.subject)}
       isDevMode={isDevMode}
     />
   );

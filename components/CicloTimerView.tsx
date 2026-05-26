@@ -1,7 +1,8 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Subject } from '../types';
+import { Subject, PostBlockData } from '../types';
 import { useBackButton } from '../hooks/useBackButton';
+import PostBlockModal from './PostBlockModal';
 
 interface Props {
   subject: Subject;
@@ -10,14 +11,16 @@ interface Props {
   onClose: () => void;
   onComplete: () => void;
   onNext: () => void;
+  onBlockLogSave?: (data: PostBlockData) => void;
   isDevMode?: boolean;
 }
 
-const CicloTimerView: React.FC<Props> = ({ subject, cycleIndex, cycleTotal, onClose, onComplete, onNext, isDevMode }) => {
+const CicloTimerView: React.FC<Props> = ({ subject, cycleIndex, cycleTotal, onClose, onComplete, onNext, onBlockLogSave, isDevMode }) => {
   const [secondsLeft, setSecondsLeft] = useState(subject.duration * 60);
   const [isActive, setIsActive] = useState(true);
   const [isFinished, setIsFinished] = useState(false);
   const [showExitConfirm, setShowExitConfirm] = useState(false);
+  const [showPostModal, setShowPostModal] = useState(false);
   const totalSeconds = subject.duration * 60;
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -30,7 +33,8 @@ const CicloTimerView: React.FC<Props> = ({ subject, cycleIndex, cycleTotal, onCl
       setIsFinished(true);
       setIsActive(false);
       onComplete();
-      setTimeout(onNext, 2000);
+      // Show post-block modal after brief "Bloco Concluído!" display
+      setTimeout(() => setShowPostModal(true), 1500);
     }
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [isActive, secondsLeft, showExitConfirm, isFinished]);
@@ -193,6 +197,24 @@ const CicloTimerView: React.FC<Props> = ({ subject, cycleIndex, cycleTotal, onCl
         className="absolute -bottom-24 -left-24 w-64 h-64 rounded-full opacity-5 blur-3xl pointer-events-none"
         style={{ backgroundColor: subject.color }}
       />
+
+      {/* Post-block modal */}
+      {showPostModal && (
+        <PostBlockModal
+          subjectId={subject.id}
+          subjectTitle={subject.title}
+          subjectColor={subject.color}
+          onSubmit={(data) => {
+            setShowPostModal(false);
+            onBlockLogSave?.(data);
+            onNext();
+          }}
+          onSkip={() => {
+            setShowPostModal(false);
+            onNext();
+          }}
+        />
+      )}
     </div>
   );
 };
