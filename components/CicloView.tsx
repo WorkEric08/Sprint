@@ -11,10 +11,11 @@ import SimuladoRunnerView from './SimuladoRunnerView';
 import PostSimuladoModal from './PostSimuladoModal';
 import RedacaoSetupModal from './RedacaoSetupModal';
 import RedacaoEditorView from './RedacaoEditorView';
+import StreakWidget from './StreakWidget';
 import { useBackButton } from '../hooks/useBackButton';
 import { useSimulados } from '../hooks/useSimulados';
 import { useRedacao } from '../hooks/useRedacao';
-import { RedacaoTheme } from '../types';
+import { RedacaoTheme, StreakState } from '../types';
 
 function getGreeting(): string {
   const h = new Date().getHours();
@@ -39,6 +40,7 @@ interface Props {
   edital: Edital | null;
   examDate: string | null;
   onEditExamDate: () => void;
+  streakState: StreakState;
 }
 
 const CicloView: React.FC<Props> = ({
@@ -50,6 +52,7 @@ const CicloView: React.FC<Props> = ({
   edital,
   examDate,
   onEditExamDate,
+  streakState,
 }) => {
   const [isAdding, setIsAdding] = useState(false);
   const [editingSubject, setEditingSubject] = useState<Subject | null>(null);
@@ -149,12 +152,15 @@ const CicloView: React.FC<Props> = ({
             {userName || 'Estudante'}
           </h2>
         </div>
-        <button
-          onClick={() => setIsAdding(true)}
-          className="bg-indigo-600 text-white w-10 h-10 rounded-full flex items-center justify-center shadow-lg hover:bg-indigo-700 transition-colors active:scale-90"
-        >
-          <i className="fas fa-plus" />
-        </button>
+        <div className="flex items-center gap-2">
+          <StreakWidget state={streakState} compact />
+          <button
+            onClick={() => setIsAdding(true)}
+            className="bg-indigo-600 text-white w-10 h-10 rounded-full flex items-center justify-center shadow-lg hover:bg-indigo-700 transition-colors active:scale-90"
+          >
+            <i className="fas fa-plus" />
+          </button>
+        </div>
       </div>
 
       {/* Fase 3: Contagem regressiva */}

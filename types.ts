@@ -83,6 +83,31 @@ export interface ReviewItem {
   reviewCount: number;
 }
 
+// ── Fase 6: Engajamento ───────────────────────────────────────────────────
+
+export type AchievementId =
+  | 'first-block'
+  | 'first-week'
+  | 'mil-questoes'
+  | 'consistencia'
+  | 'volta-por-cima'
+  | 'maratonista'
+  | 'detalhista';
+
+export interface AchievementRecord {
+  id: AchievementId;
+  unlockedAt: number;
+}
+
+export interface StreakState {
+  currentStreak: number;
+  bonusBalance: number;    // dias bônus disponíveis (0-3)
+  longestStreak: number;
+  totalStudyDays: number;
+  lastStudyDate: string | null;
+  bonusUsedRecently: boolean; // bônus usado nas últimas 24h → mostra banner
+}
+
 // ── Fase 5: Específicos por público ──────────────────────────────────────
 
 // Feature 1: Módulo Redação

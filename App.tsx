@@ -15,7 +15,11 @@ import { EDITAIS } from './data/editais';
 import { runMigrationIfNeeded } from './services/migration';
 import { checkAndFireNotifications } from './services/notificationService';
 import { useSimulados } from './hooks/useSimulados';
-import { computeToleratedStreak, toLocalDateKey } from './utils/dateUtils';
+import { toLocalDateKey } from './utils/dateUtils';
+import { computeFullStreak, shouldShowWelcomeBack } from './utils/streakUtils';
+import { useAchievements } from './hooks/useAchievements';
+import AchievementToast from './components/AchievementToast';
+import WelcomeBackCard from './components/WelcomeBackCard';
 
 type TabId = 'stats' | 'ciclo' | 'reviews' | 'settings';
 
@@ -75,10 +79,22 @@ const App: React.FC = () => {
   const { errorEntries, updateErrorNote, blockLogs } = useBlockLogs();
   const { reviewItems, pendingCount, createOrUpdateItem, applyResult } = useReviews();
   const { records: simuladoRecords } = useSimulados();
+  const { unlocked: achievements, newlyUnlocked, clearNewlyUnlocked, checkAll: checkAchievements } = useAchievements();
+  const { records: redacaoSessions } = useSimulados(); // reuse pattern
   const selectedEdital = EDITAIS.find(e => e.id === selectedEditalId) ?? null;
   const isLoading = settingsLoading || subjectsLoading || objectivesLoading;
 
-  // Fire contextual notifications after data is loaded
+  const [showWelcomeBack, setShowWelcomeBack] = useState(false);
+
+  // Streak state (computed from block data)
+  const streakState = React.useMemo(() => {
+    const activeDays = new Set(
+      subjects.flatMap(s => s.completedBlocks.map(b => toLocalDateKey(b.timestamp)))
+    );
+    return computeFullStreak(activeDays);
+  }, [subjects]);
+
+  // On data loaded: notifications + achievements + welcome back
   useEffect(() => {
     if (isLoading) return;
     const today = toLocalDateKey(Date.now());
@@ -86,21 +102,31 @@ const App: React.FC = () => {
       (a, s) => a + s.completedBlocks.filter(b => toLocalDateKey(b.timestamp) === today).length,
       0
     );
-    const activeDays = new Set(
-      subjects.flatMap(s => s.completedBlocks.map(b => toLocalDateKey(b.timestamp)))
-    );
-    const streakDays = computeToleratedStreak(activeDays);
     const lastSimulado = simuladoRecords[0] ?? null;
 
+    // Notifications
     checkAndFireNotifications({
       settings: notificationSettings,
       pendingReviews: reviewItems,
       completedBlocksToday: completedToday,
-      streakDays,
+      streakDays: streakState.currentStreak,
       lastSimulado,
       examDate,
       examName: selectedEdital?.name ?? null,
     });
+
+    // Achievements
+    checkAchievements({
+      blockLogs,
+      simuladoRecords,
+      redacaoSessions: [],
+      totalStudyDays: streakState.totalStudyDays,
+    });
+
+    // Welcome back
+    if (shouldShowWelcomeBack(streakState)) {
+      setShowWelcomeBack(true);
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoading]);
 
@@ -222,6 +248,9 @@ const App: React.FC = () => {
               edital={selectedEdital}
               blockLogs={blockLogs}
               targetBanca={targetBanca}
+              streakState={streakState}
+              achievements={achievements}
+              userName={userName}
             />
           )}
           {activeTab === 'ciclo' && (
@@ -234,6 +263,7 @@ const App: React.FC = () => {
               edital={selectedEdital}
               examDate={examDate}
               onEditExamDate={() => setActiveTab('settings')}
+              streakState={streakState}
             />
           )}
           {activeTab === 'reviews' && (
@@ -292,6 +322,23 @@ const App: React.FC = () => {
           ))}
         </nav>
       </div>
+
+      {/* Fase 6: Achievement toast (non-blocking) */}
+      {newlyUnlocked && (
+        <AchievementToast
+          achievementId={newlyUnlocked}
+          onDismiss={clearNewlyUnlocked}
+        />
+      )}
+
+      {/* Fase 6: Welcome back */}
+      {showWelcomeBack && (
+        <WelcomeBackCard
+          state={streakState}
+          userName={userName}
+          onDismiss={() => setShowWelcomeBack(false)}
+        />
+      )}
 
       {/* Caderno de Erros */}
       {showErrorNotebook && (

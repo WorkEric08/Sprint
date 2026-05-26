@@ -8,7 +8,11 @@ import EditalCoverageCard from './EditalCoverageCard';
 import SimuladoAreaCard from './SimuladoAreaCard';
 import SimuladoHistoryView from './SimuladoHistoryView';
 import BancaStatsCard from './BancaStatsCard';
+import StreakWidget from './StreakWidget';
+import AchievementsList from './AchievementsList';
+import ShareSheet from './ShareSheet';
 import { useSimulados } from '../hooks/useSimulados';
+import { AchievementRecord, StreakState } from '../types';
 
 interface Props {
   objectives: Objective[];
@@ -17,6 +21,9 @@ interface Props {
   edital: Edital | null;
   blockLogs: BlockLog[];
   targetBanca: string | null;
+  streakState: StreakState;
+  achievements: AchievementRecord[];
+  userName: string;
 }
 
 type Period = 'day' | 'week' | 'month';
@@ -100,9 +107,9 @@ function useSubtopicStats() {
   return stats;
 }
 
-const StatsOverview: React.FC<Props> = ({ subjects, onOpenErrorNotebook, edital, blockLogs: blockLogsProp, targetBanca }) => {
-  const blockLogs = blockLogsProp; // passed from App via prop
+const StatsOverview: React.FC<Props> = ({ subjects, onOpenErrorNotebook, edital, blockLogs, targetBanca, streakState, achievements, userName }) => {
   const [showSimuladoHistory, setShowSimuladoHistory] = useState(false);
+  const [showShare, setShowShare] = useState(false);
   const { records: simuladoRecords } = useSimulados();
   const isDarkMode = document.documentElement.classList.contains('dark');
   const [activePeriod, setActivePeriod] = useState<Period>('day');
@@ -232,6 +239,12 @@ const StatsOverview: React.FC<Props> = ({ subjects, onOpenErrorNotebook, edital,
 
         {/* ── Coluna direita: métricas por período ── */}
         <div className="flex-1 space-y-4 px-2 md:px-0 md:pt-6 mt-4 md:mt-0">
+          {/* ── Fase 6: Streak widget ── */}
+          <StreakWidget state={streakState} />
+
+          {/* ── Fase 6: Conquistas ── */}
+          <AchievementsList unlocked={achievements} />
+
           {/* Header de período */}
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">
@@ -428,6 +441,25 @@ const StatsOverview: React.FC<Props> = ({ subjects, onOpenErrorNotebook, edital,
             <i className="fas fa-chevron-right text-gray-300 dark:text-gray-700 text-xs group-hover:text-indigo-400 transition-colors" />
           </button>
 
+          {/* ── Fase 6: Compartilhar ── */}
+          <button
+            onClick={() => setShowShare(true)}
+            className="w-full flex items-center justify-between p-3.5 bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 hover:border-indigo-200 dark:hover:border-indigo-900/50 transition-all active:scale-[0.98] group"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center">
+                <i className="fas fa-share-nodes text-indigo-500 text-sm" />
+              </div>
+              <div className="text-left">
+                <p className="text-sm font-black text-gray-800 dark:text-gray-100">Compartilhar</p>
+                <p className="text-[10px] font-bold text-gray-400 dark:text-gray-600 uppercase tracking-wider mt-0.5">
+                  Semana, conquistas, meu ano
+                </p>
+              </div>
+            </div>
+            <i className="fas fa-chevron-right text-gray-300 dark:text-gray-700 text-xs group-hover:text-indigo-400 transition-colors" />
+          </button>
+
           {/* ── Caderno de Erros entry point ── */}
           <button
             onClick={onOpenErrorNotebook}
@@ -448,6 +480,17 @@ const StatsOverview: React.FC<Props> = ({ subjects, onOpenErrorNotebook, edital,
           </button>
         </div>
       </div>
+
+      {/* Share sheet */}
+      {showShare && (
+        <ShareSheet
+          userName={userName}
+          subjects={subjects}
+          blockLogs={blockLogs}
+          streakState={streakState}
+          onClose={() => setShowShare(false)}
+        />
+      )}
 
       {/* Simulado history overlay */}
       {showSimuladoHistory && (
