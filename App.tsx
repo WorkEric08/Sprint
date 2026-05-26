@@ -13,6 +13,9 @@ import { useBlockLogs } from './hooks/useBlockLogs';
 import { useReviews } from './hooks/useReviews';
 import { EDITAIS } from './data/editais';
 import { runMigrationIfNeeded } from './services/migration';
+import { checkAndFireNotifications } from './services/notificationService';
+import { useSimulados } from './hooks/useSimulados';
+import { computeToleratedStreak, toLocalDateKey } from './utils/dateUtils';
 
 type TabId = 'stats' | 'ciclo' | 'reviews' | 'settings';
 
@@ -63,15 +66,43 @@ const App: React.FC = () => {
   const {
     theme, setTheme, userName, setUserName,
     examDate, setExamDate, selectedEditalId, setSelectedEditalId,
+    notificationSettings, setNotificationSettings,
+    targetBanca, setTargetBanca,
     loading: settingsLoading,
   } = useSettings();
   const { subjects, setSubjects, loading: subjectsLoading } = useSubjects();
   const { objectives, loading: objectivesLoading } = useObjectives();
-  const { errorEntries, updateErrorNote } = useBlockLogs();
+  const { errorEntries, updateErrorNote, blockLogs } = useBlockLogs();
   const { reviewItems, pendingCount, createOrUpdateItem, applyResult } = useReviews();
+  const { records: simuladoRecords } = useSimulados();
   const selectedEdital = EDITAIS.find(e => e.id === selectedEditalId) ?? null;
-
   const isLoading = settingsLoading || subjectsLoading || objectivesLoading;
+
+  // Fire contextual notifications after data is loaded
+  useEffect(() => {
+    if (isLoading) return;
+    const today = toLocalDateKey(Date.now());
+    const completedToday = subjects.reduce(
+      (a, s) => a + s.completedBlocks.filter(b => toLocalDateKey(b.timestamp) === today).length,
+      0
+    );
+    const activeDays = new Set(
+      subjects.flatMap(s => s.completedBlocks.map(b => toLocalDateKey(b.timestamp)))
+    );
+    const streakDays = computeToleratedStreak(activeDays);
+    const lastSimulado = simuladoRecords[0] ?? null;
+
+    checkAndFireNotifications({
+      settings: notificationSettings,
+      pendingReviews: reviewItems,
+      completedBlocksToday: completedToday,
+      streakDays,
+      lastSimulado,
+      examDate,
+      examName: selectedEdital?.name ?? null,
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoading]);
 
   // Apply theme to document
   useEffect(() => {
@@ -189,6 +220,8 @@ const App: React.FC = () => {
               subjects={subjects}
               onOpenErrorNotebook={() => setShowErrorNotebook(true)}
               edital={selectedEdital}
+              blockLogs={blockLogs}
+              targetBanca={targetBanca}
             />
           )}
           {activeTab === 'ciclo' && (
@@ -225,6 +258,10 @@ const App: React.FC = () => {
               examDate={examDate}
               onOpenEditalPicker={() => setShowEditalPicker(true)}
               onSetExamDate={setExamDate}
+              notificationSettings={notificationSettings}
+              onSetNotificationSettings={setNotificationSettings}
+              targetBanca={targetBanca}
+              onSetTargetBanca={setTargetBanca}
             />
           )}
         </main>

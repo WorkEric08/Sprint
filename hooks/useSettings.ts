@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { db } from '../db';
+import { NotificationSettings } from '../types';
+import { DEFAULT_NOTIFICATION_SETTINGS } from '../services/notificationService';
 
 interface UseSettingsReturn {
   theme: 'light' | 'dark';
@@ -7,10 +9,15 @@ interface UseSettingsReturn {
   userName: string;
   setUserName: (name: string) => Promise<void>;
   // Fase 3
-  examDate: string | null;        // "YYYY-MM-DD" or null
+  examDate: string | null;
   setExamDate: (date: string | null) => Promise<void>;
   selectedEditalId: string | null;
   setSelectedEditalId: (id: string | null) => Promise<void>;
+  // Fase 5
+  notificationSettings: NotificationSettings;
+  setNotificationSettings: (s: NotificationSettings) => Promise<void>;
+  targetBanca: string | null;
+  setTargetBanca: (banca: string | null) => Promise<void>;
   loading: boolean;
 }
 
@@ -21,6 +28,8 @@ export function useSettings(): UseSettingsReturn {
   const [userName, setUserNameState] = useState('');
   const [examDate, setExamDateState] = useState<string | null>(null);
   const [selectedEditalId, setSelectedEditalIdState] = useState<string | null>(null);
+  const [notificationSettings, setNotificationSettingsState] = useState<NotificationSettings>(DEFAULT_NOTIFICATION_SETTINGS);
+  const [targetBanca, setTargetBancaState] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -29,14 +38,18 @@ export function useSettings(): UseSettingsReturn {
       db.settings.get('user_name'),
       db.settings.get('exam_date'),
       db.settings.get('selected_edital_id'),
+      db.settings.get('notification_settings'),
+      db.settings.get('target_banca'),
     ])
-      .then(([themeR, userR, examR, editalR]) => {
-        if (themeR && (themeR.value === 'light' || themeR.value === 'dark')) {
-          setThemeState(themeR.value);
-        }
+      .then(([themeR, userR, examR, editalR, notifR, bancaR]) => {
+        if (themeR && (themeR.value === 'light' || themeR.value === 'dark')) setThemeState(themeR.value);
         if (userR) setUserNameState(userR.value);
-        if (examR && examR.value) setExamDateState(examR.value);
-        if (editalR && editalR.value) setSelectedEditalIdState(editalR.value);
+        if (examR?.value) setExamDateState(examR.value);
+        if (editalR?.value) setSelectedEditalIdState(editalR.value);
+        if (notifR?.value) {
+          try { setNotificationSettingsState(JSON.parse(notifR.value)); } catch {}
+        }
+        if (bancaR?.value) setTargetBancaState(bancaR.value);
       })
       .catch(e => console.error('Failed to load settings', e))
       .finally(() => setLoading(false));
@@ -68,11 +81,28 @@ export function useSettings(): UseSettingsReturn {
     } catch (e) { console.error('Failed to save selected_edital_id', e); }
   };
 
+  const setNotificationSettings = async (value: NotificationSettings): Promise<void> => {
+    try {
+      await db.settings.put({ key: 'notification_settings', value: JSON.stringify(value) });
+      setNotificationSettingsState(value);
+    } catch (e) { console.error('Failed to save notification_settings', e); }
+  };
+
+  const setTargetBanca = async (value: string | null): Promise<void> => {
+    try {
+      if (value) await db.settings.put({ key: 'target_banca', value });
+      else await db.settings.delete('target_banca');
+      setTargetBancaState(value);
+    } catch (e) { console.error('Failed to save target_banca', e); }
+  };
+
   return {
     theme, setTheme,
     userName, setUserName,
     examDate, setExamDate,
     selectedEditalId, setSelectedEditalId,
+    notificationSettings, setNotificationSettings,
+    targetBanca, setTargetBanca,
     loading,
   };
 }

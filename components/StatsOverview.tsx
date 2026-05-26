@@ -7,6 +7,7 @@ import HeatmapView from './HeatmapView';
 import EditalCoverageCard from './EditalCoverageCard';
 import SimuladoAreaCard from './SimuladoAreaCard';
 import SimuladoHistoryView from './SimuladoHistoryView';
+import BancaStatsCard from './BancaStatsCard';
 import { useSimulados } from '../hooks/useSimulados';
 
 interface Props {
@@ -14,6 +15,8 @@ interface Props {
   subjects: Subject[];
   onOpenErrorNotebook: () => void;
   edital: Edital | null;
+  blockLogs: BlockLog[];
+  targetBanca: string | null;
 }
 
 type Period = 'day' | 'week' | 'month';
@@ -97,14 +100,10 @@ function useSubtopicStats() {
   return stats;
 }
 
-const StatsOverview: React.FC<Props> = ({ subjects, onOpenErrorNotebook, edital }) => {
-  const [blockLogs, setBlockLogs] = React.useState<BlockLog[]>([]);
+const StatsOverview: React.FC<Props> = ({ subjects, onOpenErrorNotebook, edital, blockLogs: blockLogsProp, targetBanca }) => {
+  const blockLogs = blockLogsProp; // passed from App via prop
   const [showSimuladoHistory, setShowSimuladoHistory] = useState(false);
   const { records: simuladoRecords } = useSimulados();
-
-  React.useEffect(() => {
-    db.blockLogs.toArray().then(setBlockLogs).catch(console.error);
-  }, []);
   const isDarkMode = document.documentElement.classList.contains('dark');
   const [activePeriod, setActivePeriod] = useState<Period>('day');
   const [expandedSubtopic, setExpandedSubtopic] = useState<string | null>(null);
@@ -399,6 +398,9 @@ const StatsOverview: React.FC<Props> = ({ subjects, onOpenErrorNotebook, edital 
             </h3>
             <HeatmapView />
           </div>
+
+          {/* ── Fase 5: Desempenho por banca ── */}
+          <BancaStatsCard blockLogs={blockLogs} targetBanca={targetBanca} />
 
           {/* ── Fase 4: Análise por área (simulados) ── */}
           {simuladoRecords.length > 0 && (

@@ -1,6 +1,8 @@
 import React, { useState, useRef } from 'react';
 import { usePWAInstall } from '../hooks/usePWAInstall';
 import { EDITAIS } from '../data/editais';
+import { BANCAS, NotificationSettings } from '../types';
+import NotificationSettingsCard from './NotificationSettingsCard';
 
 interface Props {
   theme: 'light' | 'dark';
@@ -13,6 +15,11 @@ interface Props {
   examDate: string | null;
   onOpenEditalPicker: () => void;
   onSetExamDate: (date: string | null) => void;
+  // Fase 5
+  notificationSettings: NotificationSettings;
+  onSetNotificationSettings: (s: NotificationSettings) => Promise<void>;
+  targetBanca: string | null;
+  onSetTargetBanca: (banca: string | null) => Promise<void>;
 }
 
 type UpdateStatus = 'idle' | 'clearing' | 'reloading' | 'error';
@@ -20,7 +27,10 @@ type UpdateStatus = 'idle' | 'clearing' | 'reloading' | 'error';
 const SettingsPanel: React.FC<Props> = ({
   theme, onToggleTheme, onUpdateStart, userName, onUserNameChange,
   selectedEditalId, examDate, onOpenEditalPicker, onSetExamDate,
+  notificationSettings, onSetNotificationSettings,
+  targetBanca, onSetTargetBanca,
 }) => {
+  const [showBancaPicker, setShowBancaPicker] = useState(false);
   const { canInstall, isInstalled, isInstalling, install } = usePWAInstall();
   const [updateStatus, setUpdateStatus] = useState<UpdateStatus>('idle');
   const [toast, setToast] = useState<{ msg: string; type: 'on' | 'off' } | null>(null);
@@ -208,6 +218,61 @@ const SettingsPanel: React.FC<Props> = ({
           </div>
         </div>
       </div>
+
+      {/* ── Fase 5: Banca alvo (Feature 2) ── */}
+      <div className="space-y-2">
+        <label className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">
+          Banca alvo <span className="font-normal normal-case tracking-normal opacity-60">(opcional)</span>
+        </label>
+        <div className="relative">
+          <button
+            onClick={() => setShowBancaPicker(p => !p)}
+            className="w-full flex items-center justify-between p-3 rounded-2xl border bg-gray-50 dark:bg-gray-800/40 border-gray-100 dark:border-gray-800 hover:border-indigo-200 dark:hover:border-indigo-900/50 transition-all active:scale-[0.98]"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center shrink-0">
+                <i className="fas fa-crosshairs text-sm text-gray-500 dark:text-gray-400" />
+              </div>
+              <div className="text-left">
+                <p className="text-sm font-black text-gray-800 dark:text-gray-100">
+                  {targetBanca ?? 'Nenhuma selecionada'}
+                </p>
+                <p className="text-[10px] font-bold text-gray-400 dark:text-gray-600 uppercase tracking-wider mt-0.5">
+                  {targetBanca ? 'Toque para trocar' : 'Habilita recomendações personalizadas'}
+                </p>
+              </div>
+            </div>
+            <i className={`fas fa-chevron-${showBancaPicker ? 'up' : 'down'} text-gray-300 dark:text-gray-700 text-xs`} />
+          </button>
+          {showBancaPicker && (
+            <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl shadow-lg overflow-hidden">
+              <button
+                onClick={() => { onSetTargetBanca(null); setShowBancaPicker(false); }}
+                className="w-full text-left px-4 py-2.5 text-sm text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 border-b border-gray-50 dark:border-gray-800/60"
+              >
+                Nenhuma
+              </button>
+              {BANCAS.map(b => (
+                <button
+                  key={b}
+                  onClick={() => { onSetTargetBanca(b); setShowBancaPicker(false); }}
+                  className={`w-full text-left px-4 py-2.5 text-sm hover:bg-gray-50 dark:hover:bg-gray-800 border-b border-gray-50 dark:border-gray-800/60 last:border-0 ${
+                    targetBanca === b ? 'font-black text-indigo-600 dark:text-indigo-400' : 'text-gray-700 dark:text-gray-300'
+                  }`}
+                >
+                  {b}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* ── Fase 5: Notificações (Feature 3) ── */}
+      <NotificationSettingsCard
+        settings={notificationSettings}
+        onChange={onSetNotificationSettings}
+      />
 
       {/* Aplicativo */}
       <div className="space-y-2">

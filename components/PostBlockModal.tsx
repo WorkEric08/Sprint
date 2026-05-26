@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { PostBlockData } from '../types';
+import { PostBlockData, BANCAS } from '../types';
 import { getSubtopicsForSubject } from '../hooks/useBlockLogs';
 
 interface Props {
@@ -38,6 +38,8 @@ const PostBlockModal: React.FC<Props> = ({
   const [subtopic, setSubtopic] = useState('');
   const [selfScore, setSelfScore] = useState<1 | 2 | 3 | 4 | 5>(3);
   const [flaggedForReview, setFlaggedForReview] = useState(false);
+  const [banca, setBanca] = useState<string>('');
+  const [showBancaPicker, setShowBancaPicker] = useState(false);
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const subtopicRef = useRef<HTMLInputElement>(null);
@@ -69,6 +71,7 @@ const PostBlockModal: React.FC<Props> = ({
       subtopic: subtopic.trim(),
       selfScore,
       flaggedForReview,
+      banca: banca || undefined,
     });
   };
 
@@ -279,6 +282,45 @@ const PostBlockModal: React.FC<Props> = ({
                 ))}
               </div>
             )}
+          </div>
+
+          {/* ── Banca (Feature 2 Fase 5 — sempre opcional) ── */}
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">
+              Banca <span className="font-normal normal-case tracking-normal opacity-60">(opcional)</span>
+            </label>
+            <div className="relative">
+              <button
+                onClick={() => setShowBancaPicker(p => !p)}
+                className="w-full flex items-center justify-between bg-gray-50 dark:bg-gray-800/40 border border-gray-100 dark:border-gray-800 rounded-2xl px-4 py-2.5 text-sm text-left"
+              >
+                <span className={banca ? 'text-gray-800 dark:text-gray-100 font-bold' : 'text-gray-400 dark:text-gray-600'}>
+                  {banca || 'Nenhuma selecionada'}
+                </span>
+                <i className={`fas fa-chevron-${showBancaPicker ? 'up' : 'down'} text-[10px] text-gray-400`} />
+              </button>
+              {showBancaPicker && (
+                <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl shadow-lg overflow-hidden">
+                  <button
+                    onClick={() => { setBanca(''); setShowBancaPicker(false); }}
+                    className="w-full text-left px-4 py-2.5 text-sm text-gray-400 dark:text-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 border-b border-gray-50 dark:border-gray-800/60"
+                  >
+                    Nenhuma
+                  </button>
+                  {BANCAS.map(b => (
+                    <button
+                      key={b}
+                      onClick={() => { setBanca(b); setShowBancaPicker(false); }}
+                      className={`w-full text-left px-4 py-2.5 text-sm hover:bg-gray-50 dark:hover:bg-gray-800 border-b border-gray-50 dark:border-gray-800/60 last:border-0 ${
+                        banca === b ? 'font-black text-indigo-600 dark:text-indigo-400' : 'text-gray-700 dark:text-gray-300'
+                      }`}
+                    >
+                      {b}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* ── Marcar pra revisar ── */}

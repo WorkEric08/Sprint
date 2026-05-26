@@ -1,5 +1,5 @@
 import Dexie, { Table } from 'dexie';
-import { Subject, Objective, BlockLog, ErrorEntry, ReviewItem, SimuladoRecord } from './types';
+import { Subject, Objective, BlockLog, ErrorEntry, ReviewItem, SimuladoRecord, RedacaoSession } from './types';
 
 interface SettingRecord {
   key: string;
@@ -14,6 +14,7 @@ class SprintDB extends Dexie {
   errorEntries!: Table<ErrorEntry>;
   reviewItems!: Table<ReviewItem>;
   simuladoRecords!: Table<SimuladoRecord>;
+  redacaoSessions!: Table<RedacaoSession>;
 
   constructor() {
     super('SprintDB');
@@ -54,6 +55,11 @@ class SprintDB extends Dexie {
     // v4 — simulados
     this.version(4).stores({
       simuladoRecords: 'id, completedAt, templateId',
+    });
+
+    // v5 — redação
+    this.version(5).stores({
+      redacaoSessions: 'id, completedAt, themeId',
     });
   }
 }

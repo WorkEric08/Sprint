@@ -9,8 +9,12 @@ import EditalDistributionCard from './DistributionCard';
 import SimuladoSetupModal from './SimuladoSetupModal';
 import SimuladoRunnerView from './SimuladoRunnerView';
 import PostSimuladoModal from './PostSimuladoModal';
+import RedacaoSetupModal from './RedacaoSetupModal';
+import RedacaoEditorView from './RedacaoEditorView';
 import { useBackButton } from '../hooks/useBackButton';
 import { useSimulados } from '../hooks/useSimulados';
+import { useRedacao } from '../hooks/useRedacao';
+import { RedacaoTheme } from '../types';
 
 function getGreeting(): string {
   const h = new Date().getHours();
@@ -67,6 +71,11 @@ const CicloView: React.FC<Props> = ({
     startedAt: number;
   } | null>(null);
   const { saveRecord: saveSimuladoRecord } = useSimulados();
+
+  // Redação flow
+  const [showRedacaoSetup, setShowRedacaoSetup] = useState(false);
+  const [activeRedacaoTheme, setActiveRedacaoTheme] = useState<RedacaoTheme | null>(null);
+  const { saveSession: saveRedacaoSession } = useRedacao();
 
   const handleAddSave = (data: Pick<Subject, 'title' | 'color' | 'duration' | 'blockCount'>) => {
     const newSubject: Subject = {
@@ -305,13 +314,23 @@ const CicloView: React.FC<Props> = ({
           )}
 
           {/* Fase 4: Botão Simulado */}
-          <button
-            onClick={() => setShowSimuladoSetup(true)}
-            className="w-full py-3.5 bg-gray-900 dark:bg-white/5 text-white dark:text-gray-200 rounded-2xl font-black text-xs uppercase tracking-[0.2em] flex items-center justify-center gap-3 active:scale-[0.98] transition-all hover:bg-gray-800 dark:hover:bg-white/10"
-          >
-            <i className="fas fa-stopwatch text-sm" />
-            Modo Simulado
-          </button>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              onClick={() => setShowSimuladoSetup(true)}
+              className="py-3.5 bg-gray-900 dark:bg-white/5 text-white dark:text-gray-200 rounded-2xl font-black text-xs uppercase tracking-[0.15em] flex items-center justify-center gap-2 active:scale-[0.98] transition-all hover:bg-gray-800 dark:hover:bg-white/10"
+            >
+              <i className="fas fa-stopwatch text-sm" />
+              Simulado
+            </button>
+            {/* Fase 5: Botão Redação */}
+            <button
+              onClick={() => setShowRedacaoSetup(true)}
+              className="py-3.5 bg-violet-600 text-white rounded-2xl font-black text-xs uppercase tracking-[0.15em] flex items-center justify-center gap-2 active:scale-[0.98] transition-all hover:bg-violet-700 shadow-lg shadow-violet-500/20"
+            >
+              <i className="fas fa-pen text-sm" />
+              Redação
+            </button>
+          </div>
         </>
       )}
 
@@ -419,6 +438,26 @@ const CicloView: React.FC<Props> = ({
             });
             setActiveSimulado(null);
           }}
+        />
+      )}
+
+      {/* Redação Setup */}
+      {showRedacaoSetup && (
+        <RedacaoSetupModal
+          onStart={theme => {
+            setShowRedacaoSetup(false);
+            setActiveRedacaoTheme(theme);
+          }}
+          onClose={() => setShowRedacaoSetup(false)}
+        />
+      )}
+
+      {/* Redação Editor */}
+      {activeRedacaoTheme && (
+        <RedacaoEditorView
+          theme={activeRedacaoTheme}
+          onSave={saveRedacaoSession}
+          onClose={() => setActiveRedacaoTheme(null)}
         />
       )}
 

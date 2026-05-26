@@ -30,6 +30,7 @@ export interface PostBlockData {
   subtopic: string;
   selfScore: 1 | 2 | 3 | 4 | 5;
   flaggedForReview: boolean;
+  banca?: string; // Fase 5: Feature 2 — sempre opcional
 }
 
 export interface BlockLog {
@@ -44,6 +45,7 @@ export interface BlockLog {
   selfScore: 1 | 2 | 3 | 4 | 5;
   flaggedForReview: boolean;
   blockType: BlockType;
+  banca?: string; // Fase 5: Feature 2 — sempre opcional
 }
 
 // ── Feature 2 (Fase 1): Caderno de Erros ─────────────────────────────────
@@ -79,6 +81,62 @@ export interface ReviewItem {
   intervalIndex: number;     // 0-5, index into REVIEW_INTERVALS
   consolidated: boolean;     // graduated after D+60
   reviewCount: number;
+}
+
+// ── Fase 5: Específicos por público ──────────────────────────────────────
+
+// Feature 1: Módulo Redação
+export interface RedacaoCompetencyScores {
+  c1: number; // 0-200: domínio da modalidade escrita
+  c2: number; // 0-200: compreensão do tema
+  c3: number; // 0-200: seleção de informações e argumentos
+  c4: number; // 0-200: coesão textual
+  c5: number; // 0-200: proposta de intervenção
+}
+
+export type RedacaoThemeAxis =
+  | 'meio-ambiente' | 'tecnologia' | 'sociedade' | 'saude'
+  | 'educacao' | 'direitos' | 'economia' | 'cultura' | 'treino';
+
+export interface RedacaoTheme {
+  id: string;
+  title: string;
+  year?: number;       // ENEM: ano da prova
+  axis: RedacaoThemeAxis;
+  source: 'enem' | 'treino';
+  verified: boolean;   // false = precisa verificação em fonte oficial
+}
+
+export interface RedacaoSession {
+  id: string;
+  themeId: string;
+  themeTitle: string;
+  startedAt: number;
+  lastSavedAt: number;
+  completedAt: number | null;
+  durationMinutes: number;        // tempo real de escrita
+  text: string;
+  wordCount: number;
+  competencyScores: RedacaoCompetencyScores | null;
+  estimatedScore: number | null;  // soma das competências (0-1000)
+  notes: string;
+}
+
+// Feature 2: Filtro por banca
+export const BANCAS = [
+  'CESPE/CEBRASPE', 'FCC', 'FGV', 'VUNESP',
+  'IBFC', 'Quadrix', 'IADES', 'Outra',
+] as const;
+export type Banca = typeof BANCAS[number];
+
+// Feature 3: Configuração de notificações
+export interface NotificationSettings {
+  enabled: boolean;
+  morningReview: boolean;     // revisões pendentes de manhã
+  eveningStreak: boolean;     // streak no fim do dia
+  weekendSimulado: boolean;   // sugestão de simulado na sexta
+  examProximity: boolean;     // alertas de proximidade da prova
+  streakRisk: boolean;        // risco de quebrar streak (opt-in)
 }
 
 // ── Fase 4: Modo Simulado ─────────────────────────────────────────────────
