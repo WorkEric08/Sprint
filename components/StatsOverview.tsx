@@ -5,6 +5,9 @@ import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import { db } from '../db';
 import HeatmapView from './HeatmapView';
 import EditalCoverageCard from './EditalCoverageCard';
+import SimuladoAreaCard from './SimuladoAreaCard';
+import SimuladoHistoryView from './SimuladoHistoryView';
+import { useSimulados } from '../hooks/useSimulados';
 
 interface Props {
   objectives: Objective[];
@@ -96,6 +99,9 @@ function useSubtopicStats() {
 
 const StatsOverview: React.FC<Props> = ({ subjects, onOpenErrorNotebook, edital }) => {
   const [blockLogs, setBlockLogs] = React.useState<BlockLog[]>([]);
+  const [showSimuladoHistory, setShowSimuladoHistory] = useState(false);
+  const { records: simuladoRecords } = useSimulados();
+
   React.useEffect(() => {
     db.blockLogs.toArray().then(setBlockLogs).catch(console.error);
   }, []);
@@ -394,6 +400,32 @@ const StatsOverview: React.FC<Props> = ({ subjects, onOpenErrorNotebook, edital 
             <HeatmapView />
           </div>
 
+          {/* ── Fase 4: Análise por área (simulados) ── */}
+          {simuladoRecords.length > 0 && (
+            <SimuladoAreaCard records={simuladoRecords} />
+          )}
+
+          {/* ── Fase 4: Histórico de simulados ── */}
+          <button
+            onClick={() => setShowSimuladoHistory(true)}
+            className="w-full flex items-center justify-between p-3.5 bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 hover:border-indigo-200 dark:hover:border-indigo-900/50 transition-all active:scale-[0.98] group"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center">
+                <i className="fas fa-stopwatch text-indigo-500 text-sm" />
+              </div>
+              <div className="text-left">
+                <p className="text-sm font-black text-gray-800 dark:text-gray-100">Histórico de Simulados</p>
+                <p className="text-[10px] font-bold text-gray-400 dark:text-gray-600 uppercase tracking-wider mt-0.5">
+                  {simuladoRecords.length === 0
+                    ? 'Nenhum simulado realizado'
+                    : `${simuladoRecords.length} ${simuladoRecords.length === 1 ? 'simulado' : 'simulados'} · Ver evolução`}
+                </p>
+              </div>
+            </div>
+            <i className="fas fa-chevron-right text-gray-300 dark:text-gray-700 text-xs group-hover:text-indigo-400 transition-colors" />
+          </button>
+
           {/* ── Caderno de Erros entry point ── */}
           <button
             onClick={onOpenErrorNotebook}
@@ -414,6 +446,14 @@ const StatsOverview: React.FC<Props> = ({ subjects, onOpenErrorNotebook, edital 
           </button>
         </div>
       </div>
+
+      {/* Simulado history overlay */}
+      {showSimuladoHistory && (
+        <SimuladoHistoryView
+          records={simuladoRecords}
+          onClose={() => setShowSimuladoHistory(false)}
+        />
+      )}
     </div>
   );
 };

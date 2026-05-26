@@ -81,6 +81,46 @@ export interface ReviewItem {
   reviewCount: number;
 }
 
+// ── Fase 4: Modo Simulado ─────────────────────────────────────────────────
+
+export interface SimuladoArea {
+  name: string;
+  color: string;
+  questionCount?: number; // total de questões nesta área
+}
+
+export interface SimuladoTemplate {
+  id: string;
+  name: string;
+  durationMinutes: number;
+  strictMode: boolean; // sem pausas livres
+  hasRedacao: boolean; // exibe campo de redação no pós-simulado
+  areas: SimuladoArea[];
+}
+
+export interface SimuladoAreaResult {
+  areaName: string;
+  color: string;
+  questionsTotal: number;
+  questionsCorrect: number;
+}
+
+export interface SimuladoRecord {
+  id: string;
+  templateId: string;
+  templateName: string;
+  startedAt: number;
+  completedAt: number;
+  plannedDurationMinutes: number;
+  actualDurationMinutes: number;
+  completed: boolean; // false = interrompido
+  areaResults: SimuladoAreaResult[];
+  timeControlScore: 1|2|3|4|5 | null; // percepção de gestão do tempo
+  perception: string; // campo livre
+  redacaoText: string; // ENEM: texto da redação
+  redacaoScore: number | null; // 0-1000, nota manual
+}
+
 // ── Fase 3: Edital e cronograma ───────────────────────────────────────────
 
 export interface EditalSubtopic {
