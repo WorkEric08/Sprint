@@ -82,7 +82,7 @@ const EditalPickerModal: React.FC<Props> = ({
       {step === 'pick' && (
         <>
           {/* Category filter */}
-          <div className="flex gap-2 px-4 pt-3 pb-2 overflow-x-auto shrink-0" style={{ scrollbarWidth: 'none' }}>
+          <div className="overflow-x-scroll-area flex gap-2 px-4 pt-3 pb-2 shrink-0">
             <button
               onClick={() => setFilterCategory('all')}
               className={`px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shrink-0 transition-all ${
@@ -107,6 +107,8 @@ const EditalPickerModal: React.FC<Props> = ({
                 {cat.label}
               </button>
             ))}
+            {/* Spacer: garante que o último chip fica totalmente visível */}
+            <div className="w-4 shrink-0" />
           </div>
 
           {/* Edital list */}

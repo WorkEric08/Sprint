@@ -410,7 +410,7 @@ const StatsOverview: React.FC<Props> = ({ subjects, onOpenErrorNotebook, edital,
             <h3 className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
               Histórico · 52 semanas
             </h3>
-            <HeatmapView />
+            <HeatmapView streakEnabled={streakEnabled} />
           </div>
 
           {/* ── Fase 5: Desempenho por banca ── */}
@@ -442,24 +442,26 @@ const StatsOverview: React.FC<Props> = ({ subjects, onOpenErrorNotebook, edital,
             <i className="fas fa-chevron-right text-gray-300 dark:text-gray-700 text-xs group-hover:text-indigo-400 transition-colors" />
           </button>
 
-          {/* ── Fase 6: Compartilhar ── */}
-          <button
-            onClick={() => setShowShare(true)}
-            className="w-full flex items-center justify-between p-3.5 bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 hover:border-indigo-200 dark:hover:border-indigo-900/50 transition-all active:scale-[0.98] group"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center">
-                <i className="fas fa-share-nodes text-indigo-500 text-sm" />
+          {/* ── Fase 6: Compartilhar — só aparece se ofensiva habilitada ── */}
+          {streakEnabled && (
+            <button
+              onClick={() => setShowShare(true)}
+              className="w-full flex items-center justify-between p-3.5 bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 hover:border-indigo-200 dark:hover:border-indigo-900/50 transition-all active:scale-[0.98] group"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center">
+                  <i className="fas fa-share-nodes text-indigo-500 text-sm" />
+                </div>
+                <div className="text-left">
+                  <p className="text-sm font-black text-gray-800 dark:text-gray-100">Compartilhar</p>
+                  <p className="text-[10px] font-bold text-gray-400 dark:text-gray-600 uppercase tracking-wider mt-0.5">
+                    Semana, conquistas, meu ano
+                  </p>
+                </div>
               </div>
-              <div className="text-left">
-                <p className="text-sm font-black text-gray-800 dark:text-gray-100">Compartilhar</p>
-                <p className="text-[10px] font-bold text-gray-400 dark:text-gray-600 uppercase tracking-wider mt-0.5">
-                  Semana, conquistas, meu ano
-                </p>
-              </div>
-            </div>
-            <i className="fas fa-chevron-right text-gray-300 dark:text-gray-700 text-xs group-hover:text-indigo-400 transition-colors" />
-          </button>
+              <i className="fas fa-chevron-right text-gray-300 dark:text-gray-700 text-xs group-hover:text-indigo-400 transition-colors" />
+            </button>
+          )}
 
           {/* ── Caderno de Erros entry point ── */}
           <button

@@ -42,9 +42,20 @@ html, body {
 .scroll-container {
   flex: 1;
   overflow-y: auto;
-  overflow-x: hidden;
+  overflow-x: clip; /* clip: não cria BFC, não interfere com overflow-x:auto de filhos */
   -webkit-overflow-scrolling: touch;
   scrollbar-gutter: stable;
+}
+
+/* Rolagem lateral suave em todos os containers horizontais */
+.overflow-x-scroll-area {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+}
+.overflow-x-scroll-area::-webkit-scrollbar {
+  display: none;
 }
 
 /* Custom Scrollbar para Windows/Chrome/Edge */

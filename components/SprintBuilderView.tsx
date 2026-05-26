@@ -275,7 +275,7 @@ const SprintBuilderView: React.FC<Props> = ({
 
       {/* Bottom controls */}
       <div className="border-t border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900">
-        <div className="flex gap-2 px-4 pt-3 pb-2 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
+        <div className="overflow-x-scroll-area flex gap-2 px-4 pt-3 pb-2">
           {subjects.map(subject => {
             const done = subject.completedBlocks.length;
             const inQueue = queue.filter(i => i.type === 'study' && i.subjectId === subject.id).length;
@@ -309,6 +309,7 @@ const SprintBuilderView: React.FC<Props> = ({
             <i className="fas fa-mug-hot text-gray-400 text-[10px]" />
             <span className="text-[11px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-tight">Pausa</span>
           </button>
+          <div className="w-4 shrink-0" />
         </div>
 
         <div className="px-4 pb-4 pt-1">

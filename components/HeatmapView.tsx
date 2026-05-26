@@ -55,7 +55,11 @@ function getMonthLabels(mondays: string[]): { col: number; label: string }[] {
 
 // ── Main component ─────────────────────────────────────────────────────────
 
-const HeatmapView: React.FC = () => {
+interface HeatmapProps {
+  streakEnabled?: boolean;
+}
+
+const HeatmapView: React.FC<HeatmapProps> = ({ streakEnabled = true }) => {
   const [blockLogs, setBlockLogs] = useState<BlockLog[]>([]);
   const [selected, setSelected] = useState<DayData | null>(null);
   const today = todayKey();
@@ -117,29 +121,46 @@ const HeatmapView: React.FC = () => {
   return (
     <div className="space-y-4">
       {/* ── Stats row ── */}
-      <div className="grid grid-cols-2 gap-3">
-        <div className="bg-white dark:bg-gray-900 rounded-2xl p-4 border border-gray-100 dark:border-gray-800">
-          <div className="flex items-center gap-2 mb-2">
-            <i className="fas fa-fire text-orange-500 text-sm" />
-            <span className="text-[9px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">
-              Sequência
-            </span>
-          </div>
-          <p className="text-3xl font-black text-gray-800 dark:text-white leading-none">
-            {streak}
-            <span className="text-sm font-bold text-gray-400 ml-1">{streak === 1 ? 'dia' : 'dias'}</span>
-          </p>
-          {streak > 0 && (
-            <p className="text-[9px] font-bold text-orange-400 uppercase tracking-widest mt-1">
-              Tolerante · 1 gap/semana
+      {streakEnabled ? (
+        /* Ofensiva habilitada: dois cards lado a lado */
+        <div className="grid grid-cols-2 gap-3">
+          <div className="bg-white dark:bg-gray-900 rounded-2xl p-4 border border-gray-100 dark:border-gray-800">
+            <div className="flex items-center gap-2 mb-2">
+              <i className="fas fa-fire text-orange-500 text-sm" />
+              <span className="text-[9px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">
+                Sequência
+              </span>
+            </div>
+            <p className="text-3xl font-black text-gray-800 dark:text-white leading-none">
+              {streak}
+              <span className="text-sm font-bold text-gray-400 ml-1">{streak === 1 ? 'dia' : 'dias'}</span>
             </p>
-          )}
+            {streak > 0 && (
+              <p className="text-[9px] font-bold text-orange-400 uppercase tracking-widest mt-1">
+                Tolerante · 1 gap/semana
+              </p>
+            )}
+          </div>
+          <div className="bg-white dark:bg-gray-900 rounded-2xl p-4 border border-gray-100 dark:border-gray-800">
+            <div className="flex items-center gap-2 mb-2">
+              <i className="fas fa-rotate text-indigo-500 text-sm" />
+              <span className="text-[9px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">
+                Total (1 ano)
+              </span>
+            </div>
+            <p className="text-3xl font-black text-gray-800 dark:text-white leading-none">
+              {totalBlocks}
+              <span className="text-sm font-bold text-gray-400 ml-1">blocos</span>
+            </p>
+          </div>
         </div>
+      ) : (
+        /* Ofensiva desabilitada: só total de blocos, largura completa */
         <div className="bg-white dark:bg-gray-900 rounded-2xl p-4 border border-gray-100 dark:border-gray-800">
           <div className="flex items-center gap-2 mb-2">
             <i className="fas fa-rotate text-indigo-500 text-sm" />
             <span className="text-[9px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">
-              Total (1 ano)
+              Total de blocos · 1 ano
             </span>
           </div>
           <p className="text-3xl font-black text-gray-800 dark:text-white leading-none">
@@ -147,7 +168,7 @@ const HeatmapView: React.FC = () => {
             <span className="text-sm font-bold text-gray-400 ml-1">blocos</span>
           </p>
         </div>
-      </div>
+      )}
 
       {/* ── Heatmap grid ── */}
       <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-4 overflow-x-auto">

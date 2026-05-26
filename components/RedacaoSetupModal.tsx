@@ -54,7 +54,7 @@ const RedacaoSetupModal: React.FC<Props> = ({ onStart, onClose }) => {
       </div>
 
       {/* Axis filter */}
-      <div className="flex gap-2 px-4 pt-2 pb-2 overflow-x-auto shrink-0" style={{ scrollbarWidth: 'none' }}>
+      <div className="overflow-x-scroll-area flex gap-2 px-4 pt-2 pb-2 shrink-0">
         <button
           onClick={() => setSelectedAxis('all')}
           className={`shrink-0 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${
@@ -75,6 +75,7 @@ const RedacaoSetupModal: React.FC<Props> = ({ onStart, onClose }) => {
             {AXIS_LABELS[axis]}
           </button>
         ))}
+        <div className="w-4 shrink-0" />
       </div>
 
       {/* Theme list */}

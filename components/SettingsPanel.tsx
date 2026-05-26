@@ -217,13 +217,8 @@ const SettingsPanel: React.FC<Props> = ({
           </div>
           <i className="fas fa-chevron-right text-gray-300 dark:text-gray-700 text-xs" />
         </button>
-      </div>
 
-      {/* ── Fase 5: Banca alvo ── */}
-      <div className="space-y-2">
-        <label className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">
-          Banca alvo <span className="font-normal normal-case tracking-normal opacity-60">(opcional)</span>
-        </label>
+        {/* Banca alvo — movida para dentro de Concurso/Prova */}
         <div className="relative">
           <button
             onClick={() => setShowBancaPicker(p => !p)}
@@ -235,10 +230,10 @@ const SettingsPanel: React.FC<Props> = ({
               </div>
               <div className="text-left">
                 <p className="text-sm font-black text-gray-800 dark:text-gray-100">
-                  {targetBanca ?? 'Nenhuma selecionada'}
+                  {targetBanca ? targetBanca : 'Banca alvo'}
                 </p>
                 <p className="text-[10px] font-bold text-gray-400 dark:text-gray-600 uppercase tracking-wider mt-0.5">
-                  {targetBanca ? 'Toque para trocar' : 'Habilita recomendações personalizadas'}
+                  {targetBanca ? 'Toque para trocar · Recomendações personalizadas' : 'Opcional · Habilita recomendações personalizadas'}
                 </p>
               </div>
             </div>

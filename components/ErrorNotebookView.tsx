@@ -114,7 +114,7 @@ const ErrorNotebookView: React.FC<Props> = ({ errorEntries, onUpdateNote, onClos
         </div>
 
         {/* Subject + Subtopic filters */}
-        <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
+        <div className="overflow-x-scroll-area flex gap-2 pb-1">
           {/* Subject filter */}
           <select
             value={filterSubject}
