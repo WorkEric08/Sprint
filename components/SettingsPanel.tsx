@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { usePWAInstall } from '../hooks/usePWAInstall';
+import { EDITAIS } from '../data/editais';
 
 interface Props {
   theme: 'light' | 'dark';
@@ -7,11 +8,19 @@ interface Props {
   onUpdateStart: () => void;
   userName: string;
   onUserNameChange: (name: string) => void;
+  // Fase 3
+  selectedEditalId: string | null;
+  examDate: string | null;
+  onOpenEditalPicker: () => void;
+  onSetExamDate: (date: string | null) => void;
 }
 
 type UpdateStatus = 'idle' | 'clearing' | 'reloading' | 'error';
 
-const SettingsPanel: React.FC<Props> = ({ theme, onToggleTheme, onUpdateStart, userName, onUserNameChange }) => {
+const SettingsPanel: React.FC<Props> = ({
+  theme, onToggleTheme, onUpdateStart, userName, onUserNameChange,
+  selectedEditalId, examDate, onOpenEditalPicker, onSetExamDate,
+}) => {
   const { canInstall, isInstalled, isInstalling, install } = usePWAInstall();
   const [updateStatus, setUpdateStatus] = useState<UpdateStatus>('idle');
   const [toast, setToast] = useState<{ msg: string; type: 'on' | 'off' } | null>(null);
@@ -136,6 +145,66 @@ const SettingsPanel: React.FC<Props> = ({ theme, onToggleTheme, onUpdateStart, u
               <i className="fas fa-moon" />
               Escuro
             </button>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Fase 3: Edital + Data da prova ── */}
+      <div className="space-y-2">
+        <label className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">
+          Concurso / Prova
+        </label>
+
+        {/* Edital */}
+        <button
+          onClick={onOpenEditalPicker}
+          className="w-full flex items-center justify-between p-3 rounded-2xl border bg-gray-50 dark:bg-gray-800/40 border-gray-100 dark:border-gray-800 hover:border-indigo-200 dark:hover:border-indigo-900/50 transition-all active:scale-[0.98]"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center shrink-0">
+              <i className="fas fa-file-alt text-sm text-indigo-600 dark:text-indigo-400" />
+            </div>
+            <div className="text-left">
+              <p className="text-sm font-black text-gray-800 dark:text-gray-100">
+                {selectedEditalId
+                  ? (EDITAIS.find(e => e.id === selectedEditalId)?.name ?? 'Edital selecionado')
+                  : 'Selecionar edital'}
+              </p>
+              <p className="text-[10px] font-bold text-gray-400 dark:text-gray-600 uppercase tracking-wider mt-0.5">
+                {selectedEditalId ? 'Toque para trocar' : 'Pré-popula matérias automaticamente'}
+              </p>
+            </div>
+          </div>
+          <i className="fas fa-chevron-right text-gray-300 dark:text-gray-700 text-xs" />
+        </button>
+
+        {/* Data da prova */}
+        <div className="flex items-center gap-3 p-3 rounded-2xl border bg-gray-50 dark:bg-gray-800/40 border-gray-100 dark:border-gray-800">
+          <div className="w-9 h-9 rounded-xl bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center shrink-0">
+            <i className="fas fa-calendar-day text-sm text-amber-600 dark:text-amber-400" />
+          </div>
+          <div className="flex-1 text-left">
+            <p className="text-sm font-black text-gray-800 dark:text-gray-100">Data da prova</p>
+            <p className="text-[10px] font-bold text-gray-400 dark:text-gray-600 uppercase tracking-wider mt-0.5">
+              {examDate ? new Date(examDate + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' }) : 'Não definida'}
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              type="date"
+              value={examDate ?? ''}
+              onChange={e => onSetExamDate(e.target.value || null)}
+              className="text-xs font-bold text-indigo-600 dark:text-indigo-400 bg-transparent focus:outline-none cursor-pointer"
+              style={{ colorScheme: 'auto' }}
+            />
+            {examDate && (
+              <button
+                onClick={() => onSetExamDate(null)}
+                className="w-5 h-5 flex items-center justify-center rounded-full bg-gray-200 dark:bg-gray-700 text-gray-400"
+              >
+                <i className="fas fa-times text-[8px]" />
+              </button>
+            )}
           </div>
         </div>
       </div>

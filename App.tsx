@@ -5,11 +5,13 @@ import CicloView from './components/CicloView';
 import SettingsPanel from './components/SettingsPanel';
 import ErrorNotebookView from './components/ErrorNotebookView';
 import ReviewQueueView from './components/ReviewQueueView';
+import EditalPickerModal from './components/EditalPickerModal';
 import { useSettings } from './hooks/useSettings';
 import { useSubjects } from './hooks/useSubjects';
 import { useObjectives } from './hooks/useObjectives';
 import { useBlockLogs } from './hooks/useBlockLogs';
 import { useReviews } from './hooks/useReviews';
+import { EDITAIS } from './data/editais';
 import { runMigrationIfNeeded } from './services/migration';
 
 type TabId = 'stats' | 'ciclo' | 'reviews' | 'settings';
@@ -56,12 +58,18 @@ const App: React.FC = () => {
 
   const [isUpdating, setIsUpdating] = useState(false);
   const [showErrorNotebook, setShowErrorNotebook] = useState(false);
+  const [showEditalPicker, setShowEditalPicker] = useState(false);
 
-  const { theme, setTheme, userName, setUserName, loading: settingsLoading } = useSettings();
+  const {
+    theme, setTheme, userName, setUserName,
+    examDate, setExamDate, selectedEditalId, setSelectedEditalId,
+    loading: settingsLoading,
+  } = useSettings();
   const { subjects, setSubjects, loading: subjectsLoading } = useSubjects();
   const { objectives, loading: objectivesLoading } = useObjectives();
   const { errorEntries, updateErrorNote } = useBlockLogs();
   const { reviewItems, pendingCount, createOrUpdateItem, applyResult } = useReviews();
+  const selectedEdital = EDITAIS.find(e => e.id === selectedEditalId) ?? null;
 
   const isLoading = settingsLoading || subjectsLoading || objectivesLoading;
 
@@ -180,6 +188,7 @@ const App: React.FC = () => {
               objectives={objectives}
               subjects={subjects}
               onOpenErrorNotebook={() => setShowErrorNotebook(true)}
+              edital={selectedEdital}
             />
           )}
           {activeTab === 'ciclo' && (
@@ -189,6 +198,9 @@ const App: React.FC = () => {
               onSubjectsChange={setSubjects}
               pendingReviewCount={pendingCount}
               reviewItems={reviewItems}
+              edital={selectedEdital}
+              examDate={examDate}
+              onEditExamDate={() => setActiveTab('settings')}
             />
           )}
           {activeTab === 'reviews' && (
@@ -209,6 +221,10 @@ const App: React.FC = () => {
               onUpdateStart={() => setIsUpdating(true)}
               userName={userName}
               onUserNameChange={setUserName}
+              selectedEditalId={selectedEditalId}
+              examDate={examDate}
+              onOpenEditalPicker={() => setShowEditalPicker(true)}
+              onSetExamDate={setExamDate}
             />
           )}
         </main>
@@ -246,6 +262,17 @@ const App: React.FC = () => {
           errorEntries={errorEntries}
           onUpdateNote={updateErrorNote}
           onClose={() => setShowErrorNotebook(false)}
+        />
+      )}
+
+      {/* Seletor de edital */}
+      {showEditalPicker && (
+        <EditalPickerModal
+          currentEditalId={selectedEditalId}
+          currentSubjects={subjects}
+          onSelect={setSelectedEditalId}
+          onApplySubjects={setSubjects}
+          onClose={() => setShowEditalPicker(false)}
         />
       )}
     </>

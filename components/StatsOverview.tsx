@@ -1,14 +1,16 @@
 
 import React, { useMemo, useState } from 'react';
-import { Objective, Subject, BlockLog, BlockType, BLOCK_TYPE_LABELS, BLOCK_TYPE_COLORS } from '../types';
+import { Objective, Subject, BlockLog, BlockType, BLOCK_TYPE_LABELS, BLOCK_TYPE_COLORS, Edital } from '../types';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import { db } from '../db';
 import HeatmapView from './HeatmapView';
+import EditalCoverageCard from './EditalCoverageCard';
 
 interface Props {
   objectives: Objective[];
   subjects: Subject[];
   onOpenErrorNotebook: () => void;
+  edital: Edital | null;
 }
 
 type Period = 'day' | 'week' | 'month';
@@ -92,7 +94,11 @@ function useSubtopicStats() {
   return stats;
 }
 
-const StatsOverview: React.FC<Props> = ({ subjects, onOpenErrorNotebook }) => {
+const StatsOverview: React.FC<Props> = ({ subjects, onOpenErrorNotebook, edital }) => {
+  const [blockLogs, setBlockLogs] = React.useState<BlockLog[]>([]);
+  React.useEffect(() => {
+    db.blockLogs.toArray().then(setBlockLogs).catch(console.error);
+  }, []);
   const isDarkMode = document.documentElement.classList.contains('dark');
   const [activePeriod, setActivePeriod] = useState<Period>('day');
   const [expandedSubtopic, setExpandedSubtopic] = useState<string | null>(null);
@@ -369,6 +375,15 @@ const StatsOverview: React.FC<Props> = ({ subjects, onOpenErrorNotebook }) => {
                 onToggle={setExpandedSubtopic}
               />
             </div>
+          )}
+
+          {/* ── Fase 3: Cobertura do edital ── */}
+          {edital && (
+            <EditalCoverageCard
+              edital={edital}
+              subjects={subjects}
+              blockLogs={blockLogs}
+            />
           )}
 
           {/* ── Feature 4: Heatmap ── */}

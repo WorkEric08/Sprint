@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
-import { Subject, SprintResolvedItem, BlockType, ReviewItem, BLOCK_TYPE_COLORS } from '../types';
+import { Subject, SprintResolvedItem, BlockType, ReviewItem, BLOCK_TYPE_COLORS, Edital } from '../types';
 import CicloEditView from './CicloEditView';
 import CicloAddView from './CicloAddView';
 import SprintBuilderView from './SprintBuilderView';
 import SprintRunnerView from './SprintRunnerView';
+import CountdownWidget from './CountdownWidget';
+import EditalDistributionCard from './DistributionCard';
 import { useBackButton } from '../hooks/useBackButton';
 
 function getGreeting(): string {
@@ -26,6 +28,9 @@ interface Props {
   onSubjectsChange: (subjects: Subject[]) => void;
   pendingReviewCount: number;
   reviewItems: ReviewItem[];
+  edital: Edital | null;
+  examDate: string | null;
+  onEditExamDate: () => void;
 }
 
 const CicloView: React.FC<Props> = ({
@@ -34,6 +39,9 @@ const CicloView: React.FC<Props> = ({
   onSubjectsChange,
   pendingReviewCount,
   reviewItems,
+  edital,
+  examDate,
+  onEditExamDate,
 }) => {
   const [isAdding, setIsAdding] = useState(false);
   const [editingSubject, setEditingSubject] = useState<Subject | null>(null);
@@ -121,6 +129,15 @@ const CicloView: React.FC<Props> = ({
           <i className="fas fa-plus" />
         </button>
       </div>
+
+      {/* Fase 3: Contagem regressiva */}
+      {examDate && (
+        <CountdownWidget
+          examDate={examDate}
+          examName={edital?.name}
+          onEditDate={onEditExamDate}
+        />
+      )}
 
       {subjects.length === 0 ? (
         <div className="text-center py-16 px-6 bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm md:max-w-lg md:mx-auto">
@@ -259,6 +276,15 @@ const CicloView: React.FC<Props> = ({
               Ciclo Rápido · {subjects.length} {subjects.length === 1 ? 'matéria' : 'matérias'}
             </button>
           </div>
+
+          {/* Fase 3 Feature 4: Distribuição por peso do edital */}
+          {edital && (
+            <EditalDistributionCard
+              edital={edital}
+              subjects={subjects}
+              onApplyDistribution={onSubjectsChange}
+            />
+          )}
         </>
       )}
 

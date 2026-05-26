@@ -81,6 +81,33 @@ export interface ReviewItem {
   reviewCount: number;
 }
 
+// ── Fase 3: Edital e cronograma ───────────────────────────────────────────
+
+export interface EditalSubtopic {
+  name: string;
+  /** Incidência histórica nas últimas 5 provas (0-100). 0 = não medido. */
+  incidencia: number;
+}
+
+export interface EditalSubject {
+  name: string;
+  /** Peso relativo no edital (0-100). Soma dos subjects pode ser 100. */
+  weight: number;
+  color: string;
+  subtopics: EditalSubtopic[];
+}
+
+export interface Edital {
+  id: string;
+  name: string;
+  organizer: string;
+  category: 'enem' | 'federal' | 'estadual' | 'municipal';
+  typicalMonth: string;
+  /** Aviso sobre precisão dos dados — obrigatório para editais não-ENEM. */
+  disclaimer: string;
+  subjects: EditalSubject[];
+}
+
 // ── Legacy / Objectives ───────────────────────────────────────────────────
 
 export interface Completion {
