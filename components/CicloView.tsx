@@ -186,7 +186,6 @@ const CicloView: React.FC<Props> = ({
               const completed = subject.completedBlocks.length;
               const total = subject.blockCount;
               const pct = total > 0 ? Math.round((completed / total) * 100) : 0;
-              const allDone = completed >= total;
               const isResetting = confirmReset === subject.id;
               const isDeleting = confirmDelete === subject.id;
 
@@ -236,10 +235,10 @@ const CicloView: React.FC<Props> = ({
                     <div className="space-y-2">
                       <div className="flex items-end justify-between">
                         <div className="flex items-baseline gap-0.5">
-                          <span className="text-3xl font-black tracking-tighter leading-none" style={{ color: allDone ? '#22c55e' : subject.color }}>
+                          <span className="text-3xl font-black tracking-tighter leading-none" style={{ color: subject.color }}>
                             {pct}
                           </span>
-                          <span className="text-base font-black leading-none" style={{ color: allDone ? '#22c55e' : subject.color }}>%</span>
+                          <span className="text-base font-black leading-none" style={{ color: subject.color }}>%</span>
                         </div>
                         <div className="text-right">
                           <p className="text-[10px] font-black text-gray-400 dark:text-gray-600 uppercase tracking-widest">
@@ -253,8 +252,8 @@ const CicloView: React.FC<Props> = ({
                           className="h-full rounded-full transition-all duration-700 ease-out"
                           style={{
                             width: `${pct}%`,
-                            backgroundColor: allDone ? '#22c55e' : subject.color,
-                            boxShadow: pct > 0 ? `0 0 8px ${allDone ? '#22c55e' : subject.color}66` : undefined,
+                            backgroundColor: subject.color,
+                            boxShadow: pct > 0 ? `0 0 8px ${subject.color}66` : undefined,
                           }}
                         />
                       </div>
