@@ -111,7 +111,7 @@ function useSubtopicStats() {
 const StatsOverview: React.FC<Props> = ({ subjects, onOpenErrorNotebook, edital, blockLogs, targetBanca, streakState, achievements, userName, streakEnabled = true }) => {
   const [showSimuladoHistory, setShowSimuladoHistory] = useState(false);
   const [showShare, setShowShare] = useState(false);
-  const { records: simuladoRecords } = useSimulados();
+  const { records: simuladoRecords, deleteRecord: deleteSimuladoRecord } = useSimulados();
   const isDarkMode = document.documentElement.classList.contains('dark');
   const [activePeriod, setActivePeriod] = useState<Period>('day');
   const [expandedSubtopic, setExpandedSubtopic] = useState<string | null>(null);
@@ -499,6 +499,7 @@ const StatsOverview: React.FC<Props> = ({ subjects, onOpenErrorNotebook, edital,
       {showSimuladoHistory && (
         <SimuladoHistoryView
           records={simuladoRecords}
+          onDelete={deleteSimuladoRecord}
           onClose={() => setShowSimuladoHistory(false)}
         />
       )}

@@ -6,6 +6,7 @@ interface UseSimuladosReturn {
   records: SimuladoRecord[];
   loading: boolean;
   saveRecord: (record: SimuladoRecord) => Promise<void>;
+  deleteRecord: (id: string) => Promise<void>;
   reload: () => Promise<void>;
 }
 
@@ -38,5 +39,14 @@ export function useSimulados(): UseSimuladosReturn {
     }
   };
 
-  return { records, loading, saveRecord, reload };
+  const deleteRecord = async (id: string): Promise<void> => {
+    try {
+      await db.simuladoRecords.delete(id);
+      setRecords(prev => prev.filter(r => r.id !== id));
+    } catch (e) {
+      console.error('Failed to delete simulado record', e);
+    }
+  };
+
+  return { records, loading, saveRecord, deleteRecord, reload };
 }

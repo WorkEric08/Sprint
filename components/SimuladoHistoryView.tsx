@@ -7,6 +7,7 @@ import {
 
 interface Props {
   records: SimuladoRecord[];
+  onDelete: (id: string) => Promise<void>;
   onClose: () => void;
 }
 
@@ -26,8 +27,9 @@ function formatDuration(mins: number): string {
   return m === 0 ? `${h}h` : `${h}h${m}m`;
 }
 
-const SimuladoHistoryView: React.FC<Props> = ({ records, onClose }) => {
+const SimuladoHistoryView: React.FC<Props> = ({ records, onDelete, onClose }) => {
   const [expanded, setExpanded] = useState<string | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
 
   // Chart data (only records with score)
   const chartData = useMemo(() => {
@@ -137,42 +139,54 @@ const SimuladoHistoryView: React.FC<Props> = ({ records, onClose }) => {
                 const isExpanded = expanded === r.id;
                 return (
                   <div key={r.id} className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden">
-                    <button
-                      onClick={() => setExpanded(isExpanded ? null : r.id)}
-                      className="w-full p-4 text-left flex items-center gap-4"
-                    >
-                      {/* Date */}
-                      <div className="text-center shrink-0 w-12">
-                        <p className="text-xs font-black text-gray-800 dark:text-gray-100">
-                          {new Date(r.completedAt).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
-                        </p>
-                        <p className="text-[9px] text-gray-400 dark:text-gray-600">
-                          {new Date(r.completedAt).getFullYear()}
-                        </p>
-                      </div>
-                      {/* Info */}
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-black text-gray-800 dark:text-gray-100 uppercase tracking-tight truncate">
-                          {r.templateName}
-                        </p>
-                        <div className="flex items-center gap-2 mt-0.5">
-                          <span className="text-[10px] text-gray-400 dark:text-gray-600">{formatDuration(r.actualDurationMinutes)}</span>
-                          {!r.completed && <span className="text-[9px] font-black text-amber-500 bg-amber-50 dark:bg-amber-900/20 px-2 py-0.5 rounded-full">Interrompido</span>}
+                    {/* Header row: expand button + delete */}
+                    <div className="flex items-stretch">
+                      <button
+                        onClick={() => setExpanded(isExpanded ? null : r.id)}
+                        className="flex-1 p-4 text-left flex items-center gap-4 min-w-0"
+                      >
+                        {/* Date */}
+                        <div className="text-center shrink-0 w-12">
+                          <p className="text-xs font-black text-gray-800 dark:text-gray-100">
+                            {new Date(r.completedAt).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
+                          </p>
+                          <p className="text-[9px] text-gray-400 dark:text-gray-600">
+                            {new Date(r.completedAt).getFullYear()}
+                          </p>
                         </div>
-                      </div>
-                      {/* Score */}
-                      <div className="text-right shrink-0">
-                        {pct !== null ? (
-                          <>
-                            <p className="text-xl font-black" style={{ color: pct >= 60 ? '#22c55e' : '#ef4444' }}>{pct}%</p>
-                            <p className="text-[9px] text-gray-400 dark:text-gray-600">aproveit.</p>
-                          </>
-                        ) : (
-                          <p className="text-xs text-gray-300 dark:text-gray-700">sem nota</p>
-                        )}
-                      </div>
-                      <i className={`fas fa-chevron-${isExpanded ? 'up' : 'down'} text-[10px] text-gray-300 dark:text-gray-700 shrink-0`} />
-                    </button>
+                        {/* Info */}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-black text-gray-800 dark:text-gray-100 uppercase tracking-tight truncate">
+                            {r.templateName}
+                          </p>
+                          <div className="flex items-center gap-2 mt-0.5">
+                            <span className="text-[10px] text-gray-400 dark:text-gray-600">{formatDuration(r.actualDurationMinutes)}</span>
+                            {!r.completed && <span className="text-[9px] font-black text-amber-500 bg-amber-50 dark:bg-amber-900/20 px-2 py-0.5 rounded-full">Interrompido</span>}
+                          </div>
+                        </div>
+                        {/* Score */}
+                        <div className="text-right shrink-0">
+                          {pct !== null ? (
+                            <>
+                              <p className="text-xl font-black" style={{ color: pct >= 60 ? '#22c55e' : '#ef4444' }}>{pct}%</p>
+                              <p className="text-[9px] text-gray-400 dark:text-gray-600">aproveit.</p>
+                            </>
+                          ) : (
+                            <p className="text-xs text-gray-300 dark:text-gray-700">sem nota</p>
+                          )}
+                        </div>
+                        <i className={`fas fa-chevron-${isExpanded ? 'up' : 'down'} text-[10px] text-gray-300 dark:text-gray-700 shrink-0`} />
+                      </button>
+
+                      {/* Delete button */}
+                      <button
+                        onClick={() => setConfirmDelete(r.id)}
+                        className="px-3 flex items-center justify-center border-l border-gray-100 dark:border-gray-800 text-gray-300 dark:text-gray-700 hover:text-red-400 dark:hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors shrink-0"
+                        title="Excluir simulado"
+                      >
+                        <i className="fas fa-trash text-[11px]" />
+                      </button>
+                    </div>
 
                     {/* Expanded detail */}
                     {isExpanded && (
@@ -247,6 +261,41 @@ const SimuladoHistoryView: React.FC<Props> = ({ records, onClose }) => {
           </>
         )}
       </div>
+
+      {/* Confirm delete overlay */}
+      {confirmDelete && (
+        <div className="fixed inset-0 z-[70] bg-black/60 backdrop-blur-sm flex items-center justify-center p-6 animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-gray-900 rounded-3xl p-8 w-full max-w-sm border border-gray-100 dark:border-gray-800 text-center space-y-6 shadow-2xl">
+            <div className="w-14 h-14 bg-red-50 dark:bg-red-900/20 rounded-full flex items-center justify-center mx-auto">
+              <i className="fas fa-trash text-xl text-red-500" />
+            </div>
+            <div>
+              <h3 className="text-base font-black text-gray-800 dark:text-white uppercase tracking-tight">Excluir simulado?</h3>
+              <p className="text-sm text-gray-400 dark:text-gray-500 mt-2 leading-relaxed">
+                Este registro será removido permanentemente e não poderá ser recuperado.
+              </p>
+            </div>
+            <div className="space-y-3">
+              <button
+                onClick={async () => {
+                  await onDelete(confirmDelete);
+                  setConfirmDelete(null);
+                  if (expanded === confirmDelete) setExpanded(null);
+                }}
+                className="w-full py-4 bg-red-500 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-red-600 transition-colors active:scale-[0.98]"
+              >
+                Sim, excluir
+              </button>
+              <button
+                onClick={() => setConfirmDelete(null)}
+                className="w-full py-4 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-2xl font-black text-[10px] uppercase tracking-widest"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
