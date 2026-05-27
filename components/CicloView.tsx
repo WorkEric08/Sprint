@@ -5,7 +5,6 @@ import CicloAddView from './CicloAddView';
 import SprintBuilderView from './SprintBuilderView';
 import SprintRunnerView from './SprintRunnerView';
 import CountdownWidget from './CountdownWidget';
-import EditalDistributionCard from './DistributionCard';
 import SimuladoSetupModal from './SimuladoSetupModal';
 import SimuladoRunnerView from './SimuladoRunnerView';
 import PostSimuladoModal from './PostSimuladoModal';
@@ -121,16 +120,6 @@ const CicloView: React.FC<Props> = ({
         return s;
       })
     );
-  };
-
-  const startQuickCycle = () => {
-    if (subjects.length === 0) return;
-    const items: SprintResolvedItem[] = subjects.map(s => ({
-      type: 'study',
-      subject: s,
-      blockType: 'study' as BlockType,
-    }));
-    setSprintItems(items);
   };
 
   const subjectToReset = confirmReset ? subjects.find(s => s.id === confirmReset) : null;
@@ -295,31 +284,13 @@ const CicloView: React.FC<Props> = ({
             })}
           </div>
 
-          <div className="md:flex md:items-center md:gap-3 space-y-2 md:space-y-0">
-            <button
-              onClick={() => setIsSprintBuilderOpen(true)}
-              className="w-full md:flex-1 py-4 bg-indigo-600 text-white rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-lg shadow-indigo-500/20 hover:bg-indigo-700 active:scale-[0.98] transition-all flex items-center justify-center gap-3"
-            >
-              <i className="fas fa-list-ul" />
-              Montar Sprint
-            </button>
-            <button
-              onClick={startQuickCycle}
-              className="w-full md:w-auto md:px-6 py-3 md:py-4 text-gray-400 dark:text-gray-600 font-black text-[10px] uppercase tracking-widest hover:text-indigo-500 transition-colors flex items-center justify-center gap-2 md:bg-gray-100 md:dark:bg-gray-800 md:rounded-2xl md:text-gray-500 md:dark:text-gray-400"
-            >
-              <i className="fas fa-rotate text-[10px]" />
-              Ciclo Rápido · {subjects.length} {subjects.length === 1 ? 'matéria' : 'matérias'}
-            </button>
-          </div>
-
-          {/* Fase 3 Feature 4: Distribuição por peso do edital */}
-          {edital && (
-            <EditalDistributionCard
-              edital={edital}
-              subjects={subjects}
-              onApplyDistribution={onSubjectsChange}
-            />
-          )}
+          <button
+            onClick={() => setIsSprintBuilderOpen(true)}
+            className="w-full py-4 bg-indigo-600 text-white rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-lg shadow-indigo-500/20 hover:bg-indigo-700 active:scale-[0.98] transition-all flex items-center justify-center gap-3"
+          >
+            <i className="fas fa-list-ul" />
+            Montar Sprint
+          </button>
 
           {/* Fase 4: Botão Simulado */}
           <div className="grid grid-cols-2 gap-2">
