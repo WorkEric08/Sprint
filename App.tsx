@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import StatsOverview from './components/StatsOverview';
 import CicloView from './components/CicloView';
 import SettingsPanel from './components/SettingsPanel';
@@ -74,6 +74,10 @@ const App: React.FC = () => {
 
   // Oculta a bottom nav quando qualquer tela secundária full-screen está aberta
   const hasSecondaryScreen = useHasSecondaryScreen();
+
+  // Refs para medição da nav — declarados cedo para manter ordem de hooks estável
+  const navRef = useRef<HTMLElement>(null);
+  const [navHeight, setNavHeight] = useState(0);
 
   const {
     theme, setTheme, userName, setUserName,
@@ -164,6 +168,18 @@ const App: React.FC = () => {
     }
   }, []);
 
+  // Mede a altura real da nav após o carregamento dos dados (quando a nav aparece no DOM).
+  // Usa [isLoading] para re-executar assim que isLoading passar para false e a nav for montada.
+  useLayoutEffect(() => {
+    const el = navRef.current;
+    if (!el) return;
+    const update = () => setNavHeight(el.offsetHeight);
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [isLoading]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const toggleTheme = () => setTheme(theme === 'light' ? 'dark' : 'light');
 
   if (isLoading) {
@@ -248,7 +264,10 @@ const App: React.FC = () => {
         </aside>
 
         {/* ── Conteúdo principal ── */}
-        <main className="scroll-container flex-1 p-4 md:p-6 lg:p-8">
+        <main
+          className="scroll-container flex-1 p-4 md:p-6 lg:p-8"
+          style={navHeight > 0 ? { paddingBottom: `${navHeight}px` } : undefined}
+        >
           {activeTab === 'stats' && (
             <StatsOverview
               objectives={objectives}
@@ -309,7 +328,8 @@ const App: React.FC = () => {
 
         {/* ── Nav inferior (mobile only) — some em telas secundárias ── */}
         <nav
-          className={`md:hidden shrink-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-t border-gray-100 dark:border-gray-800 pt-3 flex items-center transition-opacity duration-200 ${
+          ref={navRef}
+          className={`md:hidden fixed bottom-0 left-0 right-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-t border-gray-100 dark:border-gray-800 pt-3 flex items-center z-40 transition-opacity duration-200 ${
             hasSecondaryScreen ? 'opacity-0 pointer-events-none' : 'opacity-100'
           }`}
           style={{ paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom, 0px))' }}
