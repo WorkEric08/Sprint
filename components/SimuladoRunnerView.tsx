@@ -127,7 +127,7 @@ const SimuladoRunnerView: React.FC<Props> = ({ template, onFinish }) => {
   const strokeDashoffset = strokeDasharray - (progress / 100) * strokeDasharray;
 
   return createPortal(
-    <div className="fixed inset-0 z-[70] bg-gray-950 flex flex-col items-center select-none">
+    <div className="fixed inset-0 z-[70] bg-gray-950 flex flex-col items-center justify-between select-none">
       {/* Status bar — padding sobe até o limite do notch/status bar */}
       <div
         className="w-full flex items-center justify-between px-6"
@@ -153,7 +153,7 @@ const SimuladoRunnerView: React.FC<Props> = ({ template, onFinish }) => {
       </div>
 
       {/* Main timer */}
-      <div className="flex flex-col items-center gap-8 mt-6">
+      <div className="flex flex-col items-center gap-8">
         {/* Circle */}
         <div className="relative w-72 h-72 flex items-center justify-center">
           <svg className="w-full h-full -rotate-90 absolute" viewBox="0 0 200 200">
@@ -210,7 +210,7 @@ const SimuladoRunnerView: React.FC<Props> = ({ template, onFinish }) => {
       </div>
 
       {/* Controls */}
-      <div className="w-full max-w-xs px-4 pb-12 space-y-3 mt-auto">
+      <div className="w-full max-w-xs px-4 pb-12 space-y-3">
         {!template.strictMode && (
           <button
             onClick={togglePause}
