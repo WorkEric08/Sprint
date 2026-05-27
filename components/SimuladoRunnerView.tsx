@@ -126,10 +126,10 @@ const SimuladoRunnerView: React.FC<Props> = ({ template, onFinish }) => {
 
   return createPortal(
     <div className="fixed inset-0 z-[70] bg-gray-950 flex flex-col items-center justify-between select-none">
-      {/* Status bar — padding absorve a safe area do topo (notch/status bar) */}
+      {/* Status bar — padding sobe até o limite do notch/status bar */}
       <div
         className="w-full flex items-center justify-between px-6"
-        style={{ paddingTop: 'max(env(safe-area-inset-top, 0px), 1.5rem)' }}
+        style={{ paddingTop: 'max(env(safe-area-inset-top, 0px), 0.75rem)' }}
       >
         <div className="flex items-center gap-2">
           {template.strictMode && (

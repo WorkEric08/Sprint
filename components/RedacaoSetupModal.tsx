@@ -41,7 +41,7 @@ const RedacaoSetupModal: React.FC<Props> = ({ onStart, onClose }) => {
       {/* Header — padding absorve safe area do topo */}
       <div
         className="flex items-center gap-3 px-4 pb-3 border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 shrink-0"
-        style={{ paddingTop: 'max(env(safe-area-inset-top, 0px), 1rem)' }}
+        style={{ paddingTop: 'max(env(safe-area-inset-top, 0px), 0.5rem)' }}
       >
         <button onClick={onClose} className="w-9 h-9 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-gray-500 active:scale-90">
           <i className="fas fa-arrow-left text-sm" />

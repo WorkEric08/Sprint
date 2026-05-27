@@ -157,7 +157,7 @@ const RedacaoEditorView: React.FC<Props> = ({ theme, existingSession, onSave, on
       {/* Header — padding absorve safe area do topo */}
       <div
         className="flex items-center gap-3 px-4 pb-2 border-b border-gray-100 dark:border-gray-800 shrink-0"
-        style={{ paddingTop: 'max(env(safe-area-inset-top, 0px), 0.75rem)' }}
+        style={{ paddingTop: 'max(env(safe-area-inset-top, 0px), 0.5rem)' }}
       >
         <button onClick={() => setShowExitConfirm(true)} className="text-gray-400 hover:text-gray-600 transition-colors">
           <i className="fas fa-times text-lg" />
