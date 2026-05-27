@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { SimuladoTemplate } from '../types';
 import { SIMULADO_TEMPLATES } from '../data/simuladoTemplates';
 import { useSecondaryScreen } from '../contexts/OverlayContext';
@@ -29,16 +30,24 @@ const SimuladoSetupModal: React.FC<Props> = ({ onStart, onClose }) => {
     ? { ...selected, durationMinutes: customDuration, strictMode: customStrict }
     : selected;
 
+  useEffect(() => {
+    const meta = document.querySelector('meta[name="theme-color"]') as HTMLMetaElement | null;
+    const prev = meta?.getAttribute('content') ?? '#f9fafb';
+    const isDark = document.documentElement.classList.contains('dark');
+    meta?.setAttribute('content', isDark ? '#030712' : '#f9fafb');
+    return () => { meta?.setAttribute('content', prev); };
+  }, []);
+
   const handleStart = () => onStart(finalTemplate);
 
   const templates = SIMULADO_TEMPLATES;
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-[70] flex flex-col bg-gray-50 dark:bg-gray-950 animate-in fade-in duration-200">
       {/* Header */}
       <div
         className="flex items-center gap-3 px-4 pb-3 border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 shrink-0"
-        style={{ paddingTop: 'calc(1rem + env(safe-area-inset-top, 0px))' }}
+        style={{ paddingTop: 'max(env(safe-area-inset-top, 0px), 0.5rem)' }}
       >
         <button
           onClick={onClose}
@@ -197,7 +206,8 @@ const SimuladoSetupModal: React.FC<Props> = ({ onStart, onClose }) => {
           Começar Simulado · {formatDuration(finalTemplate.durationMinutes)}
         </button>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 
