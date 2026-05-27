@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { RedacaoTheme, RedacaoThemeAxis } from '../types';
 import { REDACAO_THEMES, AXIS_LABELS, AXIS_COLORS } from '../data/redacaoThemes';
 
@@ -26,13 +27,22 @@ const RedacaoSetupModal: React.FC<Props> = ({ onStart, onClose }) => {
     });
   }, [selectedAxis, search]);
 
-  return (
-    <div
-      className="fixed inset-0 z-[70] flex flex-col bg-gray-50 dark:bg-gray-950 animate-in fade-in duration-200"
-      style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
-    >
-      {/* Header */}
-      <div className="flex items-center gap-3 px-4 pt-4 pb-3 border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 shrink-0">
+  // Sincroniza theme-color com o fundo do modal (corrige status bar no Android PWA)
+  useEffect(() => {
+    const meta = document.querySelector('meta[name="theme-color"]') as HTMLMetaElement | null;
+    const prev = meta?.getAttribute('content') ?? '#f9fafb';
+    const isDark = document.documentElement.classList.contains('dark');
+    meta?.setAttribute('content', isDark ? '#030712' : '#f9fafb');
+    return () => { meta?.setAttribute('content', prev); };
+  }, []);
+
+  return createPortal(
+    <div className="fixed inset-0 z-[70] flex flex-col bg-gray-50 dark:bg-gray-950 animate-in fade-in duration-200">
+      {/* Header — padding absorve safe area do topo */}
+      <div
+        className="flex items-center gap-3 px-4 pb-3 border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 shrink-0"
+        style={{ paddingTop: 'max(env(safe-area-inset-top, 0px), 1rem)' }}
+      >
         <button onClick={onClose} className="w-9 h-9 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-gray-500 active:scale-90">
           <i className="fas fa-arrow-left text-sm" />
         </button>
@@ -163,7 +173,8 @@ const RedacaoSetupModal: React.FC<Props> = ({ onStart, onClose }) => {
           {selectedTheme ? 'Começar Redação · 90min' : 'Selecione um tema'}
         </button>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 

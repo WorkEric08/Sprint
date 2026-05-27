@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { SimuladoTemplate } from '../types';
 import { WakeLockManager } from '../utils/wakeLock';
 
@@ -58,6 +59,14 @@ const SimuladoRunnerView: React.FC<Props> = ({ template, onFinish }) => {
     };
   }, []);
 
+  // Sincroniza theme-color com o fundo escuro do simulado (corrige status bar no Android PWA)
+  useEffect(() => {
+    const meta = document.querySelector('meta[name="theme-color"]') as HTMLMetaElement | null;
+    const prev = meta?.getAttribute('content') ?? '#f9fafb';
+    meta?.setAttribute('content', '#030712');
+    return () => { meta?.setAttribute('content', prev); };
+  }, []);
+
   // Timestamp-based countdown — survives tab switches
   useEffect(() => {
     if (isPaused || isFinished) return;
@@ -115,13 +124,13 @@ const SimuladoRunnerView: React.FC<Props> = ({ template, onFinish }) => {
   const strokeDasharray = 565; // 2π × r(90)
   const strokeDashoffset = strokeDasharray - (progress / 100) * strokeDasharray;
 
-  return (
-    <div
-      className="fixed inset-0 z-[70] bg-gray-950 flex flex-col items-center justify-between select-none"
-      style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
-    >
-      {/* Status bar */}
-      <div className="w-full flex items-center justify-between px-6 pt-6">
+  return createPortal(
+    <div className="fixed inset-0 z-[70] bg-gray-950 flex flex-col items-center justify-between select-none">
+      {/* Status bar — padding absorve a safe area do topo (notch/status bar) */}
+      <div
+        className="w-full flex items-center justify-between px-6"
+        style={{ paddingTop: 'max(env(safe-area-inset-top, 0px), 1.5rem)' }}
+      >
         <div className="flex items-center gap-2">
           {template.strictMode && (
             <div className="flex items-center gap-1 bg-red-900/30 px-2.5 py-1 rounded-full">
@@ -260,7 +269,8 @@ const SimuladoRunnerView: React.FC<Props> = ({ template, onFinish }) => {
           </div>
         </div>
       )}
-    </div>
+    </div>,
+    document.body
   );
 };
 

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { RedacaoTheme, RedacaoSession, RedacaoCompetencyScores } from '../types';
 
 interface Props {
@@ -142,13 +143,22 @@ const RedacaoEditorView: React.FC<Props> = ({ theme, existingSession, onSave, on
     : displayMs <= 30 * 60 * 1000 ? '#f59e0b'
     : '#6366f1';
 
-  return (
-    <div
-      className="fixed inset-0 z-[70] bg-white dark:bg-gray-950 flex flex-col"
-      style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
-    >
-      {/* Header */}
-      <div className="flex items-center gap-3 px-4 pt-3 pb-2 border-b border-gray-100 dark:border-gray-800 shrink-0">
+  // Sincroniza theme-color com o fundo do editor (corrige status bar no Android PWA)
+  useEffect(() => {
+    const meta = document.querySelector('meta[name="theme-color"]') as HTMLMetaElement | null;
+    const prev = meta?.getAttribute('content') ?? '#f9fafb';
+    const isDark = document.documentElement.classList.contains('dark');
+    meta?.setAttribute('content', isDark ? '#030712' : '#ffffff');
+    return () => { meta?.setAttribute('content', prev); };
+  }, []);
+
+  return createPortal(
+    <div className="fixed inset-0 z-[70] bg-white dark:bg-gray-950 flex flex-col">
+      {/* Header — padding absorve safe area do topo */}
+      <div
+        className="flex items-center gap-3 px-4 pb-2 border-b border-gray-100 dark:border-gray-800 shrink-0"
+        style={{ paddingTop: 'max(env(safe-area-inset-top, 0px), 0.75rem)' }}
+      >
         <button onClick={() => setShowExitConfirm(true)} className="text-gray-400 hover:text-gray-600 transition-colors">
           <i className="fas fa-times text-lg" />
         </button>
@@ -379,7 +389,8 @@ Conclusão:
           </div>
         </div>
       )}
-    </div>
+    </div>,
+    document.body
   );
 };
 
