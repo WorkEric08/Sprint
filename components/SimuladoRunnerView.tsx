@@ -41,17 +41,14 @@ const SimuladoRunnerView: React.FC<Props> = ({ template, onFinish }) => {
   const [isFinished, setIsFinished] = useState(false);
   const [showExitConfirm, setShowExitConfirm] = useState(false);
   const [milestoneAlert, setMilestoneAlert] = useState<string | null>(null);
-  const [wakeLockActive, setWakeLockActive] = useState(false);
 
-  // Activate Wake Lock on mount
+  // Activate Wake Lock on mount (silent — sem badge)
   useEffect(() => {
     const wl = wakeLockRef.current;
-    wl.request().then(() => setWakeLockActive(wl.isActive));
+    wl.request();
 
     const handleVisibility = () => {
-      if (document.visibilityState === 'visible') {
-        wl.request().then(() => setWakeLockActive(wl.isActive));
-      }
+      if (document.visibilityState === 'visible') wl.request();
     };
     document.addEventListener('visibilitychange', handleVisibility);
 
@@ -119,16 +116,13 @@ const SimuladoRunnerView: React.FC<Props> = ({ template, onFinish }) => {
   const strokeDashoffset = strokeDasharray - (progress / 100) * strokeDasharray;
 
   return (
-    <div className="fixed inset-0 z-[70] bg-gray-950 flex flex-col items-center justify-between select-none">
+    <div
+      className="fixed inset-0 z-[70] bg-gray-950 flex flex-col items-center justify-between select-none"
+      style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
+    >
       {/* Status bar */}
       <div className="w-full flex items-center justify-between px-6 pt-6">
         <div className="flex items-center gap-2">
-          {wakeLockActive && (
-            <div className="flex items-center gap-1.5 bg-indigo-900/30 px-2.5 py-1 rounded-full">
-              <div className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse" />
-              <span className="text-[9px] font-black text-indigo-400 uppercase tracking-widest">Wake Lock</span>
-            </div>
-          )}
           {template.strictMode && (
             <div className="flex items-center gap-1 bg-red-900/30 px-2.5 py-1 rounded-full">
               <i className="fas fa-lock text-red-400 text-[8px]" />

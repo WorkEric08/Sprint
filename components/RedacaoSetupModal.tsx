@@ -27,7 +27,10 @@ const RedacaoSetupModal: React.FC<Props> = ({ onStart, onClose }) => {
   }, [selectedAxis, search]);
 
   return (
-    <div className="fixed inset-0 z-[70] flex flex-col bg-gray-50 dark:bg-gray-950 animate-in fade-in duration-200">
+    <div
+      className="fixed inset-0 z-[70] flex flex-col bg-gray-50 dark:bg-gray-950 animate-in fade-in duration-200"
+      style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
+    >
       {/* Header */}
       <div className="flex items-center gap-3 px-4 pt-4 pb-3 border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 shrink-0">
         <button onClick={onClose} className="w-9 h-9 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-gray-500 active:scale-90">
@@ -86,6 +89,9 @@ const RedacaoSetupModal: React.FC<Props> = ({ onStart, onClose }) => {
         {filtered.map(theme => {
           const isSelected = selectedTheme?.id === theme.id;
           const axisColor = AXIS_COLORS[theme.axis];
+          const contextPreview = theme.context
+            ? (isSelected ? theme.context : theme.context.slice(0, 130) + (theme.context.length > 130 ? '…' : ''))
+            : null;
           return (
             <button
               key={theme.id}
@@ -94,9 +100,10 @@ const RedacaoSetupModal: React.FC<Props> = ({ onStart, onClose }) => {
                 isSelected ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20' : 'border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900'
               }`}
             >
-              <div className="flex items-start justify-between gap-3">
+              <div className="flex items-start gap-3">
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2 mb-1 flex-wrap">
+                  {/* Eixo + Ano */}
+                  <div className="flex items-center gap-2 mb-1.5 flex-wrap">
                     <span
                       className="text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full"
                       style={{ backgroundColor: axisColor + '20', color: axisColor }}
@@ -106,14 +113,30 @@ const RedacaoSetupModal: React.FC<Props> = ({ onStart, onClose }) => {
                     {theme.source === 'enem' && theme.year && (
                       <span className="text-[9px] font-black text-gray-400 dark:text-gray-600 uppercase">ENEM {theme.year}</span>
                     )}
-                    {!theme.verified && (
-                      <span className="text-[9px] font-black text-amber-500 uppercase">⚠️ Não verificado</span>
-                    )}
                   </div>
+
+                  {/* Título */}
                   <p className={`text-sm font-bold leading-snug ${isSelected ? 'text-indigo-700 dark:text-indigo-300' : 'text-gray-800 dark:text-gray-200'}`}>
                     {theme.title}
                   </p>
+
+                  {/* Contextualização */}
+                  {contextPreview && (
+                    <p className={`text-[11px] mt-2 leading-relaxed transition-all ${
+                      isSelected ? 'text-gray-700 dark:text-gray-300' : 'text-gray-400 dark:text-gray-600'
+                    }`}>
+                      {contextPreview}
+                    </p>
+                  )}
+
+                  {/* Aviso ENEM não verificado */}
+                  {!theme.verified && theme.source === 'enem' && (
+                    <p className="text-[9px] font-bold text-amber-500 mt-1.5">
+                      ⚠️ Verificar título exato em inep.gov.br
+                    </p>
+                  )}
                 </div>
+
                 <div className={`w-5 h-5 rounded-full border-2 shrink-0 mt-0.5 flex items-center justify-center transition-colors ${
                   isSelected ? 'border-indigo-500 bg-indigo-500' : 'border-gray-200 dark:border-gray-700'
                 }`}>

@@ -143,7 +143,10 @@ const RedacaoEditorView: React.FC<Props> = ({ theme, existingSession, onSave, on
     : '#6366f1';
 
   return (
-    <div className="fixed inset-0 z-[70] bg-white dark:bg-gray-950 flex flex-col">
+    <div
+      className="fixed inset-0 z-[70] bg-white dark:bg-gray-950 flex flex-col"
+      style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
+    >
       {/* Header */}
       <div className="flex items-center gap-3 px-4 pt-3 pb-2 border-b border-gray-100 dark:border-gray-800 shrink-0">
         <button onClick={() => setShowExitConfirm(true)} className="text-gray-400 hover:text-gray-600 transition-colors">
@@ -227,6 +230,19 @@ Conclusão:
         {showChecklist && (
           <div className="w-72 border-l border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-900 overflow-y-auto shrink-0 animate-in slide-in-from-right-4 duration-200">
             <div className="p-4 space-y-3">
+
+              {/* Contextualização do tema */}
+              {theme.context && (
+                <div className="bg-white dark:bg-gray-800 rounded-xl p-3 space-y-1 border border-violet-100 dark:border-violet-900/30">
+                  <p className="text-[9px] font-black text-violet-500 dark:text-violet-400 uppercase tracking-widest mb-1.5">
+                    Sobre o tema
+                  </p>
+                  <p className="text-[10px] text-gray-600 dark:text-gray-400 leading-relaxed">
+                    {theme.context}
+                  </p>
+                </div>
+              )}
+
               <p className="text-[9px] font-black text-gray-400 dark:text-gray-600 uppercase tracking-widest">5 Competências ENEM</p>
               {COMPETENCIES.map(c => (
                 <div key={c.key} className="bg-white dark:bg-gray-800 rounded-xl p-3 space-y-1">

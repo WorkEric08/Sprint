@@ -24,8 +24,8 @@ import { RedacaoTheme } from '../types';
 
 export const REDACAO_THEMES: RedacaoTheme[] = [
 
-  // ── Temas ENEM — preencher manualmente via INEP ───────────────────────
-  // verified: false = precisa confirmação na fonte oficial
+  // ── Temas ENEM — verificar títulos no portal INEP antes de usar ───────
+  // verified: false = título precisa de confirmação na fonte oficial
 
   {
     id: 'enem-2024',
@@ -34,6 +34,7 @@ export const REDACAO_THEMES: RedacaoTheme[] = [
     axis: 'treino',
     source: 'enem',
     verified: false,
+    context: 'Acesse o portal do INEP (inep.gov.br) para conferir o título oficial do tema ENEM 2024 e os textos motivadores presentes na prova.',
   },
   {
     id: 'enem-2023',
@@ -42,74 +43,82 @@ export const REDACAO_THEMES: RedacaoTheme[] = [
     axis: 'treino',
     source: 'enem',
     verified: false,
+    context: 'Acesse o portal do INEP (inep.gov.br) para conferir o título oficial do tema ENEM 2023 e os textos motivadores presentes na prova.',
   },
   {
     id: 'enem-2022',
-    title: '⚠️ TODO: Tema ENEM 2022 — verificar em inep.gov.br',
+    title: 'Desafios para a valorização de comunidades e povos tradicionais no Brasil',
     year: 2022,
-    axis: 'treino',
+    axis: 'cultura',
     source: 'enem',
     verified: false,
+    context: 'O Brasil abriga enorme diversidade de povos tradicionais: indígenas, quilombolas, ribeirinhos, pescadores artesanais, caiçaras e outros grupos cujos modos de vida estão intimamente ligados ao território. Esses povos enfrentam ameaças como o desmatamento, o avanço do agronegócio sobre suas terras, o racismo estrutural e a invisibilidade nas políticas públicas. A Constituição de 1988 reconheceu direitos coletivos desses grupos, mas a efetivação desses direitos ainda é precária. A valorização dessas culturas inclui a proteção territorial, a garantia de educação diferenciada e o respeito aos seus sistemas de cura, crença e organização social. Para a proposta de intervenção, pense em ações do Estado (demarcação de terras, políticas de saúde diferenciada), da escola (currículo que inclua saberes tradicionais) e da mídia (visibilidade e respeito a essas comunidades).',
   },
   {
     id: 'enem-2021',
-    title: '⚠️ TODO: Tema ENEM 2021 — verificar em inep.gov.br',
+    title: 'Invisibilidade e registro civil: garantia de acesso à cidadania no Brasil',
     year: 2021,
-    axis: 'treino',
+    axis: 'direitos',
     source: 'enem',
     verified: false,
+    context: 'O registro civil de nascimento é o primeiro documento que formalmente insere o indivíduo na sociedade e no Estado, sendo pré-requisito para acesso a saúde, educação, trabalho e benefícios sociais. No Brasil, ainda há cidadãos sem registro — especialmente em áreas rurais remotas, comunidades quilombolas e indígenas e regiões ribeirinhas da Amazônia — configurando uma invisibilidade jurídica que perpetua vulnerabilidades. A pandemia de COVID-19 expôs essa exclusão ao dificultar o acesso de muitos brasileiros a auxílios emergenciais por falta de documentação. Causas incluem distância de cartórios, falta de informação, burocracia excessiva e desigualdade socioeconômica. Para a proposta, considere cartórios itinerantes, registro facilitado em hospitais e postos de saúde, campanhas educativas e fortalecimento do Programa Documento Legal do governo federal.',
   },
   {
     id: 'enem-2020',
-    title: '⚠️ TODO: Tema ENEM 2020 — verificar em inep.gov.br',
+    title: 'O estigma associado às doenças mentais na sociedade brasileira',
     year: 2020,
-    axis: 'treino',
+    axis: 'saude',
     source: 'enem',
     verified: false,
+    context: 'O estigma é uma marca social negativa associada a características consideradas desviantes. No caso das doenças mentais, o estigma leva ao preconceito, à discriminação e ao isolamento social das pessoas afetadas, dificultando a busca por ajuda e o acesso ao tratamento. O Brasil tem alta prevalência de transtornos mentais — ansiedade e depressão estão entre as principais causas de incapacidade. A Reforma Psiquiátrica Brasileira (lei 10.216/2001) representou um avanço ao proibir internações abusivas e promover a reinserção social via Caps (Centros de Atenção Psicossocial), mas o sistema ainda é subfinanciado. O estigma tem raízes históricas, culturais e religiosas. Para a proposta, considere campanhas de letramento em saúde mental, inserção do tema no currículo escolar, ampliação dos serviços de atenção psicossocial e treinamento de profissionais de saúde para abordagem humanizada.',
   },
   {
     id: 'enem-2019',
-    title: '⚠️ TODO: Tema ENEM 2019 — verificar em inep.gov.br',
+    title: 'Democratização do acesso ao cinema no Brasil',
     year: 2019,
-    axis: 'treino',
+    axis: 'cultura',
     source: 'enem',
     verified: false,
+    context: 'O cinema é uma forma de arte e entretenimento com papel fundamental na construção de identidades, memória coletiva e imaginário social. No Brasil, porém, o acesso ao cinema é profundamente desigual: as salas se concentram em shoppings centers de grandes centros urbanos, tornando-o inacessível para populações periféricas, cidades do interior e classes de menor renda. Com o fechamento de cinemas de rua e o avanço do streaming, essa exclusão se aprofundou para quem não tem internet de qualidade ou equipamentos adequados. A Lei Rouanet e a Ancine financiam parte da produção cultural, mas a distribuição ainda é centralizada. Para a proposta, pense em salas de cinema itinerantes, integração do cinema na rede escolar pública (cinetecas escolares), incentivos fiscais para cinemas em municípios sem salas e ampliação do acesso digital com plataformas públicas de conteúdo cultural.',
   },
   {
     id: 'enem-2018',
-    title: '⚠️ TODO: Tema ENEM 2018 — verificar em inep.gov.br',
+    title: 'Manipulação do comportamento do usuário pelo controle de dados na internet',
     year: 2018,
     axis: 'tecnologia',
     source: 'enem',
     verified: false,
+    context: 'A internet e as redes sociais coletam grandes volumes de dados sobre o comportamento dos usuários — histórico de buscas, preferências, localização, padrões de consumo. Essas informações são usadas para personalizar conteúdo, publicidade e até informação política, podendo influenciar decisões de compra, votação e comportamento social de forma que o usuário não percebe. Casos como o escândalo Cambridge Analytica, em que dados do Facebook foram usados para influenciar eleições, evidenciaram os riscos democráticos dessa prática. No Brasil, a Lei Geral de Proteção de Dados (LGPD, 2020) é um marco regulatório importante, mas a fiscalização ainda é incipiente. Para a proposta, considere fortalecimento da ANPD (Autoridade Nacional de Proteção de Dados), educação digital nas escolas, transparência algorítmica e mecanismos efetivos de consentimento do usuário.',
   },
   {
     id: 'enem-2017',
-    title: '⚠️ TODO: Tema ENEM 2017 — verificar em inep.gov.br',
+    title: 'Desafios para a formação educacional de surdos no Brasil',
     year: 2017,
     axis: 'educacao',
     source: 'enem',
     verified: false,
+    context: 'A comunidade surda no Brasil reúne cerca de 10 milhões de pessoas com algum grau de surdez, das quais aproximadamente 2 milhões são surdos profundos. A Língua Brasileira de Sinais (Libras) foi reconhecida como língua oficial em 2002 (Lei 10.436), garantindo às pessoas surdas o direito a uma educação bilíngue. Na prática, a formação de professores habilitados em Libras é insuficiente, a presença de intérpretes nas escolas ainda é limitada e os materiais didáticos adaptados são escassos. A inclusão nas escolas regulares sem suporte adequado pode resultar em exclusão disfarçada. Para a proposta de intervenção, pense em ampliação da formação de professores e intérpretes de Libras, criação de escolas bilíngues para surdos, produção de materiais em Libras e fortalecimento da identidade cultural surda.',
   },
   {
     id: 'enem-2016',
-    title: '⚠️ TODO: Tema ENEM 2016 — verificar em inep.gov.br',
+    title: 'Caminhos para combater a intolerância religiosa no Brasil',
     year: 2016,
     axis: 'direitos',
     source: 'enem',
     verified: false,
+    context: 'O Brasil é um país de grande diversidade religiosa — convivem catolicismo, protestantismo, religiões de matriz africana (candomblé, umbanda), espiritismo, islamismo, budismo e outras crenças. A Constituição Federal garante a liberdade de crença e o Estado laico. No entanto, casos de intolerância religiosa crescem, especialmente contra religiões de matriz africana: terreiros são depredados, fiéis são agredidos e o preconceito se manifesta cotidianamente. Esse fenômeno está relacionado ao racismo estrutural e à desinformação histórica sobre culturas afro-brasileiras. A Lei 7.716/1989 tipifica a discriminação religiosa como crime, mas os casos têm baixos índices de denúncia e punição. Para a proposta, pense em educação sobre diversidade religiosa nas escolas, treinamento de agentes de segurança pública, incentivo à denúncia e punição efetiva dos crimes de intolerância.',
   },
   {
     id: 'enem-2015',
-    title: '⚠️ TODO: Tema ENEM 2015 — verificar em inep.gov.br',
+    title: 'A persistência da violência contra a mulher na sociedade brasileira',
     year: 2015,
     axis: 'direitos',
     source: 'enem',
     verified: false,
+    context: 'A violência contra a mulher é um fenômeno estrutural enraizado em desigualdades de gênero históricas. No Brasil, uma mulher é vítima de violência doméstica a cada 12 segundos, segundo dados do DataSenado. A Lei Maria da Penha (11.340/2006) representou um avanço ao criar medidas protetivas, tipificar formas de violência doméstica e psicológica e endurecer punições. Em 2015, o feminicídio foi tipificado como crime hediondo (Lei 13.104). Contudo, os números ainda são alarmantes: o Brasil tem um dos maiores índices de feminicídio do mundo. Barreiras à denúncia incluem dependência econômica, medo de represálias, falta de suporte institucional e naturalização da violência. Para a proposta, considere ampliação de DEAMs (Delegacias Especializadas), casas de acolhimento, políticas de autonomia econômica da mulher, educação de gênero nas escolas e campanhas de conscientização.',
   },
 
   // ── Temas Treino — por eixo temático ─────────────────────────────────
-  // Estes são temas de prática, não ligados a edições específicas do ENEM.
 
   // Meio Ambiente
   {
@@ -118,6 +127,7 @@ export const REDACAO_THEMES: RedacaoTheme[] = [
     axis: 'meio-ambiente',
     source: 'treino',
     verified: true,
+    context: 'A Amazônia é o maior bioma tropical do mundo, abrigando cerca de 20% de toda a biodiversidade do planeta, regulando o ciclo das chuvas no Brasil e contribuindo para o equilíbrio climático global. Apesar de sua importância, a floresta enfrenta ameaças graves: desmatamento por expansão agropecuária e grilagem, exploração ilegal de madeira e mineração, queimadas e invasão de territórios indígenas. O desmatamento na Amazônia já ultrapassou 20% da cobertura original, aproximando-se do chamado "ponto de não retorno". Os povos indígenas e comunidades tradicionais desempenham papel fundamental como guardiões do bioma. Para a proposta de intervenção, pense em: fiscalização ambiental com tecnologia de monitoramento, demarcação e proteção de terras indígenas, punição efetiva de desmatadores, fomento à bioeconomia sustentável (produtos florestais não-madeireiros) e acordos internacionais de financiamento para preservação.',
   },
   {
     id: 'treino-ma-2',
@@ -125,6 +135,7 @@ export const REDACAO_THEMES: RedacaoTheme[] = [
     axis: 'meio-ambiente',
     source: 'treino',
     verified: true,
+    context: 'A educação ambiental é reconhecida pela Lei 9.795/1999 como componente essencial e permanente da educação nacional, devendo estar integrada a todas as disciplinas. Ela visa desenvolver a compreensão do meio ambiente como bem comum e a responsabilidade coletiva com a sustentabilidade. No Brasil, sua implementação ainda é desigual: muitas escolas públicas carecem de formação docente adequada, materiais didáticos e projetos práticos. A crise climática — com eventos extremos cada vez mais frequentes — torna urgente a formação de cidadãos críticos e engajados. Além do conteúdo formal, práticas como hortas escolares, coleta seletiva e visitas a unidades de conservação são instrumentos pedagógicos eficazes. Para a proposta, considere: formação continuada de professores em educação ambiental, inserção de projetos práticos de sustentabilidade nas escolas, parceria com ONGs ambientais para programas extracurriculares e incentivo à participação juvenil em conselhos ambientais.',
   },
   {
     id: 'treino-ma-3',
@@ -132,6 +143,7 @@ export const REDACAO_THEMES: RedacaoTheme[] = [
     axis: 'meio-ambiente',
     source: 'treino',
     verified: true,
+    context: 'O Brasil possui cerca de 12% das reservas de água doce do mundo, mas sua distribuição é extremamente desigual: 80% estão na Amazônia, enquanto o Nordeste semiárido sofre com a seca histórica. A crise hídrica é agravada por desperdício (perdas na distribuição chegam a 38% em algumas cidades), poluição de rios e aquíferos, desmatamento em cabeceiras e pelo uso intensivo na agropecuária, que consome cerca de 70% da água doce do país. Grandes cidades como São Paulo e Brasília já viveram racionamentos críticos. Populações periféricas, rurais e indígenas são as mais afetadas pela ausência de saneamento básico — 100 milhões de brasileiros ainda não têm acesso à água tratada. Para a proposta, pense em: investimento em infraestrutura hídrica (cisternas, adutoras), redução de perdas nas redes de distribuição, tarifação progressiva para grandes consumidores, reuso de água na indústria e agricultura e educação sobre consumo consciente.',
   },
   {
     id: 'treino-ma-4',
@@ -139,6 +151,7 @@ export const REDACAO_THEMES: RedacaoTheme[] = [
     axis: 'meio-ambiente',
     source: 'treino',
     verified: true,
+    context: 'Empresas são responsáveis por parcela significativa das emissões de gases de efeito estufa, geração de resíduos sólidos, poluição de rios e solos e consumo de recursos naturais. Conceitos como ESG (Environmental, Social, Governance), economia circular e relatórios de sustentabilidade ganharam espaço no mundo corporativo, mas sua adoção ainda é superficial em muitos casos — fenômeno chamado de "greenwashing". No Brasil, a legislação ambiental (Lei de Crimes Ambientais, Política Nacional de Resíduos Sólidos) estabelece responsabilidades, mas a fiscalização é insuficiente. Consumidores e investidores têm papel crescente na pressão por mudanças, especialmente via boicotes e desinvestimento. Para a proposta, considere: regulação com metas obrigatórias de redução de emissões, incentivos fiscais para empresas com práticas sustentáveis certificadas, transparência nos relatórios ambientais, punição efetiva de crimes ambientais corporativos e educação do consumidor para escolhas conscientes.',
   },
 
   // Tecnologia
@@ -148,6 +161,7 @@ export const REDACAO_THEMES: RedacaoTheme[] = [
     axis: 'tecnologia',
     source: 'treino',
     verified: true,
+    context: 'As redes sociais revolucionaram a participação política ao ampliar o acesso à informação, facilitar a organização de movimentos sociais e aproximar eleitores e candidatos. No entanto, também potencializaram a disseminação de desinformação, discurso de ódio e polarização. Algoritmos que priorizam conteúdo com alto engajamento tendem a criar "câmaras de eco" — bolhas ideológicas que reforçam crenças sem exposição a visões divergentes. Estudos mostram que notícias falsas se espalham até 70% mais rápido que as verdadeiras. No Brasil, o uso massivo de WhatsApp em campanhas políticas e a circulação de fake news foram investigados como fatores de desequilíbrio eleitoral. O TSE tem atuado na regulação, mas os desafios persistem. Para a proposta, pense em: regulação das plataformas digitais (exigência de transparência algorítmica), letramento midiático e digital nas escolas, fortalecimento de agências de fact-checking e responsabilização de quem cria e dissemina desinformação.',
   },
   {
     id: 'treino-tec-2',
@@ -155,6 +169,7 @@ export const REDACAO_THEMES: RedacaoTheme[] = [
     axis: 'tecnologia',
     source: 'treino',
     verified: true,
+    context: 'A inteligência artificial está transformando o mercado de trabalho global com velocidade sem precedentes, automatizando tarefas repetitivas físicas e cognitivas. Estima-se que no Brasil cerca de 54% dos empregos têm alto potencial de automação, especialmente nas áreas de manufatura, transporte, atendimento ao cliente e serviços financeiros. Ao mesmo tempo, a IA cria novas profissões e demanda habilidades como pensamento crítico, criatividade e capacidade de trabalhar com sistemas inteligentes. O risco é que a transição aprofunde desigualdades: trabalhadores com menor escolaridade e acesso à tecnologia são os mais vulneráveis. No Brasil, a ausência de uma política nacional robusta de requalificação profissional agrava o problema. Para a proposta, pense em: programas públicos de requalificação profissional com foco em habilidades digitais, integração curricular da educação tecnológica desde o ensino básico, regulação da IA para proteger direitos trabalhistas e fundo de transição financiado por empresas que se automatizem.',
   },
   {
     id: 'treino-tec-3',
@@ -162,6 +177,7 @@ export const REDACAO_THEMES: RedacaoTheme[] = [
     axis: 'tecnologia',
     source: 'treino',
     verified: true,
+    context: 'A desinformação — conteúdo falso ou enganoso difundido intencionalmente — ganhou escala industrial com as redes sociais e aplicativos de mensagens. No Brasil, o fenômeno ficou evidente durante a pandemia de COVID-19, quando teorias sobre tratamentos ineficazes e desincentivo à vacinação custaram vidas. A desinformação pode ser motivada por interesses políticos, econômicos ou simplesmente pelo engajamento emocional. Pesquisas indicam que notícias falsas exploram emoções como medo, raiva e indignação. Agências de fact-checking como Agência Lupa, AosFatos e Estadão Verifica atuam no combate, mas têm alcance limitado diante do volume de conteúdo. A LGPD e o Marco Civil da Internet estabelecem algumas responsabilidades, mas a regulação de plataformas ainda é insuficiente. Para a proposta, pense em: letramento midiático e digital obrigatório na educação básica, responsabilização das plataformas pelo conteúdo que amplificam, fortalecimento do jornalismo independente e incentivo à cultura de verificação antes de compartilhar.',
   },
   {
     id: 'treino-tec-4',
@@ -169,6 +185,7 @@ export const REDACAO_THEMES: RedacaoTheme[] = [
     axis: 'tecnologia',
     source: 'treino',
     verified: true,
+    context: 'O uso excessivo de smartphones e redes sociais está associado a crescimento dos índices de ansiedade, depressão, solidão e distúrbios do sono, especialmente entre adolescentes. Jovens brasileiros passam em média mais de 9 horas diárias conectados a telas. As plataformas digitais são projetadas para maximizar o tempo de uso: notificações, rolagem infinita, curtidas e sistemas de recompensa variável ativam os mesmos circuitos neurais de dependência. Fenômenos como FOMO (Fear of Missing Out), comparação social constante e cyberbullying agravam o quadro. A OMS reconheceu o "transtorno de jogos online" como distúrbio de saúde mental em 2018. Para a proposta, considere: regulação do design viciante das plataformas (especialmente para menores de idade), educação digital nas escolas com foco em uso crítico e saudável, programas de saúde mental nas escolas, orientação a famílias para estabelecer limites saudáveis e garantia de espaços físicos de socialização para jovens.',
   },
 
   // Sociedade
@@ -178,6 +195,7 @@ export const REDACAO_THEMES: RedacaoTheme[] = [
     axis: 'sociedade',
     source: 'treino',
     verified: true,
+    context: 'A família é o primeiro e mais importante agente de socialização humana, responsável pela transmissão de valores, normas de convivência e visão de mundo. No Brasil contemporâneo, as configurações familiares tornaram-se diversas — famílias monoparentais, homoafetivas, reconstituídas, multigeracionais —, o que também diversifica os modelos de formação. Pesquisas indicam que a qualidade do vínculo afetivo e o diálogo aberto são mais determinantes para a formação ética do que a estrutura familiar em si. No entanto, a família não age sozinha: a escola, a mídia, os grupos de amigos e as redes sociais também influenciam profundamente os jovens. Situações de violência doméstica, negligência e falta de tempo de qualidade comprometem a formação saudável. Para a proposta, pense em: programas de apoio às famílias vulneráveis (centros de referência de assistência social), formação em competências parentais, parceria ativa entre escola e família, e políticas de redução da desigualdade que diminuam o estresse familiar associado à pobreza.',
   },
   {
     id: 'treino-soc-2',
@@ -185,6 +203,7 @@ export const REDACAO_THEMES: RedacaoTheme[] = [
     axis: 'sociedade',
     source: 'treino',
     verified: true,
+    context: 'O trabalho infantil priva crianças e adolescentes do direito ao desenvolvimento pleno, à educação, à saúde e ao lazer, além de causar danos físicos e psicológicos duradouros. No Brasil, apesar de avanços nas últimas décadas, ainda há cerca de 1,7 milhão de crianças e adolescentes em situação de trabalho infantil, concentrados especialmente no setor agrícola, no trabalho doméstico e em atividades urbanas informais. A pobreza é o principal fator de risco — famílias empurram filhos ao trabalho por necessidade de renda —, mas também contribuem a naturalização cultural em certas regiões ("é melhor trabalhar que ficar na rua") e a fiscalização insuficiente. A Constituição proíbe trabalho a menores de 16 anos (salvo aprendiz a partir de 14). Programas como o PETI e o Bolsa Família são ferramentas importantes de proteção. Para a proposta, considere: ampliação da transferência de renda condicionada à frequência escolar, escola em tempo integral como alternativa ao trabalho, fiscalização de empresas que usam fornecedores com trabalho infantil e campanhas de conscientização nas comunidades de risco.',
   },
   {
     id: 'treino-soc-3',
@@ -192,6 +211,7 @@ export const REDACAO_THEMES: RedacaoTheme[] = [
     axis: 'sociedade',
     source: 'treino',
     verified: true,
+    context: 'O Brasil passa por uma transição demográfica acelerada: a expectativa de vida supera 76 anos e a taxa de fecundidade caiu para 1,7 filho por mulher. Projeta-se que em 2060 mais de 32% da população terá 60 anos ou mais — hoje são cerca de 15%. Esse fenômeno exerce pressão crescente sobre o sistema previdenciário (maior relação beneficiários/contribuintes), os serviços de saúde (aumento de doenças crônicas) e a assistência social (cuidados de longa duração). A Reforma da Previdência de 2019 aumentou as idades mínimas de aposentadoria como resposta parcial. Além da previdência, surgem demandas por lares de longa permanência, cuidadores profissionais, adaptação urbana para mobilidade reduzida e reinserção de idosos no mercado de trabalho. Para a proposta, pense em: regulação e financiamento adequado do sistema previdenciário, políticas de saúde preventiva para reduzir custos futuros, programas de qualificação e incentivo à contratação de trabalhadores mais velhos e expansão de centros-dia e serviços de cuidado domiciliar.',
   },
   {
     id: 'treino-soc-4',
@@ -199,6 +219,7 @@ export const REDACAO_THEMES: RedacaoTheme[] = [
     axis: 'sociedade',
     source: 'treino',
     verified: true,
+    context: 'O Brasil é signatário da Convenção de 1951 sobre o Estatuto dos Refugiados e tem histórico de acolhimento humanitário. Nos últimos anos, o país recebeu fluxos significativos de refugiados sírios, haitianos e venezuelanos — estes últimos concentrados especialmente em Roraima, criando desafios humanitários agudos. A Lei de Migração de 2017 (Lei 13.445) representou avanço ao tratar migrantes com base em direitos humanos. No entanto, a integração enfrenta barreiras concretas: preconceito e xenofobia da população local, dificuldades com o idioma, não reconhecimento de diplomas e qualificações, acesso limitado ao mercado formal de trabalho e ausência de políticas locais robustas de acolhimento. O CONARE (Comitê Nacional para os Refugiados) e o ACNUR (Agência da ONU para Refugiados) atuam no suporte, mas com recursos limitados. Para a proposta, pense em: programas de acolhimento e ensino de português, mecanismos ágeis de reconhecimento de diplomas, parceria com empresas para inclusão no mercado de trabalho, combate à xenofobia e fortalecimento institucional do CONARE.',
   },
 
   // Saúde
@@ -208,6 +229,7 @@ export const REDACAO_THEMES: RedacaoTheme[] = [
     axis: 'saude',
     source: 'treino',
     verified: true,
+    context: 'O SUS é um dos maiores sistemas de saúde pública do mundo, garantindo atendimento universal e gratuito a mais de 200 milhões de brasileiros. Suas conquistas incluem o Programa Nacional de Imunizações (um dos maiores do mundo), o controle de endemias, a política de medicamentos genéricos e os programas de transplantes. No entanto, o sistema enfrenta subfinanciamento crônico — o Brasil investe menos de 4% do PIB em saúde pública, enquanto países com sistemas similares investem 7-8% — superlotação de hospitais, desigualdades regionais absurdas (Norte e Nordeste têm muito menos médicos por habitante que Sul e Sudeste) e escassez de profissionais de saúde em áreas remotas. A Emenda Constitucional 95 (teto de gastos, 2016) limitou os investimentos por 20 anos. Para a proposta, pense em: financiamento adequado e progressivo ao SUS, expansão e valorização da atenção primária (postos de saúde e agentes comunitários), telemedicina para áreas remotas, formação de médicos com foco em medicina de família e redução das desigualdades regionais.',
   },
   {
     id: 'treino-sau-2',
@@ -215,6 +237,7 @@ export const REDACAO_THEMES: RedacaoTheme[] = [
     axis: 'saude',
     source: 'treino',
     verified: true,
+    context: 'A pandemia de COVID-19 desencadeou uma crise secundária de saúde mental de proporções históricas. O isolamento social, o luto coletivo por mais de 700 mil mortes no Brasil, o medo, as dificuldades econômicas e a sobrecarga extrema de profissionais de saúde elevaram significativamente os índices de ansiedade, depressão e estresse pós-traumático. Grupos já vulneráveis — profissionais de saúde, idosos, populações em situação de pobreza, crianças e adolescentes — foram os mais afetados. O Brasil já enfrentava uma crise de saúde mental antes da pandemia: era o país com maior prevalência de ansiedade do mundo. O acesso ao atendimento psicológico e psiquiátrico é profundamente desigual, restrito na prática às camadas com maior renda. Para a proposta, considere: ampliação dos CAPS (Centros de Atenção Psicossocial), implementação de telepsicologia no SUS, inserção de apoio psicológico nas escolas (psicólogos escolares), campanhas de redução do estigma e formação de médicos generalistas para identificar e tratar transtornos mentais comuns.',
   },
   {
     id: 'treino-sau-3',
@@ -222,6 +245,7 @@ export const REDACAO_THEMES: RedacaoTheme[] = [
     axis: 'saude',
     source: 'treino',
     verified: true,
+    context: 'Doenças negligenciadas são infecções tropicais que afetam predominantemente populações em situação de pobreza extrema, recebendo pouco investimento em pesquisa e tratamento por não constituírem mercado lucrativo para a indústria farmacêutica. No Brasil, ainda circulam dengue, doença de Chagas, hanseníase, leishmaniose visceral, esquistossomose e filariose linfática, especialmente nas regiões Norte e Nordeste. O Brasil lidera o número de casos de hanseníase nas Américas. A falta de saneamento básico, o acesso precário à saúde primária, a desnutrição e a habitação precária são condições estruturais que favorecem essas doenças. A pandemia de COVID-19 prejudicou os programas de controle já existentes. Para a proposta, pense em: investimento em saneamento básico universal (fator mais efetivo de controle), ampliação da cobertura de agentes comunitários de saúde, parcerias público-privadas para pesquisa de novos tratamentos, e campanhas educativas nas regiões endêmicas.',
   },
 
   // Educação
@@ -231,6 +255,7 @@ export const REDACAO_THEMES: RedacaoTheme[] = [
     axis: 'educacao',
     source: 'treino',
     verified: true,
+    context: 'O analfabetismo funcional descreve a incapacidade de usar leitura, escrita e cálculo em situações cotidianas de forma plena e eficaz, mesmo que a pessoa consiga reconhecer letras. Segundo o Inaf (Indicador de Analfabetismo Funcional), cerca de 29% da população adulta brasileira é funcionalmente analfabeta. Esse fenômeno compromete o exercício da cidadania, o acesso a empregos qualificados, a compreensão de contratos, bulas e direitos básicos. As causas incluem baixa qualidade do ensino nas redes públicas, evasão escolar precoce por trabalho infantil e necessidade econômica, falta de estímulo à leitura em casa e ausência de bibliotecas acessíveis. O problema é mais grave no Nordeste e entre populações negras, rurais e de menor renda. Para a proposta, pense em: formação de professores alfabetizadores, programas de Educação de Jovens e Adultos (EJA) de qualidade, bibliotecas comunitárias e escolares, projetos de leitura nas escolas e avaliações diagnósticas para identificar alunos com dificuldades precocemente.',
   },
   {
     id: 'treino-edu-2',
@@ -238,6 +263,7 @@ export const REDACAO_THEMES: RedacaoTheme[] = [
     axis: 'educacao',
     source: 'treino',
     verified: true,
+    context: 'A educação profissional e tecnológica é um instrumento potente de inclusão socioeconômica, habilitando jovens ao mercado de trabalho com menor tempo de formação que o ensino superior. O Brasil conta com uma rede de Institutos Federais (IFs) com mais de 650 câmpus em todo o território nacional, além de redes estaduais e o Sistema S (Senai, Senac, Senar). No entanto, o acesso ainda é desigual: os IFs concentram vagas em municípios maiores e enfrentam disputas por vagas muito acirradas. Estudos mostram que egressos do ensino técnico têm taxa de empregabilidade significativamente superior à da educação geral, com salários iniciais mais altos. O Ensino Médio integrado — que une formação técnica e propedêutica — é uma proposta promissora mas subutilizada. Para a proposta, pense em: expansão dos IFs para municípios menores e periferias, maior oferta de bolsas para estudantes de baixa renda (Pronatec), parcerias com empresas para estágios e emprego, e integração do ensino técnico ao ensino médio regular.',
   },
   {
     id: 'treino-edu-3',
@@ -245,6 +271,7 @@ export const REDACAO_THEMES: RedacaoTheme[] = [
     axis: 'educacao',
     source: 'treino',
     verified: true,
+    context: 'A Constituição Federal de 1988 e a Lei Brasileira de Inclusão (LBI, 2015) garantem às pessoas com deficiência o direito à educação inclusiva em escolas regulares com apoio especializado. Na prática, porém, a inclusão é frequentemente superficial: muitas escolas carecem de infraestrutura acessível (rampas, banheiros adaptados), materiais pedagógicos em formatos acessíveis (braille, audiodescrição, libras), intérpretes de Libras e professores capacitados para atender alunos com diferentes necessidades. O Censo Escolar registra crescimento nas matrículas de alunos com deficiência em escolas regulares, mas o que ocorre dentro da sala de aula nem sempre é inclusivo. Alunos surdos sem intérprete, cegos sem material adaptado e autistas sem apoio especializado podem estar "presentes mas ausentes". Para a proposta, considere: formação continuada de professores em educação inclusiva, provisão de recursos de tecnologia assistiva, contratação de profissionais de apoio especializado, adequação arquitetônica das escolas e monitoramento da qualidade da inclusão.',
   },
 
   // Direitos
@@ -254,6 +281,7 @@ export const REDACAO_THEMES: RedacaoTheme[] = [
     axis: 'direitos',
     source: 'treino',
     verified: true,
+    context: 'O racismo estrutural descreve como práticas, normas e instituições sociais reproduzem sistematicamente desvantagens para grupos racializados, independentemente da intenção individual de discriminar. No Brasil, herança de mais de 300 anos de escravidão e da ausência de políticas de reparação pós-abolição, o racismo se manifesta em dados concretos: negros e pardos (56% da população) representam 75% das vítimas de homicídio, têm renda média 41% menor que brancos e são maioria entre os desempregados e encarcerados. Políticas de cotas raciais em universidades (lei 12.711/2012) e no serviço público representaram avanços importantes, com resultados comprovados na redução da desigualdade educacional. O racismo também opera no cotidiano — abordagens policiais, negações de emprego, invisibilidade na mídia. Para a proposta, pense em: ampliação e fortalecimento das cotas, educação antirracista desde a infância (lei 10.639/2003 sobre história afro-brasileira), representatividade nas instituições, punição efetiva de crimes de racismo e valorização da cultura afro-brasileira e indígena.',
   },
   {
     id: 'treino-dir-2',
@@ -261,6 +289,7 @@ export const REDACAO_THEMES: RedacaoTheme[] = [
     axis: 'direitos',
     source: 'treino',
     verified: true,
+    context: 'O Brasil possui legislação avançada sobre direitos das pessoas com deficiência: a Convenção da ONU sobre os Direitos das Pessoas com Deficiência (ratificada em 2008) e a Lei Brasileira de Inclusão (LBI, 2015) estabelecem um arcabouço robusto. No entanto, a efetivação desses direitos é precária. Cerca de 18,6 milhões de brasileiros têm alguma deficiência (Censo IBGE 2022). Barreiras concretas incluem: inacessibilidade de espaços públicos e transportes (calçadas quebradas, falta de elevadores, ônibus sem rampas), mercado de trabalho restrito — a cota de 2% a 5% para PCDs em empresas com mais de 100 funcionários é frequentemente descumprida —, acesso limitado à saúde especializada e à educação inclusiva de qualidade. Preconceito e baixas expectativas sociais também limitam a autonomia das pessoas com deficiência. Para a proposta, considere: fiscalização efetiva das cotas de emprego, investimento em acessibilidade universal nos espaços públicos, ampliação de serviços de reabilitação no SUS, tecnologia assistiva acessível e campanhas de conscientização sobre inclusão.',
   },
   {
     id: 'treino-dir-3',
@@ -268,6 +297,7 @@ export const REDACAO_THEMES: RedacaoTheme[] = [
     axis: 'direitos',
     source: 'treino',
     verified: true,
+    context: 'A violência doméstica é um fenômeno estrutural enraizado em relações de poder desiguais de gênero, naturalizado por séculos de cultura patriarcal. No Brasil, uma mulher sofre agressão a cada 12 segundos. A Lei Maria da Penha (11.340/2006) é considerada uma das legislações mais avançadas do mundo sobre o tema, criando medidas protetivas de urgência, tipificando formas de violência doméstica (física, psicológica, patrimonial, moral, sexual) e estabelecendo Juizados Especiais. Em 2015, o feminicídio foi tipificado como crime hediondo. Apesar desses avanços legais, os números de feminicídio cresceram: o Brasil registra mais de 1.400 feminicídios por ano. Barreiras à denúncia incluem dependência econômica, medo de represálias, dificuldade de acesso aos serviços de proteção e, em muitos casos, normalização da violência pela própria vítima. Para a proposta, pense em: ampliação de DEAMs (Delegacias Especializadas em Atendimento à Mulher), casas de abrigo com capacidade suficiente, políticas de autonomia econômica da mulher, educação de gênero desde o ensino básico e campanhas que incentivem denúncias e rompam a cultura do silêncio.',
   },
 
   // Economia
@@ -277,6 +307,7 @@ export const REDACAO_THEMES: RedacaoTheme[] = [
     axis: 'economia',
     source: 'treino',
     verified: true,
+    context: 'O empreendedorismo é visto como uma saída para o desemprego juvenil e como motor de inovação e desenvolvimento. No Brasil, a taxa de desemprego entre jovens de 18 a 24 anos supera 20%, o dobro da média geral. Ao mesmo tempo, abrir e manter um negócio no país é desafiador: o Brasil ocupa posições baixas nos rankings de facilidade para fazer negócios. Os obstáculos incluem burocracia excessiva (abertura de empresas pode levar semanas), alta carga tributária, dificuldade de acesso a crédito (juros elevados para micro e pequenos negócios), falta de capacitação em gestão e desigualdade de acesso ao ecossistema de inovação. O MEI (Microempreendedor Individual) simplificou a formalização para negócios menores, mas 60% dos MEIs têm dificuldade de crescimento. Para a proposta, pense em: desburocratização do processo de abertura de empresas, linhas de microcrédito com juros acessíveis para jovens de baixa renda, programas de mentoria e capacitação em gestão (via SEBRAE e institutos técnicos), educação empreendedora nas escolas e políticas de apoio a startups sociais.',
   },
   {
     id: 'treino-eco-2',
@@ -284,6 +315,7 @@ export const REDACAO_THEMES: RedacaoTheme[] = [
     axis: 'economia',
     source: 'treino',
     verified: true,
+    context: 'O trabalho informal — sem carteira assinada, sem recolhimento de FGTS e INSS, sem acesso a férias, 13º salário ou seguro-desemprego — afeta cerca de 40% dos trabalhadores brasileiros, cerca de 38 milhões de pessoas. A informalidade é maior entre negros, mulheres, jovens, trabalhadores de baixa escolaridade e nas regiões Norte e Nordeste. Embora ofereça alguma flexibilidade, a informalidade priva os trabalhadores de proteção social, especialmente na velhice (sem aposentadoria) e em momentos de crise. A pandemia de COVID-19 agravou o problema: o trabalho por plataformas digitais (entregadores e motoristas de aplicativo) criou uma nova categoria de trabalhadores informais em escala. A Reforma Trabalhista de 2017 gerou debate sobre se facilitou ou aprofundou a precarização. Para a proposta, pense em: regulação específica das plataformas de trabalho digital com proteção social mínima, incentivos fiscais para formalização de micro e pequenas empresas, ampliação da cobertura do seguro-desemprego para trabalhadores informais e programas de capacitação para inserção no mercado formal.',
   },
 
   // Cultura
@@ -293,6 +325,7 @@ export const REDACAO_THEMES: RedacaoTheme[] = [
     axis: 'cultura',
     source: 'treino',
     verified: true,
+    context: 'O patrimônio histórico e cultural é o conjunto de bens materiais (edificações, sítios arqueológicos, documentos) e imateriais (festas, culinária, línguas, músicas, saberes tradicionais) que uma sociedade reconhece como expressão de sua memória e identidade. No Brasil, o IPHAN (Instituto do Patrimônio Histórico e Artístico Nacional) é responsável pela proteção desses bens, que incluem centros históricos como Ouro Preto e Olinda, manifestações como capoeira, frevo, samba e artesanato indígena. O incêndio do Museu Nacional em 2018, que destruiu acervo de 200 anos, evidenciou o descaso do poder público com a preservação. Além da falta de investimento, o patrimônio enfrenta especulação imobiliária, vandalismo e a invisibilidade de bens de grupos historicamente marginalizados. Para a proposta, pense em: financiamento público adequado para preservação, educação patrimonial nas escolas, uso de tecnologia para digitalização e acesso virtual a acervos, reconhecimento de patrimônios culturais de comunidades afro-brasileiras e indígenas e parcerias entre poder público, empresas e sociedade civil.',
   },
   {
     id: 'treino-cul-2',
@@ -300,6 +333,7 @@ export const REDACAO_THEMES: RedacaoTheme[] = [
     axis: 'cultura',
     source: 'treino',
     verified: true,
+    context: 'O Brasil abriga 305 etnias indígenas com 274 idiomas distintos, representando uma diversidade cultural e linguística ímpar. No entanto, esses povos enfrentam ameaças à sua existência cultural e física: invasão de terras, garimpo ilegal, violência, pressão para abandonar línguas e práticas tradicionais e aculturação forçada por agentes religiosos e econômicos. A Constituição de 1988 reconheceu pela primeira vez os direitos originários dos povos indígenas, incluindo a posse de suas terras. O território é a base da reprodução cultural, espiritual e econômica dessas comunidades — sem terra, não há cultura. A demarcação de terras é o mecanismo mais eficaz de proteção, mas está em disputa permanente com interesses do agronegócio e mineração. Línguas indígenas desaparecem: das 1.300 existentes no século XVI, restam cerca de 274. Para a proposta, pense em: aceleração das demarcações de terras, políticas de educação escolar indígena diferenciada (com ensino em língua materna), criação e fortalecimento de museus e centros culturais indígenas, proteção jurídica do conhecimento tradicional e valorização pública dessas culturas na mídia e nos currículos escolares.',
   },
 ];
 

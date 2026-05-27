@@ -130,6 +130,7 @@ export interface RedacaoTheme {
   axis: RedacaoThemeAxis;
   source: 'enem' | 'treino';
   verified: boolean;   // false = precisa verificação em fonte oficial
+  context?: string;    // contextualização para orientar a escrita
 }
 
 export interface RedacaoSession {
