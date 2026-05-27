@@ -41,7 +41,8 @@
       "Bash(git commit -m 'feat\\(settings\\): remove notifications section, add custom DatePickerModal *)",
       "Bash(git commit -m 'feat\\(settings\\): add streak toggle — disable hides all offensive UI *)",
       "Bash(git commit -m 'fix\\(ux\\): scroll lateral, banca alvo em concurso/prova, progresso sem ofensiva *)",
-      "PowerShell(cd \"C:\\\\Users\\\\Pichau\\\\Desktop\\\\Sprint\"; $css = Get-Content \"dist\\\\assets\\\\index-DM9EsmfV.css\" -Raw; $idx = $css.IndexOf\\(\"main-content\"\\); if \\($idx -ge 0\\) { $css.Substring\\($idx, 120\\) } else { \"NOT FOUND\" })"
+      "PowerShell(cd \"C:\\\\Users\\\\Pichau\\\\Desktop\\\\Sprint\"; $css = Get-Content \"dist\\\\assets\\\\index-DM9EsmfV.css\" -Raw; $idx = $css.IndexOf\\(\"main-content\"\\); if \\($idx -ge 0\\) { $css.Substring\\($idx, 120\\) } else { \"NOT FOUND\" })",
+      "PowerShell(cd \"C:\\\\Users\\\\Pichau\\\\Desktop\\\\Sprint\"; $css = Get-Content \"dist\\\\assets\\\\index-BXncQtPk.css\" -Raw; $i = $css.IndexOf\\(\".scroll-container\"\\); $css.Substring\\($i, 90\\))"
     ]
   }
 }

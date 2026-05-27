@@ -43,7 +43,10 @@ html, body {
   flex: 1;
   overflow-y: auto;
   overflow-x: clip; /* clip: não cria BFC, não interfere com overflow-x:auto de filhos */
-  -webkit-overflow-scrolling: touch;
+  /* NÃO usar -webkit-overflow-scrolling: touch aqui: no iOS ele faz
+     descendentes `position: fixed` ficarem presos a este container (em vez
+     do viewport), quebrando overlays full-screen. Momentum scroll já é
+     padrão no iOS 13+. */
   scrollbar-gutter: stable;
 }
 

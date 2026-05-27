@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Subject } from '../types';
 import { HexColorPicker } from "react-colorful";
 import { useBackButton } from '../hooks/useBackButton';
+import { useSecondaryScreen } from '../contexts/OverlayContext';
 
 const FAST_COLORS = [
   '#ff5d15', '#eb761d', '#d8a800', '#8ec81c', '#22b77a', '#1aa9a5', '#09a9d1',
@@ -15,6 +16,7 @@ interface Props {
 }
 
 const CicloEditView: React.FC<Props> = ({ subject, onSave, onClose }) => {
+  useSecondaryScreen();
   const [title, setTitle] = useState(subject.title);
   const [color, setColor] = useState(subject.color);
   const [duration, setDuration] = useState(subject.duration);

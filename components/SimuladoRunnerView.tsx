@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { SimuladoTemplate } from '../types';
 import { WakeLockManager } from '../utils/wakeLock';
+import { useSecondaryScreen } from '../contexts/OverlayContext';
 
 interface Props {
   template: SimuladoTemplate;
@@ -30,6 +31,7 @@ function urgencyColor(secondsLeft: number): string {
 }
 
 const SimuladoRunnerView: React.FC<Props> = ({ template, onFinish }) => {
+  useSecondaryScreen();
   const totalSeconds = template.durationMinutes * 60;
   const startedAtRef = useRef(Date.now());
   const pausedAtRef = useRef<number | null>(null);

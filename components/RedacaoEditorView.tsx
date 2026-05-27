@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { RedacaoTheme, RedacaoSession, RedacaoCompetencyScores } from '../types';
+import { useSecondaryScreen } from '../contexts/OverlayContext';
 
 interface Props {
   theme: RedacaoTheme;
@@ -39,6 +40,7 @@ function formatMS(ms: number): string {
 }
 
 const RedacaoEditorView: React.FC<Props> = ({ theme, existingSession, onSave, onClose }) => {
+  useSecondaryScreen();
   const sessionId = useRef(existingSession?.id ?? uid());
   const startedAt = useRef(existingSession?.startedAt ?? Date.now());
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);

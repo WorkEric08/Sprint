@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { SimuladoTemplate } from '../types';
 import { SIMULADO_TEMPLATES } from '../data/simuladoTemplates';
+import { useSecondaryScreen } from '../contexts/OverlayContext';
 
 interface Props {
   onStart: (template: SimuladoTemplate) => void;
@@ -17,6 +18,7 @@ function formatDuration(minutes: number): string {
 }
 
 const SimuladoSetupModal: React.FC<Props> = ({ onStart, onClose }) => {
+  useSecondaryScreen();
   const [selected, setSelected] = useState<SimuladoTemplate>(SIMULADO_TEMPLATES[0]);
   const [customDuration, setCustomDuration] = useState(180);
   const [customStrict, setCustomStrict] = useState(false);

@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { RedacaoTheme, RedacaoThemeAxis } from '../types';
 import { REDACAO_THEMES, AXIS_LABELS, AXIS_COLORS } from '../data/redacaoThemes';
+import { useSecondaryScreen } from '../contexts/OverlayContext';
 
 interface Props {
   onStart: (theme: RedacaoTheme) => void;
@@ -9,6 +10,7 @@ interface Props {
 }
 
 const RedacaoSetupModal: React.FC<Props> = ({ onStart, onClose }) => {
+  useSecondaryScreen();
   const [selectedAxis, setSelectedAxis] = useState<RedacaoThemeAxis | 'all'>('all');
   const [selectedTheme, setSelectedTheme] = useState<RedacaoTheme | null>(null);
   const [search, setSearch] = useState('');

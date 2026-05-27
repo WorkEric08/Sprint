@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { SimuladoTemplate, SimuladoAreaResult, SimuladoRecord } from '../types';
+import { useSecondaryScreen } from '../contexts/OverlayContext';
 
 interface Props {
   template: SimuladoTemplate;
@@ -25,6 +26,7 @@ const TIME_CONTROL_LABELS: Record<number, string> = {
 const PostSimuladoModal: React.FC<Props> = ({
   template, actualDurationMinutes, completed, startedAt, onSave, onSkip
 }) => {
+  useSecondaryScreen();
   const [timeControlScore, setTimeControlScore] = useState<1|2|3|4|5|null>(null);
   const [perception, setPerception] = useState('');
   const [redacaoText, setRedacaoText] = useState('');

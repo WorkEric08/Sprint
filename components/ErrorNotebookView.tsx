@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useRef } from 'react';
 import { ErrorEntry } from '../types';
+import { useSecondaryScreen } from '../contexts/OverlayContext';
 
 interface Props {
   errorEntries: ErrorEntry[];
@@ -18,6 +19,7 @@ function formatAccuracy(correct: number, total: number): string {
 }
 
 const ErrorNotebookView: React.FC<Props> = ({ errorEntries, onUpdateNote, onClose }) => {
+  useSecondaryScreen();
   const [search, setSearch] = useState('');
   const [filterSubject, setFilterSubject] = useState<string>('all');
   const [filterSubtopic, setFilterSubtopic] = useState<string>('all');

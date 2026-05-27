@@ -4,6 +4,7 @@ import {
   LineChart, Line, XAxis, YAxis, Tooltip,
   ResponsiveContainer, CartesianGrid,
 } from 'recharts';
+import { useSecondaryScreen } from '../contexts/OverlayContext';
 
 interface Props {
   records: SimuladoRecord[];
@@ -28,6 +29,7 @@ function formatDuration(mins: number): string {
 }
 
 const SimuladoHistoryView: React.FC<Props> = ({ records, onDelete, onClose }) => {
+  useSecondaryScreen();
   const [expanded, setExpanded] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
 

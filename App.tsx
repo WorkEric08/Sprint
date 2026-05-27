@@ -20,6 +20,7 @@ import { computeFullStreak, shouldShowWelcomeBack } from './utils/streakUtils';
 import { useAchievements } from './hooks/useAchievements';
 import AchievementToast from './components/AchievementToast';
 import WelcomeBackCard from './components/WelcomeBackCard';
+import { OverlayProvider, useHasSecondaryScreen } from './contexts/OverlayContext';
 
 type TabId = 'stats' | 'ciclo' | 'reviews' | 'settings';
 
@@ -51,7 +52,11 @@ const AppLoader: React.FC = () => {
     );
   }
 
-  return <App />;
+  return (
+    <OverlayProvider>
+      <App />
+    </OverlayProvider>
+  );
 };
 
 // ── App ────────────────────────────────────────────────────────────────────
@@ -66,6 +71,9 @@ const App: React.FC = () => {
   const [isUpdating, setIsUpdating] = useState(false);
   const [showErrorNotebook, setShowErrorNotebook] = useState(false);
   const [showEditalPicker, setShowEditalPicker] = useState(false);
+
+  // Oculta a bottom nav quando qualquer tela secundária full-screen está aberta
+  const hasSecondaryScreen = useHasSecondaryScreen();
 
   const {
     theme, setTheme, userName, setUserName,
@@ -299,9 +307,11 @@ const App: React.FC = () => {
           )}
         </main>
 
-        {/* ── Nav inferior (mobile only) ── */}
+        {/* ── Nav inferior (mobile only) — some em telas secundárias ── */}
         <nav
-          className="md:hidden fixed bottom-0 left-0 right-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-t border-gray-100 dark:border-gray-800 pt-3 flex items-center z-40"
+          className={`md:hidden fixed bottom-0 left-0 right-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-t border-gray-100 dark:border-gray-800 pt-3 flex items-center z-40 transition-opacity duration-200 ${
+            hasSecondaryScreen ? 'opacity-0 pointer-events-none' : 'opacity-100'
+          }`}
           style={{ paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom, 0px))' }}
         >
           {NAV_ITEMS.map(tab => (

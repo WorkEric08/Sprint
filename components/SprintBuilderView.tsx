@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Subject, SprintQueueItem, SprintResolvedItem, BlockType, ReviewItem, BLOCK_TYPE_LABELS, BLOCK_TYPE_COLORS } from '../types';
 import { useBackButton } from '../hooks/useBackButton';
 import { isPendingNow } from '../utils/reviewAlgorithm';
+import { useSecondaryScreen } from '../contexts/OverlayContext';
 
 interface Props {
   subjects: Subject[];
@@ -39,6 +40,7 @@ const SprintBuilderView: React.FC<Props> = ({
   onStart,
   onClose,
 }) => {
+  useSecondaryScreen();
   const [queue, setQueue] = useState<SprintQueueItem[]>([]);
   const [bannerDismissed, setBannerDismissed] = useState(false);
 

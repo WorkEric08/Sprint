@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Edital, Subject } from '../types';
 import { EDITAIS, EDITAL_CATEGORIES } from '../data/editais';
+import { useSecondaryScreen } from '../contexts/OverlayContext';
 
 interface Props {
   currentEditalId: string | null;
@@ -23,6 +24,7 @@ const EditalPickerModal: React.FC<Props> = ({
   onApplySubjects,
   onClose,
 }) => {
+  useSecondaryScreen();
   const [step, setStep] = useState<Step>('pick');
   const [chosen, setChosen] = useState<Edital | null>(null);
   const [filterCategory, setFilterCategory] = useState<string>('all');
