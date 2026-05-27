@@ -167,18 +167,20 @@ const App: React.FC = () => {
     }
   }, [theme]);
 
-  // Handle PWA force-update flag
+  // Handle PWA force-update flag — só faz o fade quando isLoading=false para que
+  // a nav real já esteja no DOM antes do HTML overlay sumir.
   useEffect(() => {
+    if (isLoading) return;
     if (sessionStorage.getItem('pwa-force-update') === '1') {
       sessionStorage.removeItem('pwa-force-update');
-      const overlay = document.getElementById('pwa-update-overlay');
-      if (overlay) {
-        overlay.style.transition = 'opacity 0.3s';
-        overlay.style.opacity = '0';
-        setTimeout(() => { overlay.style.display = 'none'; }, 300);
-      }
     }
-  }, []);
+    const overlay = document.getElementById('pwa-update-overlay');
+    if (overlay && overlay.style.display !== 'none') {
+      overlay.style.transition = 'opacity 0.2s';
+      overlay.style.opacity = '0';
+      setTimeout(() => { overlay.style.display = 'none'; }, 200);
+    }
+  }, [isLoading]);
 
   // Mede a altura real da nav após o carregamento dos dados (quando a nav aparece no DOM).
   // Usa [isLoading] para re-executar assim que isLoading passar para false e a nav for montada.
@@ -209,7 +211,7 @@ const App: React.FC = () => {
     <>
       {isUpdating && (
         <div
-          className="fixed inset-0 z-[9998] flex items-center justify-center"
+          className="fixed inset-0 z-[39] flex items-center justify-center"
           style={{ background: theme === 'dark' ? '#030712' : '#f9fafb' }}
         >
           <div className="flex flex-col items-center gap-4">
