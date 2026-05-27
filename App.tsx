@@ -94,7 +94,19 @@ const App: React.FC = () => {
   const { records: simuladoRecords } = useSimulados();
   const { unlocked: achievements, newlyUnlocked, clearNewlyUnlocked, checkAll: checkAchievements } = useAchievements();
   const { records: redacaoSessions } = useSimulados(); // reuse pattern
-  const selectedEdital = EDITAIS.find(e => e.id === selectedEditalId) ?? null;
+  const selectedEdital = React.useMemo(() => {
+    if (selectedEditalId === 'custom') {
+      try {
+        const stored = localStorage.getItem('sprint_custom_edital');
+        if (stored) {
+          const data = JSON.parse(stored);
+          return { id: 'custom', name: data.name, organizer: 'Customizado', category: 'municipal' as const, typicalMonth: '', disclaimer: '', subjects: [] } as import('./types').Edital;
+        }
+      } catch {}
+      return null;
+    }
+    return EDITAIS.find(e => e.id === selectedEditalId) ?? null;
+  }, [selectedEditalId]);
   const isLoading = settingsLoading || subjectsLoading || objectivesLoading;
 
   const [showWelcomeBack, setShowWelcomeBack] = useState(false);
@@ -318,8 +330,6 @@ const App: React.FC = () => {
               examDate={examDate}
               onOpenEditalPicker={() => setShowEditalPicker(true)}
               onSetExamDate={setExamDate}
-              targetBanca={targetBanca}
-              onSetTargetBanca={setTargetBanca}
               streakEnabled={streakEnabled}
               onSetStreakEnabled={setStreakEnabled}
             />
