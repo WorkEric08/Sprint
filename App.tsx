@@ -248,7 +248,7 @@ const App: React.FC = () => {
         </aside>
 
         {/* ── Conteúdo principal ── */}
-        <main className="scroll-container flex-1 p-4 md:p-6 lg:p-8 main-content">
+        <main className="scroll-container flex-1 p-4 md:p-6 lg:p-8">
           {activeTab === 'stats' && (
             <StatsOverview
               objectives={objectives}
@@ -309,7 +309,7 @@ const App: React.FC = () => {
 
         {/* ── Nav inferior (mobile only) — some em telas secundárias ── */}
         <nav
-          className={`md:hidden fixed bottom-0 left-0 right-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-t border-gray-100 dark:border-gray-800 pt-3 flex items-center z-40 transition-opacity duration-200 ${
+          className={`md:hidden shrink-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-t border-gray-100 dark:border-gray-800 pt-3 flex items-center transition-opacity duration-200 ${
             hasSecondaryScreen ? 'opacity-0 pointer-events-none' : 'opacity-100'
           }`}
           style={{ paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom, 0px))' }}
