@@ -266,7 +266,7 @@ const App: React.FC = () => {
         {/* ── Conteúdo principal ── */}
         <main
           className="scroll-container flex-1 p-4 md:p-6 lg:p-8"
-          style={navHeight > 0 ? { paddingBottom: `${navHeight}px` } : undefined}
+          style={navHeight > 0 ? { paddingBottom: `${navHeight + 16}px` } : undefined}
         >
           {activeTab === 'stats' && (
             <StatsOverview
