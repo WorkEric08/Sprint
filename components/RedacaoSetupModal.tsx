@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { RedacaoTheme, RedacaoThemeAxis } from '../types';
-import { REDACAO_THEMES, AXIS_LABELS, AXIS_COLORS } from '../data/redacaoThemes';
+import { RedacaoTheme } from '../types';
+import { REDACAO_THEMES } from '../data/redacaoThemes';
 import { useSecondaryScreen } from '../contexts/OverlayContext';
 
 interface Props {
@@ -11,23 +11,15 @@ interface Props {
 
 const RedacaoSetupModal: React.FC<Props> = ({ onStart, onClose }) => {
   useSecondaryScreen();
-  const [selectedAxis, setSelectedAxis] = useState<RedacaoThemeAxis | 'all'>('all');
   const [selectedTheme, setSelectedTheme] = useState<RedacaoTheme | null>(null);
   const [search, setSearch] = useState('');
 
-  const axes = useMemo(() => {
-    const seen = new Set<string>();
-    REDACAO_THEMES.forEach(t => seen.add(t.axis));
-    return [...seen] as RedacaoThemeAxis[];
-  }, []);
-
   const filtered = useMemo(() => {
-    return REDACAO_THEMES.filter(t => {
-      if (selectedAxis !== 'all' && t.axis !== selectedAxis) return false;
-      if (search.trim() && !t.title.toLowerCase().includes(search.toLowerCase())) return false;
-      return true;
-    });
-  }, [selectedAxis, search]);
+    if (!search.trim()) return REDACAO_THEMES;
+    return REDACAO_THEMES.filter(t =>
+      t.title.toLowerCase().includes(search.toLowerCase())
+    );
+  }, [search]);
 
   // Sincroniza theme-color com o fundo do modal (corrige status bar no Android PWA)
   useEffect(() => {
@@ -68,31 +60,6 @@ const RedacaoSetupModal: React.FC<Props> = ({ onStart, onClose }) => {
         </div>
       </div>
 
-      {/* Axis filter */}
-      <div className="overflow-x-scroll-area flex gap-2 px-4 pt-2 pb-2 shrink-0">
-        <button
-          onClick={() => setSelectedAxis('all')}
-          className={`shrink-0 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${
-            selectedAxis === 'all' ? 'bg-indigo-600 text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-500'
-          }`}
-        >
-          Todos
-        </button>
-        {axes.map(axis => (
-          <button
-            key={axis}
-            onClick={() => setSelectedAxis(axis)}
-            className={`shrink-0 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${
-              selectedAxis === axis ? 'text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-500'
-            }`}
-            style={selectedAxis === axis ? { backgroundColor: AXIS_COLORS[axis] } : {}}
-          >
-            {AXIS_LABELS[axis]}
-          </button>
-        ))}
-        <div className="w-4 shrink-0" />
-      </div>
-
       {/* Theme list */}
       <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-2">
         {filtered.length === 0 && (
@@ -100,7 +67,6 @@ const RedacaoSetupModal: React.FC<Props> = ({ onStart, onClose }) => {
         )}
         {filtered.map(theme => {
           const isSelected = selectedTheme?.id === theme.id;
-          const axisColor = AXIS_COLORS[theme.axis];
           const contextPreview = theme.context
             ? (isSelected ? theme.context : theme.context.slice(0, 130) + (theme.context.length > 130 ? '…' : ''))
             : null;
@@ -114,25 +80,9 @@ const RedacaoSetupModal: React.FC<Props> = ({ onStart, onClose }) => {
             >
               <div className="flex items-start gap-3">
                 <div className="min-w-0 flex-1">
-                  {/* Eixo + Ano */}
-                  <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-                    <span
-                      className="text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full"
-                      style={{ backgroundColor: axisColor + '20', color: axisColor }}
-                    >
-                      {AXIS_LABELS[theme.axis]}
-                    </span>
-                    {theme.source === 'enem' && theme.year && (
-                      <span className="text-[9px] font-black text-gray-400 dark:text-gray-600 uppercase">ENEM {theme.year}</span>
-                    )}
-                  </div>
-
-                  {/* Título */}
                   <p className={`text-sm font-bold leading-snug ${isSelected ? 'text-indigo-700 dark:text-indigo-300' : 'text-gray-800 dark:text-gray-200'}`}>
                     {theme.title}
                   </p>
-
-                  {/* Contextualização */}
                   {contextPreview && (
                     <p className={`text-[11px] mt-2 leading-relaxed transition-all ${
                       isSelected ? 'text-gray-700 dark:text-gray-300' : 'text-gray-400 dark:text-gray-600'
@@ -140,15 +90,7 @@ const RedacaoSetupModal: React.FC<Props> = ({ onStart, onClose }) => {
                       {contextPreview}
                     </p>
                   )}
-
-                  {/* Aviso ENEM não verificado */}
-                  {!theme.verified && theme.source === 'enem' && (
-                    <p className="text-[9px] font-bold text-amber-500 mt-1.5">
-                      ⚠️ Verificar título exato em inep.gov.br
-                    </p>
-                  )}
                 </div>
-
                 <div className={`w-5 h-5 rounded-full border-2 shrink-0 mt-0.5 flex items-center justify-center transition-colors ${
                   isSelected ? 'border-indigo-500 bg-indigo-500' : 'border-gray-200 dark:border-gray-700'
                 }`}>

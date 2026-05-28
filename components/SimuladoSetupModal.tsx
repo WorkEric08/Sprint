@@ -40,7 +40,9 @@ const SimuladoSetupModal: React.FC<Props> = ({ onStart, onClose }) => {
 
   const handleStart = () => onStart(finalTemplate);
 
-  const templates = SIMULADO_TEMPLATES;
+  const templates = SIMULADO_TEMPLATES.filter(t =>
+    t.id === 'enem-dia1' || t.id === 'enem-dia2' || t.id === 'custom'
+  );
 
   return createPortal(
     <div className="fixed inset-0 z-[70] flex flex-col bg-gray-50 dark:bg-gray-950 animate-in fade-in duration-200">
