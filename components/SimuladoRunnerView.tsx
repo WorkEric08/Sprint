@@ -137,7 +137,7 @@ const SimuladoRunnerView: React.FC<Props> = ({ template, onFinish, isDevMode }) 
   const strokeDashoffset = strokeDasharray - (progress / 100) * strokeDasharray;
 
   return createPortal(
-    <div className="fixed inset-0 z-[70] bg-gray-950 select-none animate-in fade-in slide-in-from-bottom-4 duration-300">
+    <div className="fixed inset-0 z-[70] bg-gray-950 md:left-16 lg:left-56 xl:left-64 2xl:left-72 select-none animate-in fade-in slide-in-from-bottom-4 duration-300">
       <div className="h-full w-full flex flex-col items-center justify-between md:max-w-3xl xl:max-w-4xl md:mx-auto md:border-x md:border-gray-800/60 md:shadow-2xl md:shadow-black/50">
       {/* Status bar — padding sobe até o limite do notch/status bar */}
       <div

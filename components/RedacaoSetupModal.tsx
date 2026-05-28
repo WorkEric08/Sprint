@@ -47,7 +47,7 @@ const RedacaoSetupModal: React.FC<Props> = ({ onStart, onClose }) => {
   }, []);
 
   return createPortal(
-    <div className={`fixed inset-0 z-[70] bg-gray-50 dark:bg-gray-950 ${closing ? 'animate-out fade-out slide-out-to-bottom-4 duration-[200ms]' : 'animate-in fade-in slide-in-from-bottom-4 duration-300'}`}>
+    <div className={`fixed inset-0 z-[70] bg-gray-50 dark:bg-gray-950 md:left-16 lg:left-56 xl:left-64 2xl:left-72 ${closing ? 'animate-out fade-out slide-out-to-bottom-4 duration-[200ms]' : 'animate-in fade-in slide-in-from-bottom-4 duration-300'}`}>
       <div className="h-full w-full flex flex-col md:max-w-3xl xl:max-w-4xl md:mx-auto md:border-x md:border-gray-100 md:dark:border-gray-800 md:shadow-2xl md:shadow-black/5">
       {/* Header — padding absorve safe area do topo */}
       <div
@@ -109,7 +109,7 @@ const RedacaoSetupModal: React.FC<Props> = ({ onStart, onClose }) => {
       </div>
 
       {/* Theme list */}
-      <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-2">
+      <div className="flex-1 overflow-y-auto scroll-container px-4 pb-4 space-y-2">
         {filtered.length === 0 && (
           <div className="text-center py-12 text-gray-400 dark:text-gray-600 text-sm">Nenhum tema encontrado</div>
         )}

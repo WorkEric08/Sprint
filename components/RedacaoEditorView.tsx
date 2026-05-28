@@ -164,7 +164,7 @@ const RedacaoEditorView: React.FC<Props> = ({ theme, existingSession, onSave, on
   }, []);
 
   return createPortal(
-    <div className={`fixed inset-0 z-[70] bg-gray-50 dark:bg-gray-950 ${closing ? 'animate-out fade-out slide-out-to-bottom-4 duration-[200ms]' : 'animate-in fade-in slide-in-from-bottom-4 duration-300'}`}>
+    <div className={`fixed inset-0 z-[70] bg-gray-50 dark:bg-gray-950 md:left-16 lg:left-56 xl:left-64 2xl:left-72 ${closing ? 'animate-out fade-out slide-out-to-bottom-4 duration-[200ms]' : 'animate-in fade-in slide-in-from-bottom-4 duration-300'}`}>
       <div className="h-full w-full flex flex-col bg-white dark:bg-gray-950 md:max-w-4xl xl:max-w-5xl md:mx-auto md:border-x md:border-gray-100 md:dark:border-gray-800 md:shadow-2xl md:shadow-black/5">
       {/* Header — padding absorve safe area do topo */}
       <div
@@ -250,7 +250,7 @@ Conclusão:
 
         {/* Checklist panel (retrátil) */}
         {showChecklist && (
-          <div className="w-72 border-l border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-900 overflow-y-auto shrink-0 animate-in slide-in-from-right-4 duration-200">
+          <div className="w-72 border-l border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-900 overflow-y-auto scroll-container shrink-0 animate-in slide-in-from-right-4 duration-200">
             <div className="p-4 space-y-3">
 
               {/* Contextualização do tema */}
