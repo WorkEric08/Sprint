@@ -12,6 +12,7 @@ import StreakWidget from './StreakWidget';
 import AchievementsList from './AchievementsList';
 import ShareSheet from './ShareSheet';
 import { useSimulados } from '../hooks/useSimulados';
+import { isDevModeUser } from '../utils/devMode';
 import { AchievementRecord, StreakState } from '../types';
 
 interface Props {
@@ -456,7 +457,7 @@ const StatsOverview: React.FC<Props> = ({ subjects, edital, blockLogs, targetBan
 
           {/* ── Feature 4: Heatmap ── */}
           <div className="pt-2">
-            <HeatmapView streakEnabled={streakEnabled} />
+            <HeatmapView streakEnabled={streakEnabled} isDevMode={isDevModeUser(userName)} />
           </div>
 
           {/* ── Banca + Simulados — lado a lado no lg ── */}

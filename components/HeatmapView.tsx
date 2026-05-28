@@ -65,6 +65,16 @@ function persistNotes(notes: Record<string, string>): void {
 
 type GoalLevel = 'none' | 'below' | 'partial' | 'full';
 
+// Modo dev: o que um toque num dia faz quando a simulação está ativa.
+type SimMode = 'paint' | 'today';
+
+const SIM_CYCLE: GoalLevel[] = ['none', 'below', 'partial', 'full'];
+
+function formatShortDate(dateKey: string): string {
+  const [, m, d] = dateKey.split('-');
+  return `${d}/${m}`;
+}
+
 function getGoalLevel(blocks: number, isFuture: boolean, goal: GoalSettings): GoalLevel {
   if (isFuture || blocks === 0) return 'none';
   if (blocks < goal.min) return 'below';
@@ -72,20 +82,14 @@ function getGoalLevel(blocks: number, isFuture: boolean, goal: GoalSettings): Go
   return 'full';
 }
 
-function cellBg(level: GoalLevel): string {
-  switch (level) {
-    case 'none':    return 'bg-gray-100 dark:bg-gray-800/50';
-    case 'below':   return 'bg-violet-200 dark:bg-violet-900/60';
-    case 'partial': return 'bg-violet-400 dark:bg-violet-700';
-    case 'full':    return 'bg-violet-600 dark:bg-violet-500';
-  }
-}
-
+// As células 'below/partial/full' são pintadas via inline style com levelColor()
+// — exatamente a mesma cor usada na legenda — então não há helper de classe de
+// fundo aqui. Só 'none' usa fundo cinza (dependente de tema), tratado no render.
 function cellText(level: GoalLevel, isFuture: boolean): string {
   if (isFuture) return 'text-gray-200 dark:text-gray-800';
   switch (level) {
     case 'none':    return 'text-gray-400 dark:text-gray-600';
-    case 'below':   return 'text-violet-800 dark:text-violet-200';
+    case 'below':   return 'text-violet-900'; // fundo claro (#c4b5fd) em ambos os temas
     case 'partial':
     case 'full':    return 'text-white';
   }
@@ -245,9 +249,10 @@ const GoalModal: React.FC<GoalModalProps> = ({ current, onSave, onClose }) => {
 
 interface HeatmapProps {
   streakEnabled?: boolean;
+  isDevMode?: boolean;
 }
 
-const HeatmapView: React.FC<HeatmapProps> = ({ streakEnabled: _streakEnabled = true }) => {
+const HeatmapView: React.FC<HeatmapProps> = ({ streakEnabled: _streakEnabled = true, isDevMode = false }) => {
   const [blockLogs, setBlockLogs] = useState<BlockLog[]>([]);
   const [selected, setSelected] = useState<DayData | null>(null);
   const [showSettings, setShowSettings] = useState(false);
@@ -258,6 +263,28 @@ const HeatmapView: React.FC<HeatmapProps> = ({ streakEnabled: _streakEnabled = t
   const scrollRef = useRef<HTMLDivElement>(null);
   const noteRef = useRef<HTMLTextAreaElement>(null);
   const today = todayKey();
+
+  // ── Simulação (somente modo dev) ──
+  // Estado puramente visual: NÃO toca no IndexedDB. Permite escolher qual dia é
+  // "hoje" e pintar dias com cada nível de meta para testar as cores em sequência.
+  const [simEnabled, setSimEnabled] = useState(false);
+  const [simMode, setSimMode] = useState<SimMode>('paint');
+  const [simToday, setSimToday] = useState<string | null>(null);
+  const [simLevels, setSimLevels] = useState<Record<string, GoalLevel>>({});
+  const simActive = isDevMode && simEnabled;
+  const effToday = simActive && simToday ? simToday : today;
+  const resetSim = () => { setSimToday(null); setSimLevels({}); };
+
+  const cycleSimLevel = (dateKey: string) => {
+    setSimLevels(prev => {
+      const curr = prev[dateKey] ?? 'none';
+      const next = SIM_CYCLE[(SIM_CYCLE.indexOf(curr) + 1) % SIM_CYCLE.length];
+      const copy = { ...prev };
+      if (next === 'none') delete copy[dateKey];
+      else copy[dateKey] = next;
+      return copy;
+    });
+  };
 
   useEffect(() => {
     db.blockLogs.toArray().then(setBlockLogs).catch(console.error);
@@ -360,6 +387,61 @@ const HeatmapView: React.FC<HeatmapProps> = ({ streakEnabled: _streakEnabled = t
           </button>
         </div>
 
+        {/* ── Painel de simulação (somente modo dev) ── */}
+        {isDevMode && (
+          <div className="mx-4 mb-3 rounded-xl border border-dashed border-amber-300 dark:border-amber-700/70 bg-amber-50/60 dark:bg-amber-900/10 p-3 space-y-2.5">
+            <div className="flex items-center justify-between">
+              <span className="text-[9px] font-black text-amber-600 dark:text-amber-400 uppercase tracking-widest flex items-center gap-1.5">
+                <i className="fas fa-flask text-[10px]" /> Simulação (dev)
+              </span>
+              <button
+                onClick={() => setSimEnabled(v => !v)}
+                className={`px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest transition-colors ${
+                  simEnabled ? 'bg-amber-500 text-white' : 'bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400'
+                }`}
+              >
+                {simEnabled ? 'Ativo' : 'Inativo'}
+              </button>
+            </div>
+
+            {simEnabled && (
+              <>
+                <div className="flex items-center gap-1.5">
+                  {(['paint', 'today'] as SimMode[]).map(m => (
+                    <button
+                      key={m}
+                      onClick={() => setSimMode(m)}
+                      className={`flex-1 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-colors ${
+                        simMode === m
+                          ? 'bg-amber-500 text-white'
+                          : 'bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 border border-amber-200 dark:border-amber-800'
+                      }`}
+                    >
+                      {m === 'paint' ? 'Pintar cor' : 'Definir hoje'}
+                    </button>
+                  ))}
+                </div>
+                <p className="text-[9px] font-bold text-amber-600/80 dark:text-amber-500/80 leading-snug">
+                  {simMode === 'paint'
+                    ? 'Toque num dia para ciclar a cor: sem estudo → início → parcial → meta.'
+                    : 'Toque num dia para defini-lo como “hoje” (move o anel e o limite de dias futuros).'}
+                </p>
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-[9px] font-bold text-amber-600/80 dark:text-amber-500/80">
+                    Hoje simulado: <span className="font-black">{simToday ? formatShortDate(simToday) : '—'}</span>
+                  </span>
+                  <button
+                    onClick={resetSim}
+                    className="px-2.5 py-1 rounded-full bg-white dark:bg-gray-800 border border-amber-200 dark:border-amber-800 text-[9px] font-black uppercase tracking-widest text-amber-600 dark:text-amber-400 active:scale-90 transition-transform"
+                  >
+                    Resetar
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        )}
+
         {/* Scroll container: full card width, padding-x gives ring room at edges */}
         <div ref={scrollRef} className="overflow-x-scroll-area calendar-hscroll pb-1">
           <div className="flex gap-5 py-1">
@@ -396,31 +478,39 @@ const HeatmapView: React.FC<HeatmapProps> = ({ streakEnabled: _streakEnabled = t
 
                       const data = dayMap.get(dateKey);
                       const blocks = data?.blocks ?? 0;
-                      const isFuture = data?.isFuture ?? dateKey > today;
-                      const isToday = data?.isToday ?? false;
+                      // Em simulação dev, o nível pintado e o "hoje" simulado têm prioridade.
+                      const painted = simActive ? simLevels[dateKey] : undefined;
+                      const isFuture = painted ? false : dateKey > effToday;
+                      const isToday = dateKey === effToday;
                       const isSelected = selected?.dateKey === dateKey;
                       const day = parseInt(dateKey.split('-')[2], 10);
-                      const level = getGoalLevel(blocks, isFuture, goal);
+                      const level = painted ?? getGoalLevel(blocks, isFuture, goal);
                       const hasNote = !!dayNotes[dateKey];
 
                       return (
                         <button
                           key={dateKey}
                           onClick={() => {
+                            if (simActive) {
+                              if (simMode === 'today') setSimToday(dateKey);
+                              else cycleSimLevel(dateKey);
+                              return;
+                            }
                             if (isFuture || !data) return;
                             setSelected(prev => prev?.dateKey === dateKey ? null : data);
                           }}
                           className={[
                             'aspect-square rounded-[5px] relative flex items-center justify-center transition-all duration-150',
-                            isFuture ? 'bg-transparent' : cellBg(level),
+                            isFuture ? 'bg-transparent' : (level === 'none' ? 'bg-gray-100 dark:bg-gray-800/50' : ''),
                             isToday && !isSelected
                               ? 'ring-2 ring-violet-500 ring-offset-1 ring-offset-white dark:ring-offset-gray-900 z-10'
                               : '',
                             isSelected
                               ? 'ring-2 ring-violet-500 ring-offset-1 ring-offset-white dark:ring-offset-gray-900 scale-110 z-20'
                               : '',
-                            !isFuture ? 'active:scale-90' : 'cursor-default',
+                            (!isFuture || simActive) ? 'active:scale-90' : 'cursor-default',
                           ].join(' ')}
+                          style={!isFuture && level !== 'none' ? { backgroundColor: levelColor(level) } : undefined}
                         >
                           <span className={`text-[10px] font-bold leading-none select-none ${cellText(level, isFuture)}`}>
                             {day}
