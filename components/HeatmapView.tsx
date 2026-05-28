@@ -361,8 +361,8 @@ const HeatmapView: React.FC<HeatmapProps> = ({ streakEnabled: _streakEnabled = t
         </div>
 
         {/* Scroll container: full card width, padding-x gives ring room at edges */}
-        <div ref={scrollRef} className="overflow-x-scroll-area pl-2 pr-[10px] pb-1">
-          <div className="flex gap-5 py-1">
+        <div ref={scrollRef} className="overflow-x-scroll-area pb-1">
+          <div className="flex gap-5 pl-2 pr-4 py-1">
             {monthsForDisplay.map(({ year, month }) => {
               const cells = buildMonthCells(year, month);
               const activeDays = cells.filter(dk => dk && (dayMap.get(dk)?.blocks ?? 0) > 0).length;
