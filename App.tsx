@@ -35,6 +35,12 @@ const NAV_ITEMS: { id: TabId; icon: string; label: string }[] = [
   { id: 'settings', icon: 'fa-gear',       label: 'Configurações' },
 ];
 
+// Bottom nav do PWA mobile: só as 4 ações do dia a dia (em ordem de fluxo).
+// "Progresso" e "Configurações" vivem na top bar (hub de perfil) — ver MobileTopBar.
+// A sidebar do desktop continua usando NAV_ITEMS completo.
+const MOBILE_NAV_IDS: TabId[] = ['ciclo', 'reviews', 'simulado', 'redacao'];
+const MOBILE_NAV_ITEMS = NAV_ITEMS.filter(t => MOBILE_NAV_IDS.includes(t.id));
+
 // ── AppLoader ──────────────────────────────────────────────────────────────
 const AppLoader: React.FC = () => {
   const [migrationReady, setMigrationReady] = useState(false);
@@ -240,6 +246,47 @@ const App: React.FC = () => {
 
       <div className="flex flex-col md:flex-row h-full bg-gray-50 dark:bg-gray-950 w-full relative overflow-hidden transition-theme">
 
+        {/* ── Top bar (mobile only) — hub de perfil: Progresso + Configurações ── */}
+        <header
+          className="md:hidden flex items-center justify-between px-4 py-3 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-100 dark:border-gray-800 shrink-0 z-30"
+          style={{ paddingTop: 'calc(0.75rem + env(safe-area-inset-top, 0px))' }}
+        >
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-indigo-600 rounded-xl flex items-center justify-center shrink-0 shadow-md shadow-indigo-500/30">
+              <i className="fas fa-rotate text-white text-sm" />
+            </div>
+            <span className="font-black text-gray-800 dark:text-white text-sm uppercase tracking-[0.15em]">
+              Sprint
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setActiveTab('stats')}
+              aria-label="Progresso e perfil"
+              className={`w-9 h-9 rounded-full flex items-center justify-center font-black transition-all active:scale-90 ${
+                activeTab === 'stats'
+                  ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/30'
+                  : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400'
+              }`}
+            >
+              {userName?.trim()
+                ? <span className="text-xs">{userName.trim().charAt(0).toUpperCase()}</span>
+                : <i className="fas fa-user text-sm" />}
+            </button>
+            <button
+              onClick={() => setActiveTab('settings')}
+              aria-label="Configurações"
+              className={`w-9 h-9 rounded-full flex items-center justify-center transition-all active:scale-90 active:rotate-45 ${
+                activeTab === 'settings'
+                  ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400'
+                  : 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500'
+              }`}
+            >
+              <i className="fas fa-gear text-base" />
+            </button>
+          </div>
+        </header>
+
         {/* ── Sidebar (tablet / desktop) — escalada por breakpoint ── */}
         <aside className="hidden md:flex flex-col bg-white dark:bg-gray-900 border-r border-gray-100 dark:border-gray-800 w-16 lg:w-56 xl:w-64 2xl:w-72 shrink-0">
           <div className="h-16 flex items-center justify-center lg:justify-start lg:px-5 gap-3 border-b border-gray-100 dark:border-gray-800 shrink-0">
@@ -376,7 +423,7 @@ const App: React.FC = () => {
           }`}
           style={{ paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom, 0px))' }}
         >
-          {NAV_ITEMS.map(tab => (
+          {MOBILE_NAV_ITEMS.map(tab => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
