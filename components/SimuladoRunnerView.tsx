@@ -1,9 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { createPortal } from 'react-dom';
 import { SimuladoTemplate } from '../types';
 import { WakeLockManager } from '../utils/wakeLock';
-import { useBackButton } from '../hooks/useBackButton';
-import { useSecondaryScreen } from '../contexts/OverlayContext';
 
 interface Props {
   template: SimuladoTemplate;
@@ -33,7 +30,6 @@ function urgencyColor(secondsLeft: number): string {
 }
 
 const SimuladoRunnerView: React.FC<Props> = ({ template, onFinish, isDevMode }) => {
-  useSecondaryScreen();
   const totalSeconds = template.durationMinutes * 60;
   const startedAtRef = useRef(Date.now());
   const pausedAtRef = useRef<number | null>(null);
@@ -46,7 +42,6 @@ const SimuladoRunnerView: React.FC<Props> = ({ template, onFinish, isDevMode }) 
   const [isFinished, setIsFinished] = useState(false);
   const [showExitConfirm, setShowExitConfirm] = useState(false);
 
-  useBackButton(() => setShowExitConfirm(true));
   const [milestoneAlert, setMilestoneAlert] = useState<string | null>(null);
 
   // Activate Wake Lock on mount (silent — sem badge)
@@ -63,14 +58,6 @@ const SimuladoRunnerView: React.FC<Props> = ({ template, onFinish, isDevMode }) 
       document.removeEventListener('visibilitychange', handleVisibility);
       wl.destroy();
     };
-  }, []);
-
-  // Sincroniza theme-color com o fundo escuro do simulado (corrige status bar no Android PWA)
-  useEffect(() => {
-    const meta = document.querySelector('meta[name="theme-color"]') as HTMLMetaElement | null;
-    const prev = meta?.getAttribute('content') ?? '#f9fafb';
-    meta?.setAttribute('content', '#030712');
-    return () => { meta?.setAttribute('content', prev); };
   }, []);
 
   // Timestamp-based countdown — survives tab switches
@@ -136,39 +123,32 @@ const SimuladoRunnerView: React.FC<Props> = ({ template, onFinish, isDevMode }) 
   const strokeDasharray = 565; // 2π × r(90)
   const strokeDashoffset = strokeDasharray - (progress / 100) * strokeDasharray;
 
-  return createPortal(
-    <div className="fixed inset-0 z-[70] bg-gray-950 md:left-16 lg:left-56 xl:left-64 2xl:left-72 select-none animate-in fade-in slide-in-from-bottom-4 duration-300">
-      <div className="h-full w-full flex flex-col items-center justify-between md:max-w-3xl xl:max-w-4xl md:mx-auto md:border-x md:border-gray-800/60 md:shadow-2xl md:shadow-black/50">
-      {/* Status bar — padding sobe até o limite do notch/status bar */}
-      <div
-        className="w-full flex items-center justify-between px-6"
-        style={{ paddingTop: 'max(env(safe-area-inset-top, 0px), 0.75rem)' }}
-      >
-        <div className="flex items-center gap-2">
-          {template.strictMode && (
-            <div className="flex items-center gap-1 bg-red-900/30 px-2.5 py-1 rounded-full">
-              <i className="fas fa-lock text-red-400 text-[8px]" />
-              <span className="text-[9px] font-black text-red-400 uppercase tracking-widest">Strict</span>
-            </div>
-          )}
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-lg font-black text-gray-800 dark:text-gray-100 uppercase tracking-tight md:text-xl">
+            {template.name}
+          </h2>
+          <p className="text-[10px] font-bold text-gray-400 dark:text-gray-600 uppercase tracking-widest mt-1">
+            Iniciado às {new Date(startedAtRef.current).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+          </p>
         </div>
-        <div className="text-center">
-          <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">{template.name}</p>
-        </div>
-        <button
-          onClick={() => setShowExitConfirm(true)}
-          className="text-gray-600 hover:text-gray-400 transition-colors"
-        >
-          <i className="fas fa-times text-xl" />
-        </button>
+        {template.strictMode && (
+          <div className="flex items-center gap-1 bg-red-50 dark:bg-red-900/20 px-2.5 py-1 rounded-full">
+            <i className="fas fa-lock text-red-500 text-[8px]" />
+            <span className="text-[9px] font-black text-red-500 uppercase tracking-widest">Strict</span>
+          </div>
+        )}
       </div>
 
       {/* Main timer */}
-      <div className="flex flex-col items-center gap-8">
+      <div className="bg-white dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-800 p-6 md:p-8 flex flex-col items-center gap-8">
         {/* Circle */}
-        <div className="relative w-72 h-72 flex items-center justify-center">
+        <div className="relative w-72 h-72 md:w-80 md:h-80 flex items-center justify-center">
           <svg className="w-full h-full -rotate-90 absolute" viewBox="0 0 200 200">
-            <circle cx="100" cy="100" r="90" fill="none" stroke="#1f2937" strokeWidth="6" />
+            <circle cx="100" cy="100" r="90" fill="none" stroke="currentColor" className="text-gray-100 dark:text-gray-800" strokeWidth="6" />
             <circle
               cx="100" cy="100" r="90"
               fill="none"
@@ -183,12 +163,12 @@ const SimuladoRunnerView: React.FC<Props> = ({ template, onFinish, isDevMode }) 
           </svg>
           <div className="flex flex-col items-center gap-2 z-10">
             <span
-              className="text-6xl font-black tabular-nums tracking-tighter leading-none"
+              className="text-5xl md:text-6xl font-black tabular-nums tracking-tighter leading-none"
               style={{ color }}
             >
               {formatHMS(displaySeconds)}
             </span>
-            <span className="text-xs font-bold text-gray-600 uppercase tracking-widest">
+            <span className="text-xs font-bold text-gray-400 dark:text-gray-600 uppercase tracking-widest">
               {isPaused ? 'Pausado' : 'restantes'}
             </span>
           </div>
@@ -196,7 +176,7 @@ const SimuladoRunnerView: React.FC<Props> = ({ template, onFinish, isDevMode }) 
 
         {/* Areas */}
         {template.areas.length > 0 && (
-          <div className="flex flex-wrap gap-2 justify-center max-w-xs">
+          <div className="flex flex-wrap gap-2 justify-center max-w-md">
             {template.areas.map(a => (
               <span
                 key={a.name}
@@ -210,18 +190,13 @@ const SimuladoRunnerView: React.FC<Props> = ({ template, onFinish, isDevMode }) 
         )}
 
         {/* Progress text */}
-        <div className="text-center space-y-1">
-          <p className="text-xs font-bold text-gray-600 uppercase tracking-widest">
-            {Math.round(progress)}% concluído
-          </p>
-          <p className="text-[10px] text-gray-700">
-            Iniciado às {new Date(startedAtRef.current).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
-          </p>
-        </div>
+        <p className="text-xs font-bold text-gray-400 dark:text-gray-600 uppercase tracking-widest">
+          {Math.round(progress)}% concluído
+        </p>
       </div>
 
       {/* Controls */}
-      <div className="w-full max-w-xs px-4 pb-12 space-y-3">
+      <div className="space-y-3">
         {!template.strictMode && (
           <button
             onClick={togglePause}
@@ -234,16 +209,15 @@ const SimuladoRunnerView: React.FC<Props> = ({ template, onFinish, isDevMode }) 
         )}
         <button
           onClick={() => setShowExitConfirm(true)}
-          className="w-full py-3 text-gray-600 font-black text-[10px] uppercase tracking-widest hover:text-red-400 transition-colors"
+          className="w-full py-3 text-gray-400 dark:text-gray-600 font-black text-[10px] uppercase tracking-widest hover:text-red-500 transition-colors"
         >
           Encerrar simulado
         </button>
       </div>
-      </div>
 
       {/* Milestone alert overlay */}
       {milestoneAlert && (
-        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-[80] pointer-events-none animate-in fade-in slide-in-from-top-4 duration-300">
+        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[80] pointer-events-none animate-in fade-in slide-in-from-top-4 duration-300">
           <div className="flex items-center gap-3 px-5 py-3 rounded-2xl shadow-2xl"
             style={{ backgroundColor: color, color: '#fff' }}
           >
@@ -256,13 +230,13 @@ const SimuladoRunnerView: React.FC<Props> = ({ template, onFinish, isDevMode }) 
       {/* Exit confirm */}
       {showExitConfirm && (
         <div className="fixed inset-0 z-[80] bg-black/60 backdrop-blur-sm flex items-center justify-center p-6 animate-in fade-in duration-200">
-          <div className="bg-gray-900 rounded-3xl p-8 w-full max-w-sm border border-gray-800 text-center space-y-6">
-            <div className="w-16 h-16 bg-red-900/30 rounded-full flex items-center justify-center mx-auto">
+          <div className="bg-white dark:bg-gray-900 rounded-3xl p-8 w-full max-w-sm border border-gray-100 dark:border-gray-800 text-center space-y-6">
+            <div className="w-16 h-16 bg-red-50 dark:bg-red-900/20 rounded-full flex items-center justify-center mx-auto">
               <i className="fas fa-exclamation-triangle text-2xl text-red-500" />
             </div>
             <div>
-              <h3 className="text-lg font-black text-white uppercase tracking-tight">Encerrar simulado?</h3>
-              <p className="text-sm text-gray-400 mt-2 leading-relaxed">
+              <h3 className="text-lg font-black text-gray-800 dark:text-white uppercase tracking-tight">Encerrar simulado?</h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-2 leading-relaxed">
                 {isDevMode
                   ? `Modo DEV: o simulado será registrado como concluído com a duração total (${template.durationMinutes}min).`
                   : 'O tempo decorrido será registrado como duração real. Você ainda poderá inserir o gabarito depois.'}
@@ -271,13 +245,13 @@ const SimuladoRunnerView: React.FC<Props> = ({ template, onFinish, isDevMode }) 
             <div className="space-y-3">
               <button
                 onClick={handleExit}
-                className="w-full py-4 bg-red-600 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest active:scale-[0.98] transition-transform"
+                className="w-full py-4 bg-red-500 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest active:scale-[0.98] transition-transform hover:bg-red-600"
               >
                 Sim, encerrar
               </button>
               <button
                 onClick={() => setShowExitConfirm(false)}
-                className="w-full py-4 bg-gray-800 text-gray-200 rounded-2xl font-black text-[10px] uppercase tracking-widest"
+                className="w-full py-4 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-2xl font-black text-[10px] uppercase tracking-widest"
               >
                 Continuar simulado
               </button>
@@ -285,8 +259,7 @@ const SimuladoRunnerView: React.FC<Props> = ({ template, onFinish, isDevMode }) 
           </div>
         </div>
       )}
-    </div>,
-    document.body
+    </div>
   );
 };
 

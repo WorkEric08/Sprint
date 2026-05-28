@@ -1,22 +1,15 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Subject, SprintResolvedItem, BlockType, ReviewItem, BLOCK_TYPE_COLORS, Edital, SimuladoTemplate, SimuladoRecord } from '../types';
+import { Subject, SprintResolvedItem, BlockType, ReviewItem, BLOCK_TYPE_COLORS, Edital } from '../types';
 import CicloEditView from './CicloEditView';
 import CicloAddView from './CicloAddView';
 import SprintBuilderView from './SprintBuilderView';
 import SprintRunnerView from './SprintRunnerView';
 import CountdownWidget from './CountdownWidget';
-import SimuladoSetupModal from './SimuladoSetupModal';
-import SimuladoRunnerView from './SimuladoRunnerView';
-import PostSimuladoModal from './PostSimuladoModal';
-import RedacaoSetupModal from './RedacaoSetupModal';
-import RedacaoEditorView from './RedacaoEditorView';
 import StreakWidget from './StreakWidget';
 import { useBackButton } from '../hooks/useBackButton';
-import { useSimulados } from '../hooks/useSimulados';
-import { useRedacao } from '../hooks/useRedacao';
 import { isDevModeUser } from '../utils/devMode';
-import { RedacaoTheme, StreakState } from '../types';
+import { StreakState } from '../types';
 
 function getGreeting(): string {
   const h = new Date().getHours();
@@ -64,25 +57,6 @@ const CicloView: React.FC<Props> = ({
   const [sprintItems, setSprintItems] = useState<SprintResolvedItem[] | null>(null);
   const [confirmReset, setConfirmReset] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
-
-  // Simulado flow
-  const [showSimuladoSetup, setShowSimuladoSetup] = useState(false);
-  const [activeSimulado, setActiveSimulado] = useState<{
-    template: SimuladoTemplate;
-    startedAt: number;
-  } | null>(null);
-  const [postSimulado, setPostSimulado] = useState<{
-    template: SimuladoTemplate;
-    actualMinutes: number;
-    completed: boolean;
-    startedAt: number;
-  } | null>(null);
-  const { saveRecord: saveSimuladoRecord } = useSimulados();
-
-  // Redação flow
-  const [showRedacaoSetup, setShowRedacaoSetup] = useState(false);
-  const [activeRedacaoTheme, setActiveRedacaoTheme] = useState<RedacaoTheme | null>(null);
-  const { saveSession: saveRedacaoSession } = useRedacao();
 
   const handleAddSave = (data: Pick<Subject, 'title' | 'color' | 'duration' | 'blockCount'>) => {
     const newSubject: Subject = {
@@ -293,25 +267,6 @@ const CicloView: React.FC<Props> = ({
             <i className="fas fa-list-ul" />
             Montar Sprint
           </button>
-
-          {/* Fase 4: Botão Simulado */}
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              onClick={() => setShowSimuladoSetup(true)}
-              className="py-3.5 bg-gray-900 dark:bg-white/5 text-white dark:text-gray-200 rounded-2xl font-black text-xs uppercase tracking-[0.15em] flex items-center justify-center gap-2 active:scale-[0.98] transition-all hover:bg-gray-800 dark:hover:bg-white/10"
-            >
-              <i className="fas fa-stopwatch text-sm" />
-              Simulado
-            </button>
-            {/* Fase 5: Botão Redação */}
-            <button
-              onClick={() => setShowRedacaoSetup(true)}
-              className="py-3.5 bg-violet-600 text-white rounded-2xl font-black text-xs uppercase tracking-[0.15em] flex items-center justify-center gap-2 active:scale-[0.98] transition-all hover:bg-violet-700 shadow-lg shadow-violet-500/20"
-            >
-              <i className="fas fa-pen text-sm" />
-              Redação
-            </button>
-          </div>
         </>
       )}
 
@@ -397,69 +352,6 @@ const CicloView: React.FC<Props> = ({
         />
       )}
 
-      {/* Simulado Setup */}
-      {showSimuladoSetup && (
-        <SimuladoSetupModal
-          onStart={template => {
-            setShowSimuladoSetup(false);
-            setActiveSimulado({ template, startedAt: Date.now() });
-          }}
-          onClose={() => setShowSimuladoSetup(false)}
-        />
-      )}
-
-      {/* Simulado Runner */}
-      {activeSimulado && (
-        <SimuladoRunnerView
-          template={activeSimulado.template}
-          isDevMode={isDevMode}
-          onFinish={(actualMinutes, completed) => {
-            setPostSimulado({
-              template: activeSimulado.template,
-              actualMinutes,
-              completed,
-              startedAt: activeSimulado.startedAt,
-            });
-            setActiveSimulado(null);
-          }}
-        />
-      )}
-
-      {/* Redação Setup */}
-      {showRedacaoSetup && (
-        <RedacaoSetupModal
-          onStart={theme => {
-            setShowRedacaoSetup(false);
-            setActiveRedacaoTheme(theme);
-          }}
-          onClose={() => setShowRedacaoSetup(false)}
-        />
-      )}
-
-      {/* Redação Editor */}
-      {activeRedacaoTheme && (
-        <RedacaoEditorView
-          theme={activeRedacaoTheme}
-          isDevMode={isDevMode}
-          onSave={saveRedacaoSession}
-          onClose={() => setActiveRedacaoTheme(null)}
-        />
-      )}
-
-      {/* Post-simulado modal */}
-      {postSimulado && (
-        <PostSimuladoModal
-          template={postSimulado.template}
-          actualDurationMinutes={postSimulado.actualMinutes}
-          completed={postSimulado.completed}
-          startedAt={postSimulado.startedAt}
-          onSave={record => {
-            saveSimuladoRecord(record);
-            setPostSimulado(null);
-          }}
-          onSkip={() => setPostSimulado(null)}
-        />
-      )}
     </div>
   );
 };

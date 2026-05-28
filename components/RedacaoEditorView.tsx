@@ -1,9 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { RedacaoTheme, RedacaoSession, RedacaoCompetencyScores } from '../types';
-import { useBackButton } from '../hooks/useBackButton';
-import { useAnimatedClose } from '../hooks/useAnimatedClose';
-import { useSecondaryScreen } from '../contexts/OverlayContext';
 
 interface Props {
   theme: RedacaoTheme;
@@ -43,9 +40,6 @@ function formatMS(ms: number): string {
 }
 
 const RedacaoEditorView: React.FC<Props> = ({ theme, existingSession, onSave, onClose, isDevMode }) => {
-  useSecondaryScreen();
-  const { closing, handleClose } = useAnimatedClose(onClose);
-  useBackButton(() => setShowExitConfirm(true));
   const sessionId = useRef(existingSession?.id ?? uid());
   const startedAt = useRef(existingSession?.startedAt ?? Date.now());
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -54,7 +48,6 @@ const RedacaoEditorView: React.FC<Props> = ({ theme, existingSession, onSave, on
   const [text, setText] = useState(existingSession?.text ?? '');
   const [showChecklist, setShowChecklist] = useState(false);
   const [showScoring, setShowScoring] = useState(false);
-  const [showExitConfirm, setShowExitConfirm] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<number | null>(existingSession?.lastSavedAt ?? null);
 
@@ -147,68 +140,51 @@ const RedacaoEditorView: React.FC<Props> = ({ theme, existingSession, onSave, on
       notes,
     };
     onSave(session);
-    handleClose();
+    onClose();
   };
 
   const timerColor = displayMs <= 10 * 60 * 1000 ? '#ef4444'
     : displayMs <= 30 * 60 * 1000 ? '#f59e0b'
     : '#6366f1';
 
-  // Sincroniza theme-color com o fundo do editor (corrige status bar no Android PWA)
-  useEffect(() => {
-    const meta = document.querySelector('meta[name="theme-color"]') as HTMLMetaElement | null;
-    const prev = meta?.getAttribute('content') ?? '#f9fafb';
-    const isDark = document.documentElement.classList.contains('dark');
-    meta?.setAttribute('content', isDark ? '#030712' : '#ffffff');
-    return () => { meta?.setAttribute('content', prev); };
-  }, []);
-
-  return createPortal(
-    <div className={`fixed inset-0 z-[70] bg-gray-50 dark:bg-gray-950 md:left-16 lg:left-56 xl:left-64 2xl:left-72 ${closing ? 'animate-out fade-out slide-out-to-bottom-4 duration-[200ms]' : 'animate-in fade-in slide-in-from-bottom-4 duration-300'}`}>
-      <div className="h-full w-full flex flex-col bg-white dark:bg-gray-950 md:max-w-4xl xl:max-w-5xl md:mx-auto md:border-x md:border-gray-100 md:dark:border-gray-800 md:shadow-2xl md:shadow-black/5">
-      {/* Header — padding absorve safe area do topo */}
-      <div
-        className="flex items-center gap-3 px-4 pb-2 border-b border-gray-100 dark:border-gray-800 shrink-0"
-        style={{ paddingTop: 'max(env(safe-area-inset-top, 0px), 0.5rem)' }}
-      >
-        <button onClick={() => setShowExitConfirm(true)} className="text-gray-400 hover:text-gray-600 transition-colors">
-          <i className="fas fa-times text-lg" />
-        </button>
-        <div className="flex-1 min-w-0">
-          <p className="text-xs font-black text-gray-800 dark:text-gray-100 truncate">{theme.title}</p>
-          <div className="flex items-center gap-2 mt-0.5">
+  return (
+    <div className="space-y-4">
+      {/* Header */}
+      <div className="flex items-center justify-between gap-3">
+        <div className="min-w-0">
+          <h2 className="text-lg font-black text-gray-800 dark:text-gray-100 uppercase tracking-tight md:text-xl truncate">
+            {theme.title}
+          </h2>
+          <div className="flex items-center gap-2 mt-1">
             {isSaving ? (
-              <span className="text-[9px] text-indigo-400">Salvando…</span>
+              <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">Salvando…</span>
             ) : lastSaved ? (
-              <span className="text-[9px] text-gray-400 dark:text-gray-600">✓ Salvo</span>
-            ) : null}
-            <span className="text-[9px] text-gray-400 dark:text-gray-600">{wordCount} palavras</span>
+              <span className="text-[10px] font-bold text-gray-400 dark:text-gray-600 uppercase tracking-widest">✓ Salvo</span>
+            ) : (
+              <span className="text-[10px] font-bold text-gray-400 dark:text-gray-600 uppercase tracking-widest">Rascunho</span>
+            )}
+            <span className="text-[10px] font-bold text-gray-400 dark:text-gray-600 uppercase tracking-widest">· {wordCount} palavras</span>
           </div>
         </div>
 
-        {/* Timer */}
-        <div
-          className="text-xl font-black tabular-nums shrink-0"
-          style={{ color: timerColor }}
-        >
-          {formatMS(displayMs)}
+        <div className="flex items-center gap-3 shrink-0">
+          <div className="text-2xl font-black tabular-nums" style={{ color: timerColor }}>
+            {formatMS(displayMs)}
+          </div>
+          <button
+            onClick={() => setShowChecklist(p => !p)}
+            className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
+              showChecklist ? 'bg-violet-100 dark:bg-violet-900/30 text-violet-600' : 'bg-gray-100 dark:bg-gray-800 text-gray-400'
+            }`}
+          >
+            <i className="fas fa-list-check text-sm" />
+          </button>
         </div>
-
-        {/* Checklist toggle */}
-        <button
-          onClick={() => setShowChecklist(p => !p)}
-          className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors shrink-0 ${
-            showChecklist ? 'bg-violet-100 dark:bg-violet-900/30 text-violet-600' : 'bg-gray-100 dark:bg-gray-800 text-gray-400'
-          }`}
-        >
-          <i className="fas fa-list-check text-sm" />
-        </button>
       </div>
 
-      {/* Main content */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* Editor */}
-        <div className="flex-1 flex flex-col">
+      {/* Editor + checklist */}
+      <div className="grid gap-4 lg:grid-cols-[1fr,18rem]">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden flex flex-col">
           <textarea
             ref={textareaRef}
             value={text}
@@ -224,12 +200,11 @@ Desenvolvimento:
 
 Conclusão:
 • Proposta de intervenção (agente, ação, modo, finalidade, detalhamento)"
-            className="flex-1 p-4 md:p-6 text-sm leading-7 text-gray-800 dark:text-gray-100 bg-white dark:bg-gray-950 resize-none focus:outline-none placeholder:text-gray-300 dark:placeholder:text-gray-700 font-mono"
+            className="w-full min-h-[60vh] p-4 md:p-6 text-sm leading-7 text-gray-800 dark:text-gray-100 bg-white dark:bg-gray-900 resize-none focus:outline-none placeholder:text-gray-300 dark:placeholder:text-gray-700 font-mono"
             style={{ letterSpacing: '0.01em' }}
             autoFocus
           />
-
-          {/* Word count bar */}
+          {/* Word count + Concluir */}
           <div className="px-4 py-2 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between text-[10px] font-bold shrink-0">
             <span className="text-gray-400 dark:text-gray-600">
               {wordCount < 150 ? '⚠️ Muito curto' : wordCount > 500 ? '⚠️ Muito longo' : '✓ Tamanho ideal'}
@@ -248,56 +223,54 @@ Conclusão:
           </div>
         </div>
 
-        {/* Checklist panel (retrátil) */}
+        {/* Checklist panel */}
         {showChecklist && (
-          <div className="w-72 border-l border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-900 overflow-y-auto scroll-container shrink-0 animate-in slide-in-from-right-4 duration-200">
-            <div className="p-4 space-y-3">
+          <div className="bg-gray-50 dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-4 space-y-3 animate-in fade-in slide-in-from-right-4 duration-200">
 
-              {/* Contextualização do tema */}
-              {theme.context && (
-                <div className="bg-white dark:bg-gray-800 rounded-xl p-3 space-y-1 border border-violet-100 dark:border-violet-900/30">
-                  <p className="text-[9px] font-black text-violet-500 dark:text-violet-400 uppercase tracking-widest mb-1.5">
-                    Sobre o tema
-                  </p>
-                  <p className="text-[10px] text-gray-600 dark:text-gray-400 leading-relaxed">
-                    {theme.context}
-                  </p>
-                </div>
-              )}
-
-              <p className="text-[9px] font-black text-gray-400 dark:text-gray-600 uppercase tracking-widest">5 Competências ENEM</p>
-              {COMPETENCIES.map(c => (
-                <div key={c.key} className="bg-white dark:bg-gray-800 rounded-xl p-3 space-y-1">
-                  <p className="text-[10px] font-black text-gray-700 dark:text-gray-300 uppercase tracking-tight">{c.label}: {c.title}</p>
-                  <p className="text-[9px] text-gray-500 dark:text-gray-500 leading-relaxed">{c.desc}</p>
-                </div>
-              ))}
-              <div className="pt-2 border-t border-gray-100 dark:border-gray-700">
-                <p className="text-[9px] font-black text-gray-400 dark:text-gray-600 uppercase tracking-widest mb-2">Checklist de escrita</p>
-                {[
-                  'Parágrafo introdutório com contextualização',
-                  'Pelo menos 2 argumentos com repertório',
-                  'Conectivos de coesão entre parágrafos',
-                  'Proposta de intervenção detalhada (C5)',
-                  'Agente, ação, modo e finalidade na proposta',
-                  'Revisão gramatical e ortográfica',
-                ].map((item, i) => (
-                  <label key={i} className="flex items-start gap-2 cursor-pointer mb-1.5">
-                    <input type="checkbox" className="mt-0.5 accent-violet-500" />
-                    <span className="text-[10px] text-gray-600 dark:text-gray-400 leading-relaxed">{item}</span>
-                  </label>
-                ))}
+            {/* Contextualização do tema */}
+            {theme.context && (
+              <div className="bg-white dark:bg-gray-800 rounded-xl p-3 space-y-1 border border-violet-100 dark:border-violet-900/30">
+                <p className="text-[9px] font-black text-violet-500 dark:text-violet-400 uppercase tracking-widest mb-1.5">
+                  Sobre o tema
+                </p>
+                <p className="text-[10px] text-gray-600 dark:text-gray-400 leading-relaxed">
+                  {theme.context}
+                </p>
               </div>
+            )}
+
+            <p className="text-[9px] font-black text-gray-400 dark:text-gray-600 uppercase tracking-widest">5 Competências ENEM</p>
+            {COMPETENCIES.map(c => (
+              <div key={c.key} className="bg-white dark:bg-gray-800 rounded-xl p-3 space-y-1">
+                <p className="text-[10px] font-black text-gray-700 dark:text-gray-300 uppercase tracking-tight">{c.label}: {c.title}</p>
+                <p className="text-[9px] text-gray-500 dark:text-gray-500 leading-relaxed">{c.desc}</p>
+              </div>
+            ))}
+            <div className="pt-2 border-t border-gray-100 dark:border-gray-700">
+              <p className="text-[9px] font-black text-gray-400 dark:text-gray-600 uppercase tracking-widest mb-2">Checklist de escrita</p>
+              {[
+                'Parágrafo introdutório com contextualização',
+                'Pelo menos 2 argumentos com repertório',
+                'Conectivos de coesão entre parágrafos',
+                'Proposta de intervenção detalhada (C5)',
+                'Agente, ação, modo e finalidade na proposta',
+                'Revisão gramatical e ortográfica',
+              ].map((item, i) => (
+                <label key={i} className="flex items-start gap-2 cursor-pointer mb-1.5">
+                  <input type="checkbox" className="mt-0.5 accent-violet-500" />
+                  <span className="text-[10px] text-gray-600 dark:text-gray-400 leading-relaxed">{item}</span>
+                </label>
+              ))}
             </div>
           </div>
         )}
       </div>
 
-      {/* Scoring modal */}
-      {showScoring && (
+      {/* Scoring modal (portal to escape any layout constraints) */}
+      {showScoring && createPortal(
         <div className="fixed inset-0 z-[80] flex flex-col justify-end animate-in fade-in duration-200">
           <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
-          <div className="relative bg-white dark:bg-gray-900 rounded-t-3xl shadow-2xl max-h-[90vh] overflow-y-auto">
+          <div className="relative bg-white dark:bg-gray-900 rounded-t-3xl shadow-2xl max-h-[90vh] overflow-y-auto md:max-w-2xl md:mx-auto md:rounded-3xl md:mb-8">
             <div className="sticky top-0 bg-white dark:bg-gray-900 pt-3 pb-3 px-5 border-b border-gray-100 dark:border-gray-800 z-10">
               <div className="w-10 h-1 bg-gray-200 dark:bg-gray-700 rounded-full mx-auto mb-3" />
               <div className="flex items-center justify-between">
@@ -376,34 +349,10 @@ Conclusão:
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
-
-      {/* Exit confirm */}
-      {showExitConfirm && (
-        <div className="fixed inset-0 z-[90] bg-black/50 backdrop-blur-sm flex items-center justify-center p-6 animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-gray-900 rounded-3xl p-6 w-full max-w-sm border border-gray-100 dark:border-gray-800 space-y-4 text-center">
-            <i className="fas fa-save text-violet-500 text-2xl" />
-            <div>
-              <h3 className="font-black text-gray-800 dark:text-white uppercase tracking-tight">Sair da redação?</h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
-                O texto foi salvo automaticamente. Você pode retomar depois.
-              </p>
-            </div>
-            <div className="space-y-2">
-              <button onClick={handleClose} className="w-full py-3 bg-red-500 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest active:scale-[0.98]">
-                Sair
-              </button>
-              <button onClick={() => setShowExitConfirm(false)} className="w-full py-3 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-2xl font-black text-[10px] uppercase tracking-widest">
-                Continuar escrevendo
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-      </div>
-    </div>,
-    document.body
+    </div>
   );
 };
 

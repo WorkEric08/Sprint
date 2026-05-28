@@ -5,7 +5,10 @@ import CicloView from './components/CicloView';
 import SettingsPanel from './components/SettingsPanel';
 import ReviewQueueView from './components/ReviewQueueView';
 import EditalPickerModal from './components/EditalPickerModal';
+import SimuladoView from './components/SimuladoView';
+import RedacaoView from './components/RedacaoView';
 import { useSettings } from './hooks/useSettings';
+import { useRedacao } from './hooks/useRedacao';
 import { useSubjects } from './hooks/useSubjects';
 import { useObjectives } from './hooks/useObjectives';
 import { useBlockLogs } from './hooks/useBlockLogs';
@@ -21,12 +24,14 @@ import AchievementToast from './components/AchievementToast';
 import WelcomeBackCard from './components/WelcomeBackCard';
 import { OverlayProvider, useHasSecondaryScreen } from './contexts/OverlayContext';
 
-type TabId = 'stats' | 'ciclo' | 'reviews' | 'settings';
+type TabId = 'stats' | 'ciclo' | 'reviews' | 'simulado' | 'redacao' | 'settings';
 
 const NAV_ITEMS: { id: TabId; icon: string; label: string }[] = [
   { id: 'stats',    icon: 'fa-chart-line', label: 'Progresso' },
   { id: 'ciclo',    icon: 'fa-rotate',     label: 'Ciclo' },
   { id: 'reviews',  icon: 'fa-bookmark',   label: 'Revisões' },
+  { id: 'simulado', icon: 'fa-stopwatch',  label: 'Simulado' },
+  { id: 'redacao',  icon: 'fa-pen',        label: 'Redação' },
   { id: 'settings', icon: 'fa-gear',       label: 'Config' },
 ];
 
@@ -94,7 +99,8 @@ const App: React.FC = () => {
   const { objectives, loading: objectivesLoading } = useObjectives();
   const { blockLogs } = useBlockLogs();
   const { reviewItems, pendingCount, createOrUpdateItem, applyResult } = useReviews();
-  const { records: simuladoRecords } = useSimulados();
+  const { records: simuladoRecords, saveRecord: saveSimuladoRecord } = useSimulados();
+  const { saveSession: saveRedacaoSession } = useRedacao();
   const { unlocked: achievements, newlyUnlocked, clearNewlyUnlocked, checkAll: checkAchievements } = useAchievements();
   const selectedEdital = React.useMemo(() => {
     if (selectedEditalId === 'custom') {
@@ -327,6 +333,22 @@ const App: React.FC = () => {
               <ReviewQueueView
                 reviewItems={reviewItems}
                 onApplyResult={applyResult}
+              />
+            </div>
+          )}
+          {activeTab === 'simulado' && (
+            <div className="animate-in fade-in slide-in-from-bottom-2 duration-300 lg:max-w-3xl xl:max-w-4xl lg:mx-auto">
+              <SimuladoView
+                userName={userName}
+                onSaveRecord={saveSimuladoRecord}
+              />
+            </div>
+          )}
+          {activeTab === 'redacao' && (
+            <div className="animate-in fade-in slide-in-from-bottom-2 duration-300 lg:max-w-4xl xl:max-w-5xl lg:mx-auto">
+              <RedacaoView
+                userName={userName}
+                onSaveSession={saveRedacaoSession}
               />
             </div>
           )}
