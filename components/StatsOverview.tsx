@@ -406,9 +406,6 @@ const StatsOverview: React.FC<Props> = ({ subjects, edital, blockLogs, targetBan
 
           {/* ── Feature 4: Heatmap ── */}
           <div className="pt-2">
-            <h3 className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
-              Histórico · 52 semanas
-            </h3>
             <HeatmapView streakEnabled={streakEnabled} />
           </div>
 

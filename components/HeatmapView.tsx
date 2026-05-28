@@ -341,11 +341,14 @@ const HeatmapView: React.FC<HeatmapProps> = ({ streakEnabled: _streakEnabled = t
   return (
     <div className="space-y-4">
 
-      {/* ── Calendar card ── */}
-      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-4">
+      {/* ── Calendar card ──
+          Structure: no horizontal padding on the card itself — the scroll container
+          goes full-width so the ring (ring-offset-1 + ring-2 = 6px) is never
+          clipped by the card padding. Header and legend get their own px-4. */}
+      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800">
 
         {/* Card header */}
-        <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center justify-between px-4 pt-4 mb-3">
           <span className="text-[9px] font-black text-gray-400 dark:text-gray-600 uppercase tracking-widest">
             Últimos {MONTHS_COUNT} meses
           </span>
@@ -357,11 +360,9 @@ const HeatmapView: React.FC<HeatmapProps> = ({ streakEnabled: _streakEnabled = t
           </button>
         </div>
 
-        {/* Horizontal scroll
-            px-1 py-1 on the inner flex gives rings room at every edge
-            so the selected/today ring-2 (2px) is never clipped by overflow-x-scroll-area */}
-        <div ref={scrollRef} className="overflow-x-scroll-area">
-          <div className="flex gap-5 px-1 py-1">
+        {/* Scroll container: full card width, padding-x gives ring room at edges */}
+        <div ref={scrollRef} className="overflow-x-scroll-area px-2 pb-1">
+          <div className="flex gap-5 py-1">
             {monthsForDisplay.map(({ year, month }) => {
               const cells = buildMonthCells(year, month);
               const activeDays = cells.filter(dk => dk && (dayMap.get(dk)?.blocks ?? 0) > 0).length;
@@ -412,10 +413,10 @@ const HeatmapView: React.FC<HeatmapProps> = ({ streakEnabled: _streakEnabled = t
                             'aspect-square rounded-[5px] relative flex items-center justify-center transition-all duration-150',
                             isFuture ? 'bg-transparent' : cellBg(level),
                             isToday && !isSelected
-                              ? 'ring-[1.5px] ring-violet-500 ring-offset-1 ring-offset-white dark:ring-offset-gray-900'
+                              ? 'ring-2 ring-violet-500 ring-offset-1 ring-offset-white dark:ring-offset-gray-900'
                               : '',
                             isSelected
-                              ? 'ring-2 ring-violet-400 ring-offset-1 ring-offset-white dark:ring-offset-gray-900 scale-110'
+                              ? 'ring-2 ring-violet-500 ring-offset-1 ring-offset-white dark:ring-offset-gray-900 scale-110'
                               : '',
                             !isFuture ? 'active:scale-90' : 'cursor-default',
                           ].join(' ')}
@@ -445,7 +446,7 @@ const HeatmapView: React.FC<HeatmapProps> = ({ streakEnabled: _streakEnabled = t
         </div>
 
         {/* Legend */}
-        <div className="flex items-center gap-2 mt-3 justify-end">
+        <div className="flex items-center gap-2 px-4 pb-4 mt-2 justify-end">
           <span className="text-[8px] font-bold text-gray-300 dark:text-gray-700 uppercase tracking-widest mr-1">Meta</span>
           {(['below', 'partial', 'full'] as GoalLevel[]).map(level => (
             <div key={level} className="w-3 h-3 rounded-[3px]" style={{ backgroundColor: levelColor(level) }} />
@@ -565,16 +566,16 @@ const HeatmapView: React.FC<HeatmapProps> = ({ streakEnabled: _streakEnabled = t
                     />
                     <div className="flex gap-2">
                       <button
-                        onClick={saveNote}
-                        className="flex-1 py-2.5 bg-violet-600 text-white rounded-xl font-black text-[10px] uppercase tracking-widest active:scale-[0.98] transition-transform"
-                      >
-                        Salvar
-                      </button>
-                      <button
                         onClick={() => setIsEditingNote(false)}
                         className="px-4 py-2.5 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded-xl font-black text-[10px] uppercase tracking-widest active:scale-[0.98] transition-transform"
                       >
                         Cancelar
+                      </button>
+                      <button
+                        onClick={saveNote}
+                        className="flex-1 py-2.5 bg-violet-600 text-white rounded-xl font-black text-[10px] uppercase tracking-widest active:scale-[0.98] transition-transform"
+                      >
+                        Salvar
                       </button>
                     </div>
                   </div>
