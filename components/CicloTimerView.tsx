@@ -158,7 +158,21 @@ const CicloTimerView: React.FC<Props> = ({ subject, blockType = 'study', cycleIn
               {isActive ? 'Pausar' : 'Retomar'}
             </button>
             <button
-              onClick={() => { if (isDevMode) onComplete(); onNext(); }}
+              onClick={() => {
+                if (isDevMode) {
+                  onComplete();
+                  // Modo dev: registra um BlockLog mínimo para o bloco pulado
+                  // aparecer colorido no calendário do Progresso.
+                  onBlockLogSave?.({
+                    questionsTotal: 0,
+                    questionsCorrect: 0,
+                    subtopic: '',
+                    selfScore: 3,
+                    flaggedForReview: false,
+                  });
+                }
+                onNext();
+              }}
               className="w-full py-4 text-gray-400 dark:text-gray-600 font-bold text-xs uppercase tracking-widest hover:text-indigo-500 transition-colors"
             >
               {cycleIndex + 1 < cycleTotal ? 'Pular → Próxima Matéria' : 'Pular → Finalizar Ciclo'}
