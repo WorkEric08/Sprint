@@ -32,7 +32,7 @@ const NAV_ITEMS: { id: TabId; icon: string; label: string }[] = [
   { id: 'reviews',  icon: 'fa-bookmark',   label: 'Revisões' },
   { id: 'simulado', icon: 'fa-stopwatch',  label: 'Simulado' },
   { id: 'redacao',  icon: 'fa-pen',        label: 'Redação' },
-  { id: 'settings', icon: 'fa-gear',       label: 'Config' },
+  { id: 'settings', icon: 'fa-gear',       label: 'Configurações' },
 ];
 
 // ── AppLoader ──────────────────────────────────────────────────────────────
