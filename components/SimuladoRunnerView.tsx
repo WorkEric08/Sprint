@@ -137,7 +137,8 @@ const SimuladoRunnerView: React.FC<Props> = ({ template, onFinish, isDevMode }) 
   const strokeDashoffset = strokeDasharray - (progress / 100) * strokeDasharray;
 
   return createPortal(
-    <div className="fixed inset-0 z-[70] bg-gray-950 flex flex-col items-center justify-between select-none animate-in fade-in slide-in-from-bottom-4 duration-300">
+    <div className="fixed inset-0 z-[70] bg-gray-950 select-none animate-in fade-in slide-in-from-bottom-4 duration-300">
+      <div className="h-full w-full flex flex-col items-center justify-between md:max-w-3xl xl:max-w-4xl md:mx-auto md:border-x md:border-gray-800/60 md:shadow-2xl md:shadow-black/50">
       {/* Status bar — padding sobe até o limite do notch/status bar */}
       <div
         className="w-full flex items-center justify-between px-6"
@@ -237,6 +238,7 @@ const SimuladoRunnerView: React.FC<Props> = ({ template, onFinish, isDevMode }) 
         >
           Encerrar simulado
         </button>
+      </div>
       </div>
 
       {/* Milestone alert overlay */}

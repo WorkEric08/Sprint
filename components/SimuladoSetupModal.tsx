@@ -49,7 +49,8 @@ const SimuladoSetupModal: React.FC<Props> = ({ onStart, onClose }) => {
   );
 
   return createPortal(
-    <div className={`fixed inset-0 z-[70] flex flex-col bg-gray-50 dark:bg-gray-950 ${closing ? 'animate-out fade-out slide-out-to-bottom-4 duration-[200ms]' : 'animate-in fade-in slide-in-from-bottom-4 duration-300'}`}>
+    <div className={`fixed inset-0 z-[70] bg-gray-50 dark:bg-gray-950 ${closing ? 'animate-out fade-out slide-out-to-bottom-4 duration-[200ms]' : 'animate-in fade-in slide-in-from-bottom-4 duration-300'}`}>
+      <div className="h-full w-full flex flex-col md:max-w-3xl xl:max-w-4xl md:mx-auto md:border-x md:border-gray-100 md:dark:border-gray-800 md:shadow-2xl md:shadow-black/5">
       {/* Header */}
       <div
         className="flex items-center gap-3 px-4 pb-3 border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 shrink-0"
@@ -211,6 +212,7 @@ const SimuladoSetupModal: React.FC<Props> = ({ onStart, onClose }) => {
           <i className="fas fa-play" />
           Começar Simulado · {formatDuration(finalTemplate.durationMinutes)}
         </button>
+      </div>
       </div>
     </div>,
     document.body
