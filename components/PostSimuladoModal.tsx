@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { SimuladoTemplate, SimuladoAreaResult, SimuladoRecord } from '../types';
+import { useBackButton } from '../hooks/useBackButton';
 import { useSecondaryScreen } from '../contexts/OverlayContext';
 
 interface Props {
@@ -27,6 +28,7 @@ const PostSimuladoModal: React.FC<Props> = ({
   template, actualDurationMinutes, completed, startedAt, onSave, onSkip
 }) => {
   useSecondaryScreen();
+  useBackButton(onSkip);
   const [timeControlScore, setTimeControlScore] = useState<1|2|3|4|5|null>(null);
   const [perception, setPerception] = useState('');
   const [redacaoText, setRedacaoText] = useState('');
@@ -74,7 +76,7 @@ const PostSimuladoModal: React.FC<Props> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-[80] flex flex-col justify-end animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-[80] flex flex-col justify-end animate-in fade-in slide-in-from-bottom-6 duration-300">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onSkip} />
 
       <div className="relative bg-white dark:bg-gray-900 rounded-t-3xl shadow-2xl max-h-[95vh] overflow-y-auto">

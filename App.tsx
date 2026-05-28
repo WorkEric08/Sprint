@@ -291,35 +291,39 @@ const App: React.FC = () => {
           style={navHeight > 0 ? { paddingBottom: `${navHeight + 16}px` } : undefined}
         >
           {activeTab === 'stats' && (
-            <StatsOverview
-              objectives={objectives}
-              subjects={subjects}
-              onOpenErrorNotebook={() => setShowErrorNotebook(true)}
-              edital={selectedEdital}
-              blockLogs={blockLogs}
-              targetBanca={targetBanca}
-              streakState={streakState}
-              achievements={achievements}
-              userName={userName}
-              streakEnabled={streakEnabled}
-            />
+            <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+              <StatsOverview
+                objectives={objectives}
+                subjects={subjects}
+                onOpenErrorNotebook={() => setShowErrorNotebook(true)}
+                edital={selectedEdital}
+                blockLogs={blockLogs}
+                targetBanca={targetBanca}
+                streakState={streakState}
+                achievements={achievements}
+                userName={userName}
+                streakEnabled={streakEnabled}
+              />
+            </div>
           )}
           {activeTab === 'ciclo' && (
-            <CicloView
-              userName={userName}
-              subjects={subjects}
-              onSubjectsChange={setSubjects}
-              pendingReviewCount={pendingCount}
-              reviewItems={reviewItems}
-              edital={selectedEdital}
-              examDate={examDate}
-              onEditExamDate={() => setActiveTab('settings')}
-              streakState={streakState}
-              streakEnabled={streakEnabled}
-            />
+            <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+              <CicloView
+                userName={userName}
+                subjects={subjects}
+                onSubjectsChange={setSubjects}
+                pendingReviewCount={pendingCount}
+                reviewItems={reviewItems}
+                edital={selectedEdital}
+                examDate={examDate}
+                onEditExamDate={() => setActiveTab('settings')}
+                streakState={streakState}
+                streakEnabled={streakEnabled}
+              />
+            </div>
           )}
           {activeTab === 'reviews' && (
-            <>
+            <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
               <h2 className="text-lg font-black text-gray-800 dark:text-gray-100 uppercase tracking-tight mb-4">
                 Revisões
               </h2>
@@ -327,22 +331,24 @@ const App: React.FC = () => {
                 reviewItems={reviewItems}
                 onApplyResult={applyResult}
               />
-            </>
+            </div>
           )}
           {activeTab === 'settings' && (
-            <SettingsPanel
-              theme={theme}
-              onToggleTheme={toggleTheme}
-              onUpdateStart={() => setIsUpdating(true)}
-              userName={userName}
-              onUserNameChange={setUserName}
-              selectedEditalId={selectedEditalId}
-              examDate={examDate}
-              onOpenEditalPicker={() => setShowEditalPicker(true)}
-              onSetExamDate={setExamDate}
-              streakEnabled={streakEnabled}
-              onSetStreakEnabled={setStreakEnabled}
-            />
+            <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+              <SettingsPanel
+                theme={theme}
+                onToggleTheme={toggleTheme}
+                onUpdateStart={() => setIsUpdating(true)}
+                userName={userName}
+                onUserNameChange={setUserName}
+                selectedEditalId={selectedEditalId}
+                examDate={examDate}
+                onOpenEditalPicker={() => setShowEditalPicker(true)}
+                onSetExamDate={setExamDate}
+                streakEnabled={streakEnabled}
+                onSetStreakEnabled={setStreakEnabled}
+              />
+            </div>
           )}
         </main>
 
@@ -358,7 +364,7 @@ const App: React.FC = () => {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex-1 flex flex-col items-center gap-1 transition-colors relative ${
+              className={`flex-1 flex flex-col items-center gap-1 transition-all active:scale-90 relative ${
                 activeTab === tab.id ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-400 dark:text-gray-600'
               }`}
             >

@@ -47,7 +47,8 @@
       "Bash(cd \"/c/Users/Pichau/Desktop/Sprint\" && grep -o \"safe-top{[^}]*}\" dist/assets/index-DYJRHybc.css)",
       "Read(//c/c/Users/Pichau/Desktop/Sprint/dist/assets/**)",
       "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\Pichau\\\\Desktop\\\\Sprint\\\\src\" -Recurse -Include \"*.tsx\", \"*.ts\" -ErrorAction SilentlyContinue)",
-      "Bash(dir \"c:\\\\Users\\\\Pichau\\\\Desktop\\\\Sprint\")"
+      "Bash(dir \"c:\\\\Users\\\\Pichau\\\\Desktop\\\\Sprint\")",
+      "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\Pichau\\\\Desktop\\\\Sprint\" -Recurse -Force)"
     ]
   }
 }

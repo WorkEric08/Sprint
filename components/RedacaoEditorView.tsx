@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { RedacaoTheme, RedacaoSession, RedacaoCompetencyScores } from '../types';
+import { useBackButton } from '../hooks/useBackButton';
+import { useAnimatedClose } from '../hooks/useAnimatedClose';
 import { useSecondaryScreen } from '../contexts/OverlayContext';
 
 interface Props {
@@ -41,6 +43,8 @@ function formatMS(ms: number): string {
 
 const RedacaoEditorView: React.FC<Props> = ({ theme, existingSession, onSave, onClose }) => {
   useSecondaryScreen();
+  const { closing, handleClose } = useAnimatedClose(onClose);
+  useBackButton(() => setShowExitConfirm(true));
   const sessionId = useRef(existingSession?.id ?? uid());
   const startedAt = useRef(existingSession?.startedAt ?? Date.now());
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -138,7 +142,7 @@ const RedacaoEditorView: React.FC<Props> = ({ theme, existingSession, onSave, on
       notes,
     };
     onSave(session);
-    onClose();
+    handleClose();
   };
 
   const timerColor = displayMs <= 10 * 60 * 1000 ? '#ef4444'
@@ -155,7 +159,7 @@ const RedacaoEditorView: React.FC<Props> = ({ theme, existingSession, onSave, on
   }, []);
 
   return createPortal(
-    <div className="fixed inset-0 z-[70] bg-white dark:bg-gray-950 flex flex-col">
+    <div className={`fixed inset-0 z-[70] bg-white dark:bg-gray-950 flex flex-col ${closing ? 'animate-out fade-out slide-out-to-bottom-4 duration-[200ms]' : 'animate-in fade-in slide-in-from-bottom-4 duration-300'}`}>
       {/* Header — padding absorve safe area do topo */}
       <div
         className="flex items-center gap-3 px-4 pb-2 border-b border-gray-100 dark:border-gray-800 shrink-0"
@@ -381,7 +385,7 @@ Conclusão:
               </p>
             </div>
             <div className="space-y-2">
-              <button onClick={onClose} className="w-full py-3 bg-red-500 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest active:scale-[0.98]">
+              <button onClick={handleClose} className="w-full py-3 bg-red-500 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest active:scale-[0.98]">
                 Sair
               </button>
               <button onClick={() => setShowExitConfirm(false)} className="w-full py-3 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-2xl font-black text-[10px] uppercase tracking-widest">

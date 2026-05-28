@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Objective, Frequency } from '../types';
+import { useBackButton } from '../hooks/useBackButton';
 
 interface Props {
   isOpen: boolean;
@@ -19,6 +20,7 @@ const FREQUENCY_OPTIONS: { value: Frequency; label: string }[] = [
 ];
 
 const AddObjectiveModal: React.FC<Props> = ({ isOpen, onClose, onSubmit, initialData }) => {
+  useBackButton(onClose, isOpen);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [frequency, setFrequency] = useState<Frequency>('daily');

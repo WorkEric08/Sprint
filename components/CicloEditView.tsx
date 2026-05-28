@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { Subject } from '../types';
 import { HexColorPicker } from "react-colorful";
 import { useBackButton } from '../hooks/useBackButton';
+import { useAnimatedClose } from '../hooks/useAnimatedClose';
 import { useSecondaryScreen } from '../contexts/OverlayContext';
 
 const FAST_COLORS = [
@@ -18,12 +19,13 @@ interface Props {
 
 const CicloEditView: React.FC<Props> = ({ subject, onSave, onClose }) => {
   useSecondaryScreen();
+  const { closing, handleClose } = useAnimatedClose(onClose);
   const [title, setTitle] = useState(subject.title);
   const [color, setColor] = useState(subject.color);
   const [duration, setDuration] = useState(subject.duration);
   const [blockCount, setBlockCount] = useState(subject.blockCount);
 
-  useBackButton(onClose);
+  useBackButton(handleClose);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,11 +34,11 @@ const CicloEditView: React.FC<Props> = ({ subject, onSave, onClose }) => {
   };
 
   return createPortal(
-    <div className="fixed inset-0 z-[110] flex flex-col md:items-center md:justify-center md:bg-black/50 md:backdrop-blur-sm animate-in fade-in duration-200">
+    <div className={`fixed inset-0 z-[110] flex flex-col md:items-center md:justify-center md:bg-black/50 md:backdrop-blur-sm ${closing ? 'animate-out fade-out slide-out-to-bottom-4 duration-[200ms]' : 'animate-in fade-in slide-in-from-bottom-4 duration-300'}`}>
       <div className="bg-gray-50 dark:bg-gray-950 flex flex-col w-full h-full md:h-auto md:max-h-[90vh] md:max-w-lg md:rounded-3xl md:overflow-hidden md:shadow-2xl">
       <div className="flex items-center gap-3 px-4 pb-3 safe-top border-b border-gray-100 dark:border-gray-800 md:px-6">
         <button
-          onClick={onClose}
+          onClick={handleClose}
           className="w-9 h-9 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 active:scale-90 transition-transform hover:bg-gray-200 dark:hover:bg-gray-700"
         >
           <i className="fas fa-arrow-left text-sm" />

@@ -5,6 +5,8 @@ import {
   LineChart, Line, XAxis, YAxis, Tooltip,
   ResponsiveContainer, CartesianGrid,
 } from 'recharts';
+import { useBackButton } from '../hooks/useBackButton';
+import { useAnimatedClose } from '../hooks/useAnimatedClose';
 import { useSecondaryScreen } from '../contexts/OverlayContext';
 
 interface Props {
@@ -31,6 +33,8 @@ function formatDuration(mins: number): string {
 
 const SimuladoHistoryView: React.FC<Props> = ({ records, onDelete, onClose }) => {
   useSecondaryScreen();
+  const { closing, handleClose } = useAnimatedClose(onClose);
+  useBackButton(handleClose);
   const [expanded, setExpanded] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
 
@@ -56,11 +60,11 @@ const SimuladoHistoryView: React.FC<Props> = ({ records, onDelete, onClose }) =>
   }, [records]);
 
   return createPortal(
-    <div className="fixed inset-0 z-[60] bg-gray-50 dark:bg-gray-950 flex flex-col animate-in fade-in duration-200">
+    <div className={`fixed inset-0 z-[60] bg-gray-50 dark:bg-gray-950 flex flex-col ${closing ? 'animate-out fade-out slide-out-to-bottom-4 duration-[200ms]' : 'animate-in fade-in slide-in-from-bottom-4 duration-300'}`}>
       {/* Header */}
       <div className="flex items-center gap-3 px-4 pb-3 safe-top border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 shrink-0">
         <button
-          onClick={onClose}
+          onClick={handleClose}
           className="w-9 h-9 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-gray-500 active:scale-90 transition-transform"
         >
           <i className="fas fa-arrow-left text-sm" />

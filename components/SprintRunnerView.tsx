@@ -5,6 +5,7 @@ import BreakTimerView from './BreakTimerView';
 import ReviewBreakTimerView from './ReviewBreakTimerView';
 import { useBlockLogs } from '../hooks/useBlockLogs';
 import { useReviews } from '../hooks/useReviews';
+import { useBackButton } from '../hooks/useBackButton';
 import { useSecondaryScreen } from '../contexts/OverlayContext';
 
 interface Props {
@@ -16,6 +17,7 @@ interface Props {
 
 const SprintRunnerView: React.FC<Props> = ({ items, onBlockComplete, onClose, isDevMode }) => {
   useSecondaryScreen();
+  useBackButton(onClose);
   const [currentIndex, setCurrentIndex] = useState(0);
   const { saveBlockLog } = useBlockLogs();
   const { createOrUpdateItem } = useReviews();

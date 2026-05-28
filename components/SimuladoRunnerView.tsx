@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { SimuladoTemplate } from '../types';
 import { WakeLockManager } from '../utils/wakeLock';
+import { useBackButton } from '../hooks/useBackButton';
 import { useSecondaryScreen } from '../contexts/OverlayContext';
 
 interface Props {
@@ -43,6 +44,8 @@ const SimuladoRunnerView: React.FC<Props> = ({ template, onFinish }) => {
   const [isPaused, setIsPaused] = useState(false);
   const [isFinished, setIsFinished] = useState(false);
   const [showExitConfirm, setShowExitConfirm] = useState(false);
+
+  useBackButton(() => setShowExitConfirm(true));
   const [milestoneAlert, setMilestoneAlert] = useState<string | null>(null);
 
   // Activate Wake Lock on mount (silent — sem badge)
@@ -127,7 +130,7 @@ const SimuladoRunnerView: React.FC<Props> = ({ template, onFinish }) => {
   const strokeDashoffset = strokeDasharray - (progress / 100) * strokeDasharray;
 
   return createPortal(
-    <div className="fixed inset-0 z-[70] bg-gray-950 flex flex-col items-center justify-between select-none">
+    <div className="fixed inset-0 z-[70] bg-gray-950 flex flex-col items-center justify-between select-none animate-in fade-in slide-in-from-bottom-4 duration-300">
       {/* Status bar — padding sobe até o limite do notch/status bar */}
       <div
         className="w-full flex items-center justify-between px-6"

@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Edital, Subject } from '../types';
 import { EDITAIS } from '../data/editais';
+import { useBackButton } from '../hooks/useBackButton';
+import { useAnimatedClose } from '../hooks/useAnimatedClose';
 import { useSecondaryScreen } from '../contexts/OverlayContext';
 import CicloEditView from './CicloEditView';
 import CicloAddView from './CicloAddView';
@@ -34,6 +36,7 @@ const EditalPickerModal: React.FC<Props> = ({
   onClose,
 }) => {
   useSecondaryScreen();
+  const { closing, handleClose } = useAnimatedClose(onClose);
 
   const [step, setStep] = useState<Step>('pick');
 
@@ -53,7 +56,7 @@ const EditalPickerModal: React.FC<Props> = ({
       completedBlocks: [],
     }));
     if (newSubjects.length > 0) onApplySubjects([...currentSubjects, ...newSubjects]);
-    onClose();
+    handleClose();
   };
 
   // ── Custom edital ─────────────────────────────────────────────────────────
@@ -99,7 +102,7 @@ const EditalPickerModal: React.FC<Props> = ({
         })),
       ]);
     }
-    onClose();
+    handleClose();
   };
 
   // ── Header title ──────────────────────────────────────────────────────────
@@ -110,11 +113,13 @@ const EditalPickerModal: React.FC<Props> = ({
 
   const handleBack = () => {
     if (step !== 'pick') { setStep('pick'); return; }
-    onClose();
+    handleClose();
   };
 
+  useBackButton(handleBack);
+
   return (
-    <div className="fixed inset-0 z-[90] flex flex-col bg-gray-50 dark:bg-gray-950 animate-in fade-in duration-200">
+    <div className={`fixed inset-0 z-[90] flex flex-col bg-gray-50 dark:bg-gray-950 ${closing ? 'animate-out fade-out slide-out-to-bottom-4 duration-[200ms]' : 'animate-in fade-in slide-in-from-bottom-4 duration-300'}`}>
       {/* Header */}
       <div
         className="flex items-center gap-3 px-4 pb-3 border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 shrink-0"

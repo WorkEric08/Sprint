@@ -1,6 +1,8 @@
 import React, { useState, useMemo, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { ErrorEntry } from '../types';
+import { useBackButton } from '../hooks/useBackButton';
+import { useAnimatedClose } from '../hooks/useAnimatedClose';
 import { useSecondaryScreen } from '../contexts/OverlayContext';
 
 interface Props {
@@ -21,6 +23,8 @@ function formatAccuracy(correct: number, total: number): string {
 
 const ErrorNotebookView: React.FC<Props> = ({ errorEntries, onUpdateNote, onClose }) => {
   useSecondaryScreen();
+  const { closing, handleClose } = useAnimatedClose(onClose);
+  useBackButton(handleClose);
   const [search, setSearch] = useState('');
   const [filterSubject, setFilterSubject] = useState<string>('all');
   const [filterSubtopic, setFilterSubtopic] = useState<string>('all');
@@ -75,11 +79,11 @@ const ErrorNotebookView: React.FC<Props> = ({ errorEntries, onUpdateNote, onClos
   };
 
   return createPortal(
-    <div className="fixed inset-0 z-50 bg-gray-50 dark:bg-gray-950 flex flex-col animate-in fade-in duration-200">
+    <div className={`fixed inset-0 z-50 bg-gray-50 dark:bg-gray-950 flex flex-col ${closing ? 'animate-out fade-out slide-out-to-bottom-4 duration-[200ms]' : 'animate-in fade-in slide-in-from-bottom-4 duration-300'}`}>
       {/* Header */}
       <div className="flex items-center gap-3 px-4 pb-3 safe-top border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 shrink-0">
         <button
-          onClick={onClose}
+          onClick={handleClose}
           className="w-9 h-9 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 active:scale-90 transition-transform shrink-0"
         >
           <i className="fas fa-arrow-left text-sm" />

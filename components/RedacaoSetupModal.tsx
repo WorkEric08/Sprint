@@ -2,6 +2,8 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { RedacaoTheme, RedacaoThemeAxis } from '../types';
 import { REDACAO_THEMES, AXIS_LABELS, AXIS_COLORS } from '../data/redacaoThemes';
+import { useBackButton } from '../hooks/useBackButton';
+import { useAnimatedClose } from '../hooks/useAnimatedClose';
 import { useSecondaryScreen } from '../contexts/OverlayContext';
 
 interface Props {
@@ -11,6 +13,8 @@ interface Props {
 
 const RedacaoSetupModal: React.FC<Props> = ({ onStart, onClose }) => {
   useSecondaryScreen();
+  const { closing, handleClose } = useAnimatedClose(onClose);
+  useBackButton(handleClose);
   const [selectedTheme, setSelectedTheme] = useState<RedacaoTheme | null>(null);
   const [selectedAxis, setSelectedAxis] = useState<RedacaoThemeAxis | 'all'>('all');
   const [search, setSearch] = useState('');
@@ -43,13 +47,13 @@ const RedacaoSetupModal: React.FC<Props> = ({ onStart, onClose }) => {
   }, []);
 
   return createPortal(
-    <div className="fixed inset-0 z-[70] flex flex-col bg-gray-50 dark:bg-gray-950 animate-in fade-in duration-200">
+    <div className={`fixed inset-0 z-[70] flex flex-col bg-gray-50 dark:bg-gray-950 ${closing ? 'animate-out fade-out slide-out-to-bottom-4 duration-[200ms]' : 'animate-in fade-in slide-in-from-bottom-4 duration-300'}`}>
       {/* Header — padding absorve safe area do topo */}
       <div
         className="flex items-center gap-3 px-4 pb-3 border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 shrink-0"
         style={{ paddingTop: 'max(env(safe-area-inset-top, 0px), 0.5rem)' }}
       >
-        <button onClick={onClose} className="w-9 h-9 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-gray-500 active:scale-90">
+        <button onClick={handleClose} className="w-9 h-9 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-gray-500 active:scale-90">
           <i className="fas fa-arrow-left text-sm" />
         </button>
         <div>

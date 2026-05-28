@@ -6,6 +6,7 @@ import {
   shareOrDownload,
 } from '../utils/shareGenerator';
 import { toLocalDateKey } from '../utils/dateUtils';
+import { useBackButton } from '../hooks/useBackButton';
 import { useSecondaryScreen } from '../contexts/OverlayContext';
 
 interface Props {
@@ -45,6 +46,7 @@ function getWeeklyStats(blockLogs: BlockLog[]) {
 
 const ShareSheet: React.FC<Props> = ({ userName, subjects, blockLogs, streakState, onClose }) => {
   useSecondaryScreen();
+  useBackButton(onClose);
   const [generating, setGenerating] = useState<ShareType | null>(null);
 
   const activeDayKeys = new Set(blockLogs.map(l => toLocalDateKey(l.timestamp)));

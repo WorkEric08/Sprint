@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useBackButton } from '../hooks/useBackButton';
+import { useAnimatedClose } from '../hooks/useAnimatedClose';
 
 interface Props {
   value: string | null; // "YYYY-MM-DD"
@@ -27,6 +28,7 @@ function parseLocalDate(dateStr: string): { y: number; m: number; d: number } {
 }
 
 const DatePickerModal: React.FC<Props> = ({ value, onSelect, onClear, onClose }) => {
+  const { closing, handleClose } = useAnimatedClose(onClose);
   const today = new Date();
   const todayKey = toDateKey(today.getFullYear(), today.getMonth(), today.getDate());
 
@@ -35,7 +37,7 @@ const DatePickerModal: React.FC<Props> = ({ value, onSelect, onClear, onClose })
   const [viewYear, setViewYear] = useState(initial.y);
   const [viewMonth, setViewMonth] = useState(initial.m);
 
-  useBackButton(onClose);
+  useBackButton(handleClose);
 
   const prevMonth = () => {
     if (viewMonth === 0) { setViewMonth(11); setViewYear(y => y - 1); }
@@ -57,25 +59,25 @@ const DatePickerModal: React.FC<Props> = ({ value, onSelect, onClear, onClose })
 
   const handleDay = (day: number) => {
     onSelect(toDateKey(viewYear, viewMonth, day));
-    onClose();
+    handleClose();
   };
 
   const handleToday = () => {
     onSelect(todayKey);
-    onClose();
+    handleClose();
   };
 
   const handleClear = () => {
     onClear?.();
-    onClose();
+    handleClose();
   };
 
   return createPortal(
-    <div className="fixed inset-0 z-[95] flex items-center justify-center p-4 animate-in fade-in duration-200">
+    <div className={`fixed inset-0 z-[95] flex items-center justify-center p-4 ${closing ? 'animate-out fade-out duration-[200ms]' : 'animate-in fade-in duration-250'}`}>
       {/* Backdrop */}
       <div
         className="absolute inset-0 bg-black/60 backdrop-blur-md"
-        onClick={onClose}
+        onClick={handleClose}
       />
 
       {/* Card */}
@@ -171,7 +173,7 @@ const DatePickerModal: React.FC<Props> = ({ value, onSelect, onClear, onClose })
             )}
           </div>
           <button
-            onClick={onClose}
+            onClick={handleClose}
             className="text-[11px] font-black text-gray-400 dark:text-gray-600 uppercase tracking-widest active:opacity-70 transition-opacity"
           >
             Cancelar

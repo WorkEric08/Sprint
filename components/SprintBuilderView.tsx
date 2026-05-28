@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Subject, SprintQueueItem, SprintResolvedItem, BlockType, ReviewItem, BLOCK_TYPE_LABELS, BLOCK_TYPE_COLORS } from '../types';
 import { useBackButton } from '../hooks/useBackButton';
+import { useAnimatedClose } from '../hooks/useAnimatedClose';
 import { isPendingNow } from '../utils/reviewAlgorithm';
 import { useSecondaryScreen } from '../contexts/OverlayContext';
 
@@ -42,10 +43,11 @@ const SprintBuilderView: React.FC<Props> = ({
   onClose,
 }) => {
   useSecondaryScreen();
+  const { closing, handleClose } = useAnimatedClose(onClose);
   const [queue, setQueue] = useState<SprintQueueItem[]>([]);
   const [bannerDismissed, setBannerDismissed] = useState(false);
 
-  useBackButton(onClose);
+  useBackButton(handleClose);
 
   const now = Date.now();
   const pendingNow = pendingReviewItems.filter(i => isPendingNow(i, now));
@@ -113,11 +115,11 @@ const SprintBuilderView: React.FC<Props> = ({
   };
 
   return createPortal(
-    <div className="fixed inset-0 z-50 bg-gray-50 dark:bg-gray-950 flex flex-col animate-in fade-in duration-200">
+    <div className={`fixed inset-0 z-50 bg-gray-50 dark:bg-gray-950 flex flex-col ${closing ? 'animate-out fade-out slide-out-to-bottom-4 duration-[200ms]' : 'animate-in fade-in slide-in-from-bottom-4 duration-300'}`}>
       {/* Header */}
       <div className="flex items-center gap-3 px-4 pb-3 safe-top border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-950">
         <button
-          onClick={onClose}
+          onClick={handleClose}
           className="w-9 h-9 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 active:scale-90 transition-transform shrink-0"
         >
           <i className="fas fa-arrow-left text-sm" />

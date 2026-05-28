@@ -28,7 +28,7 @@ const SecondaryScreen: React.FC<Props> = ({ children, className = '', zIndex = 6
 
   return createPortal(
     <div
-      className={`fixed inset-0 flex flex-col animate-in fade-in slide-in-from-bottom-2 duration-200 ${className}`}
+      className={`fixed inset-0 flex flex-col animate-in fade-in slide-in-from-bottom-4 duration-300 ${className}`}
       style={{ zIndex }}
     >
       {children}
