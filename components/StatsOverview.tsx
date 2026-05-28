@@ -127,6 +127,8 @@ const StatsOverview: React.FC<Props> = ({ subjects, edital, blockLogs, targetBan
     const start = getPeriodStart(activePeriod);
     let totalSprints = 0;
     let totalMinutes = 0;
+    let totalQuestions = 0;
+    let totalCorrect = 0;
     const typeCounts: Record<BlockType, number> = { study: 0, review: 0, questions: 0 };
 
     const subjectBreakdown = subjects
@@ -142,8 +144,17 @@ const StatsOverview: React.FC<Props> = ({ subjects, edital, blockLogs, targetBan
       .filter(s => s.blocks > 0)
       .sort((a, b) => b.minutes - a.minutes);
 
-    return { totalSprints, totalMinutes, subjectBreakdown, typeCounts };
-  }, [subjects, activePeriod]);
+    blockLogs.filter(l => l.timestamp >= start).forEach(l => {
+      totalQuestions += l.questionsTotal;
+      totalCorrect += l.questionsCorrect;
+    });
+
+    const accuracy = totalQuestions > 0
+      ? Math.round((totalCorrect / totalQuestions) * 100)
+      : null;
+
+    return { totalSprints, totalMinutes, subjectBreakdown, typeCounts, totalQuestions, accuracy };
+  }, [subjects, activePeriod, blockLogs]);
 
   // Feature 3: Top strong/weak subtopics (min 3 questions to count)
   const { strongPoints, weakPoints } = useMemo(() => {
@@ -164,18 +175,19 @@ const StatsOverview: React.FC<Props> = ({ subjects, edital, blockLogs, targetBan
     <div className="animate-in fade-in slide-in-from-bottom-2 duration-700 pb-2">
 
       {/* ── Desktop: two-column | Mobile: stacked ── */}
-      <div className="md:flex md:gap-8 md:items-start lg:gap-12">
+      <div className="md:flex md:gap-8 md:items-start lg:gap-10">
 
-        {/* ── Coluna esquerda: anel + lista de matérias ── */}
-        <div className="md:w-56 lg:w-64 md:shrink-0 md:sticky md:top-0">
+        {/* ── Coluna esquerda: anel + lista de matérias + streak/conquistas (lg) ── */}
+        <div className="md:w-64 lg:w-80 md:shrink-0 md:sticky md:top-0 md:max-h-screen md:overflow-y-auto">
           <div className="flex flex-col items-center justify-center py-3 md:py-6">
-            <div className="relative w-48 h-48">
+            {/* Anel de progresso — maior no lg */}
+            <div className="relative w-48 h-48 lg:w-60 lg:h-60">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
                     data={pieData}
-                    innerRadius={70}
-                    outerRadius={85}
+                    innerRadius="58%"
+                    outerRadius="72%"
                     startAngle={90}
                     endAngle={450}
                     paddingAngle={0}
@@ -189,7 +201,7 @@ const StatsOverview: React.FC<Props> = ({ subjects, edital, blockLogs, targetBan
                 </PieChart>
               </ResponsiveContainer>
               <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-4xl font-black text-gray-800 dark:text-white leading-none">
+                <span className="text-4xl lg:text-5xl font-black text-gray-800 dark:text-white leading-none">
                   {overallProgress.percent}%
                 </span>
                 <span className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mt-1">
@@ -202,14 +214,14 @@ const StatsOverview: React.FC<Props> = ({ subjects, edital, blockLogs, targetBan
               <p className="text-sm text-gray-400 dark:text-gray-500">
                 {subjects.length === 0
                   ? 'Nenhuma matéria cadastrada'
-                  : `${overallProgress.completedBlocks} de ${overallProgress.totalBlocks} blocos concluídos`}
+                  : `${overallProgress.completedBlocks} de ${overallProgress.totalBlocks} blocos`}
               </p>
             </div>
           </div>
 
           {/* Lista de matérias — apenas no desktop */}
           {subjects.length > 0 && (
-            <div className="hidden md:block mt-2 pb-6 space-y-2.5">
+            <div className="hidden md:block mt-2 space-y-2.5">
               <p className="text-[9px] font-black text-gray-400 dark:text-gray-600 uppercase tracking-widest mb-3 text-center">
                 Matérias
               </p>
@@ -235,15 +247,29 @@ const StatsOverview: React.FC<Props> = ({ subjects, edital, blockLogs, targetBan
               })}
             </div>
           )}
+
+          {/* Streak + Conquistas na sidebar — apenas lg+ */}
+          {streakEnabled && (
+            <div className="hidden lg:block mt-6 pt-5 border-t border-gray-100 dark:border-gray-800">
+              <StreakWidget state={streakState} />
+            </div>
+          )}
+          <div className="hidden lg:block mt-4 pb-8">
+            <AchievementsList unlocked={achievements} />
+          </div>
         </div>
 
         {/* ── Coluna direita: métricas por período ── */}
-        <div className="flex-1 space-y-4 px-2 md:px-0 md:pt-6 mt-4 md:mt-0">
-          {/* ── Fase 6: Streak widget — só mostra se ofensiva habilitada ── */}
-          {streakEnabled && <StreakWidget state={streakState} />}
-
-          {/* ── Fase 6: Conquistas ── */}
-          <AchievementsList unlocked={achievements} />
+        <div className="flex-1 space-y-4 px-2 md:px-0 md:pt-6 mt-4 md:mt-0 min-w-0">
+          {/* Streak + Conquistas — mobile/md apenas (no lg ficam na sidebar) */}
+          {streakEnabled && (
+            <div className="lg:hidden">
+              <StreakWidget state={streakState} />
+            </div>
+          )}
+          <div className="lg:hidden">
+            <AchievementsList unlocked={achievements} />
+          </div>
 
           {/* Header de período */}
           <div className="flex items-center justify-between">
@@ -267,8 +293,8 @@ const StatsOverview: React.FC<Props> = ({ subjects, edital, blockLogs, targetBan
             </div>
           </div>
 
-          {/* Cards de métricas */}
-          <div className="grid grid-cols-2 gap-3">
+          {/* Cards de métricas — 2 colunas no mobile, 3 no lg */}
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
             <div className="bg-white dark:bg-gray-900 rounded-2xl p-4 border border-gray-100 dark:border-gray-800/50">
               <div className="flex items-center gap-2 mb-3">
                 <div className="w-6 h-6 rounded-full bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center">
@@ -289,7 +315,7 @@ const StatsOverview: React.FC<Props> = ({ subjects, edital, blockLogs, targetBan
                   <i className="fas fa-bolt text-indigo-500 text-[9px]" />
                 </div>
                 <span className="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">
-                  Sprints
+                  Blocos
                 </span>
               </div>
               <p className="text-2xl font-black text-gray-800 dark:text-white leading-none">
@@ -300,6 +326,30 @@ const StatsOverview: React.FC<Props> = ({ subjects, edital, blockLogs, targetBan
                   </span>
                 )}
               </p>
+            </div>
+
+            {/* 3º card — acerto — apenas lg */}
+            <div className="hidden lg:block bg-white dark:bg-gray-900 rounded-2xl p-4 border border-gray-100 dark:border-gray-800/50">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-6 h-6 rounded-full bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center">
+                  <i className="fas fa-bullseye text-indigo-500 text-[9px]" />
+                </div>
+                <span className="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">
+                  Acerto
+                </span>
+              </div>
+              <p className="text-2xl font-black leading-none"
+                style={{
+                  color: periodMetrics.accuracy === null ? '#9ca3af'
+                    : periodMetrics.accuracy >= 70 ? '#16a34a' : '#ef4444',
+                }}>
+                {periodMetrics.accuracy !== null ? `${periodMetrics.accuracy}%` : '—'}
+              </p>
+              {periodMetrics.totalQuestions > 0 && (
+                <p className="text-[9px] font-bold text-gray-400 dark:text-gray-600 mt-1">
+                  {periodMetrics.totalQuestions} questões
+                </p>
+              )}
             </div>
           </div>
 
@@ -369,9 +419,9 @@ const StatsOverview: React.FC<Props> = ({ subjects, edital, blockLogs, targetBan
             </div>
           )}
 
-          {/* ── Feature 3: Pontos Fortes / Fracos ── */}
+          {/* ── Feature 3: Pontos Fortes / Fracos — lado a lado no lg ── */}
           {(strongPoints.length > 0 || weakPoints.length > 0) && (
-            <div className="space-y-3 pt-2">
+            <div className="pt-2 grid grid-cols-1 lg:grid-cols-2 gap-3">
               <SubtopicCard
                 title="Pontos Fortes"
                 icon="fa-arrow-trend-up"
@@ -409,13 +459,13 @@ const StatsOverview: React.FC<Props> = ({ subjects, edital, blockLogs, targetBan
             <HeatmapView streakEnabled={streakEnabled} />
           </div>
 
-          {/* ── Fase 5: Desempenho por banca ── */}
-          <BancaStatsCard blockLogs={blockLogs} targetBanca={targetBanca} />
-
-          {/* ── Fase 4: Análise por área (simulados) ── */}
-          {simuladoRecords.length > 0 && (
-            <SimuladoAreaCard records={simuladoRecords} />
-          )}
+          {/* ── Banca + Simulados — lado a lado no lg ── */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <BancaStatsCard blockLogs={blockLogs} targetBanca={targetBanca} />
+            {simuladoRecords.length > 0 && (
+              <SimuladoAreaCard records={simuladoRecords} />
+            )}
+          </div>
 
           {/* ── Fase 4: Histórico de simulados ── */}
           <button
