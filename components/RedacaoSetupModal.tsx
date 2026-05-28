@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { RedacaoTheme } from '../types';
-import { REDACAO_THEMES } from '../data/redacaoThemes';
+import { RedacaoTheme, RedacaoThemeAxis } from '../types';
+import { REDACAO_THEMES, AXIS_LABELS, AXIS_COLORS } from '../data/redacaoThemes';
 import { useSecondaryScreen } from '../contexts/OverlayContext';
 
 interface Props {
@@ -12,14 +12,26 @@ interface Props {
 const RedacaoSetupModal: React.FC<Props> = ({ onStart, onClose }) => {
   useSecondaryScreen();
   const [selectedTheme, setSelectedTheme] = useState<RedacaoTheme | null>(null);
+  const [selectedAxis, setSelectedAxis] = useState<RedacaoThemeAxis | 'all'>('all');
   const [search, setSearch] = useState('');
 
+  // Tópicos disponíveis (apenas os que possuem temas), com contagem.
+  const axes = useMemo(() => {
+    const counts = new Map<RedacaoThemeAxis, number>();
+    REDACAO_THEMES.forEach(t => counts.set(t.axis, (counts.get(t.axis) ?? 0) + 1));
+    return [...counts.entries()]
+      .sort((a, b) => AXIS_LABELS[a[0]].localeCompare(AXIS_LABELS[b[0]]))
+      .map(([axis, count]) => ({ axis, count }));
+  }, []);
+
   const filtered = useMemo(() => {
-    if (!search.trim()) return REDACAO_THEMES;
-    return REDACAO_THEMES.filter(t =>
-      t.title.toLowerCase().includes(search.toLowerCase())
-    );
-  }, [search]);
+    const q = search.trim().toLowerCase();
+    return REDACAO_THEMES.filter(t => {
+      if (selectedAxis !== 'all' && t.axis !== selectedAxis) return false;
+      if (q && !t.title.toLowerCase().includes(q)) return false;
+      return true;
+    });
+  }, [selectedAxis, search]);
 
   // Sincroniza theme-color com o fundo do modal (corrige status bar no Android PWA)
   useEffect(() => {
@@ -60,6 +72,37 @@ const RedacaoSetupModal: React.FC<Props> = ({ onStart, onClose }) => {
         </div>
       </div>
 
+      {/* Filtro por tópico */}
+      <div className="overflow-x-scroll-area flex gap-2 px-4 pt-3 pb-1 shrink-0">
+        <button
+          onClick={() => setSelectedAxis('all')}
+          className={`shrink-0 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${
+            selectedAxis === 'all'
+              ? 'bg-indigo-600 text-white'
+              : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400'
+          }`}
+        >
+          Todos · {REDACAO_THEMES.length}
+        </button>
+        {axes.map(({ axis, count }) => {
+          const active = selectedAxis === axis;
+          const color = AXIS_COLORS[axis];
+          return (
+            <button
+              key={axis}
+              onClick={() => setSelectedAxis(axis)}
+              className={`shrink-0 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${
+                active ? 'text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400'
+              }`}
+              style={active ? { backgroundColor: color } : {}}
+            >
+              {AXIS_LABELS[axis]} · {count}
+            </button>
+          );
+        })}
+        <div className="w-4 shrink-0" />
+      </div>
+
       {/* Theme list */}
       <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-2">
         {filtered.length === 0 && (
@@ -80,6 +123,12 @@ const RedacaoSetupModal: React.FC<Props> = ({ onStart, onClose }) => {
             >
               <div className="flex items-start gap-3">
                 <div className="min-w-0 flex-1">
+                  <span
+                    className="inline-block text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full mb-1.5"
+                    style={{ backgroundColor: AXIS_COLORS[theme.axis] + '20', color: AXIS_COLORS[theme.axis] }}
+                  >
+                    {AXIS_LABELS[theme.axis]}
+                  </span>
                   <p className={`text-sm font-bold leading-snug ${isSelected ? 'text-indigo-700 dark:text-indigo-300' : 'text-gray-800 dark:text-gray-200'}`}>
                     {theme.title}
                   </p>

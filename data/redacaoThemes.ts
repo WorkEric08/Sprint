@@ -28,24 +28,6 @@ export const REDACAO_THEMES: RedacaoTheme[] = [
   // verified: false = título precisa de confirmação na fonte oficial
 
   {
-    id: 'enem-2024',
-    title: '⚠️ TODO: Tema ENEM 2024 — verificar em inep.gov.br',
-    year: 2024,
-    axis: 'treino',
-    source: 'enem',
-    verified: false,
-    context: 'Acesse o portal do INEP (inep.gov.br) para conferir o título oficial do tema ENEM 2024 e os textos motivadores presentes na prova.',
-  },
-  {
-    id: 'enem-2023',
-    title: '⚠️ TODO: Tema ENEM 2023 — verificar em inep.gov.br',
-    year: 2023,
-    axis: 'treino',
-    source: 'enem',
-    verified: false,
-    context: 'Acesse o portal do INEP (inep.gov.br) para conferir o título oficial do tema ENEM 2023 e os textos motivadores presentes na prova.',
-  },
-  {
     id: 'enem-2022',
     title: 'Desafios para a valorização de comunidades e povos tradicionais no Brasil',
     year: 2022,
@@ -334,6 +316,100 @@ export const REDACAO_THEMES: RedacaoTheme[] = [
     source: 'treino',
     verified: true,
     context: 'O Brasil abriga 305 etnias indígenas com 274 idiomas distintos, representando uma diversidade cultural e linguística ímpar. No entanto, esses povos enfrentam ameaças à sua existência cultural e física: invasão de terras, garimpo ilegal, violência, pressão para abandonar línguas e práticas tradicionais e aculturação forçada por agentes religiosos e econômicos. A Constituição de 1988 reconheceu pela primeira vez os direitos originários dos povos indígenas, incluindo a posse de suas terras. O território é a base da reprodução cultural, espiritual e econômica dessas comunidades — sem terra, não há cultura. A demarcação de terras é o mecanismo mais eficaz de proteção, mas está em disputa permanente com interesses do agronegócio e mineração. Línguas indígenas desaparecem: das 1.300 existentes no século XVI, restam cerca de 274. Para a proposta, pense em: aceleração das demarcações de terras, políticas de educação escolar indígena diferenciada (com ensino em língua materna), criação e fortalecimento de museus e centros culturais indígenas, proteção jurídica do conhecimento tradicional e valorização pública dessas culturas na mídia e nos currículos escolares.',
+  },
+  {
+    id: 'treino-cul-3',
+    title: 'A valorização da leitura como instrumento de cidadania',
+    axis: 'cultura',
+    source: 'treino',
+    verified: true,
+    context: 'A leitura é uma ferramenta de emancipação intelectual e exercício pleno da cidadania: forma o senso crítico, amplia o repertório cultural e capacita o indivíduo a interpretar o mundo e os próprios direitos. No Brasil, os índices de leitura ainda são baixos — boa parte da população lê pouco ou nenhum livro por ano fora da obrigação escolar. As causas incluem a baixa oferta de bibliotecas públicas, o preço elevado dos livros, a ausência de estímulo familiar e a concorrência das telas. A leitura por prazer, quando incentivada desde a infância, está associada a melhor desempenho escolar e maior mobilidade social. Para a proposta, pense em: ampliação e modernização de bibliotecas comunitárias e escolares, programas de mediação de leitura nas escolas, distribuição de acervos acessíveis, incentivos fiscais ao mercado editorial popular e campanhas culturais que aproximem a leitura do cotidiano dos jovens.',
+  },
+
+  // Economia
+  {
+    id: 'treino-eco-3',
+    title: 'Desafios para a inclusão financeira da população de baixa renda',
+    axis: 'economia',
+    source: 'treino',
+    verified: true,
+    context: 'A inclusão financeira — acesso a contas, crédito, poupança e meios de pagamento — é condição para que famílias planejem o futuro, enfrentem imprevistos e construam patrimônio. No Brasil, milhões de pessoas ainda estão à margem do sistema financeiro formal ou dependem de crédito informal com juros abusivos. A expansão de bancos digitais, do Pix e de contas simplificadas ampliou o acesso, mas persistem barreiras: baixa educação financeira, desconfiança em relação a instituições, endividamento por crédito caro (cartão e cheque especial) e exclusão digital. O superendividamento das famílias atingiu níveis recordes nos últimos anos. Para a proposta, pense em: educação financeira nas escolas e em programas comunitários, regulação de juros abusivos, expansão de microcrédito orientado, ampliação do acesso digital e proteção ao consumidor superendividado.',
+  },
+  {
+    id: 'treino-eco-4',
+    title: 'O impacto da concentração de renda no desenvolvimento social brasileiro',
+    axis: 'economia',
+    source: 'treino',
+    verified: true,
+    context: 'O Brasil é um dos países mais desiguais do mundo em distribuição de renda: uma pequena parcela da população concentra fatia desproporcional da riqueza nacional, enquanto milhões vivem em situação de pobreza. Essa concentração limita o desenvolvimento social, reduz a mobilidade entre classes, sobrecarrega serviços públicos e enfraquece o mercado interno. Suas raízes são históricas — escravidão, ausência de reforma agrária, sistema tributário regressivo que cobra proporcionalmente mais dos mais pobres. A desigualdade se reproduz no acesso à educação de qualidade, saúde, moradia e oportunidades de trabalho. Para a proposta, pense em: reforma tributária que torne a cobrança mais progressiva, investimento em educação pública de qualidade, políticas de transferência de renda condicionada, fortalecimento do salário mínimo e ampliação do acesso a serviços públicos essenciais.',
+  },
+
+  // Meio Ambiente
+  {
+    id: 'treino-ma-5',
+    title: 'Os desafios da gestão de resíduos sólidos nas cidades brasileiras',
+    axis: 'meio-ambiente',
+    source: 'treino',
+    verified: true,
+    context: 'A produção de resíduos sólidos cresce com a urbanização e o consumo, mas a maioria das cidades brasileiras ainda não dá destinação adequada ao lixo. Lixões a céu aberto persistem em milhares de municípios, contaminando solo e lençóis freáticos, apesar de a Política Nacional de Resíduos Sólidos (Lei 12.305/2010) prever sua extinção. A coleta seletiva é incipiente e a reciclagem no país é baixa, embora exista uma extensa rede de catadores que cumpre papel ambiental e social essencial — muitas vezes sem reconhecimento ou condições dignas de trabalho. O consumo de descartáveis e a obsolescência programada agravam o volume gerado. Para a proposta, pense em: universalização da coleta seletiva, valorização e formalização dos catadores em cooperativas, incentivos à logística reversa pelas empresas, educação ambiental sobre consumo e descarte e construção de aterros sanitários adequados.',
+  },
+
+  // Tecnologia
+  {
+    id: 'treino-tec-5',
+    title: 'Os desafios da inclusão digital no Brasil',
+    axis: 'tecnologia',
+    source: 'treino',
+    verified: true,
+    context: 'O acesso à internet tornou-se condição para estudar, trabalhar, acessar serviços públicos e exercer a cidadania — mas no Brasil esse acesso é desigual. Milhões de pessoas, sobretudo em áreas rurais, periferias e regiões Norte e Nordeste, não têm conexão de qualidade ou dispositivos adequados. A pandemia de COVID-19 expôs essa "exclusão digital" quando o ensino remoto deixou para trás estudantes sem internet ou computador. Além do acesso físico, há a barreira do letramento digital: saber usar as ferramentas de forma crítica e produtiva. A exclusão digital aprofunda outras desigualdades, restringindo oportunidades de emprego e educação. Para a proposta, pense em: expansão da infraestrutura de banda larga a regiões remotas, programas de distribuição de dispositivos a estudantes de baixa renda, oferta de internet pública gratuita em espaços comunitários e formação em letramento digital nas escolas.',
+  },
+
+  // Sociedade
+  {
+    id: 'treino-soc-5',
+    title: 'O combate à fome e à insegurança alimentar no Brasil',
+    axis: 'sociedade',
+    source: 'treino',
+    verified: true,
+    context: 'A fome voltou a ser uma realidade para milhões de brasileiros, com parcela significativa da população convivendo com algum grau de insegurança alimentar. A insegurança alimentar não significa apenas ausência de comida, mas também a incerteza sobre a próxima refeição e o consumo de alimentos de baixa qualidade nutricional. Suas causas combinam desemprego, inflação dos alimentos, desigualdade de renda e enfraquecimento de políticas públicas de segurança alimentar. O Brasil já chegou a sair do Mapa da Fome da ONU, demonstrando que o problema tem solução com políticas adequadas. Programas como a alimentação escolar e a aquisição de alimentos da agricultura familiar são instrumentos importantes. Para a proposta, pense em: fortalecimento de programas de transferência de renda, apoio à agricultura familiar, ampliação da alimentação escolar, criação de restaurantes populares e combate ao desperdício de alimentos.',
+  },
+  {
+    id: 'treino-soc-6',
+    title: 'Mobilidade urbana e qualidade de vida nas cidades brasileiras',
+    axis: 'sociedade',
+    source: 'treino',
+    verified: true,
+    context: 'O modelo de mobilidade das cidades brasileiras, centrado no transporte individual motorizado, gera congestionamentos crônicos, poluição do ar, acidentes de trânsito e perda de horas produtivas. O transporte público, especialmente nas periferias, costuma ser caro, lotado e demorado, penalizando os trabalhadores de menor renda que dependem dele. A falta de infraestrutura para pedestres e ciclistas desincentiva alternativas sustentáveis. A mobilidade precária afeta diretamente a qualidade de vida, o acesso a empregos, saúde e lazer, além de aprofundar a segregação socioespacial. A Política Nacional de Mobilidade Urbana (Lei 12.587/2012) prioriza o transporte coletivo e os modos não motorizados, mas sua implementação é lenta. Para a proposta, pense em: investimento e subsídio ao transporte público de qualidade, criação de ciclovias e calçadas acessíveis, integração entre modais e planejamento urbano que aproxime moradia e trabalho.',
+  },
+
+  // Saúde
+  {
+    id: 'treino-sau-4',
+    title: 'A importância da vacinação para a saúde coletiva no Brasil',
+    axis: 'saude',
+    source: 'treino',
+    verified: true,
+    context: 'A vacinação é uma das estratégias de saúde pública mais eficazes da história, responsável pela erradicação da varíola e pelo controle de doenças como poliomielite, sarampo e rubéola. O Programa Nacional de Imunizações brasileiro já foi referência mundial em cobertura gratuita e universal. Nos últimos anos, porém, as taxas de vacinação caíram abaixo das metas, levando ao retorno de doenças antes controladas. Esse recuo combina desinformação e movimentos antivacina amplificados pelas redes sociais, falsa sensação de segurança, dificuldades de acesso a postos de saúde e fragilidade das campanhas educativas. A imunização depende da chamada imunidade coletiva: quando muitos se vacinam, protegem inclusive quem não pode tomar a vacina. Para a proposta, pense em: combate à desinformação com campanhas educativas, ampliação de horários e locais de vacinação, busca ativa de não vacinados pelos agentes de saúde e inserção do tema nas escolas.',
+  },
+
+  // Educação
+  {
+    id: 'treino-edu-4',
+    title: 'Os impactos da evasão escolar no ensino médio brasileiro',
+    axis: 'educacao',
+    source: 'treino',
+    verified: true,
+    context: 'A evasão escolar no ensino médio é um dos maiores gargalos da educação brasileira: parte significativa dos jovens que ingressam não conclui essa etapa. Entre as causas estão a necessidade de trabalhar para complementar a renda familiar, a gravidez na adolescência, a falta de identificação com um currículo distante da realidade do aluno, a baixa qualidade do ensino e a violência. A evasão compromete o futuro desses jovens, reduzindo oportunidades de emprego qualificado e perpetuando o ciclo de pobreza e desigualdade. O período da pandemia agravou o problema, com muitos estudantes abandonando os estudos durante o ensino remoto. Para a proposta, pense em: ampliação da escola em tempo integral, currículo mais conectado a projetos de vida e ao mundo do trabalho, transferência de renda condicionada à permanência escolar, apoio socioemocional aos estudantes e busca ativa dos que abandonaram a escola.',
+  },
+
+  // Direitos
+  {
+    id: 'treino-dir-4',
+    title: 'Caminhos para o combate à LGBTfobia na sociedade brasileira',
+    axis: 'direitos',
+    source: 'treino',
+    verified: true,
+    context: 'A população LGBTQIA+ enfrenta no Brasil altos índices de violência, discriminação e exclusão, em um país que registra um dos maiores números de mortes violentas dessa comunidade no mundo. A LGBTfobia se manifesta em agressões físicas, no preconceito no ambiente de trabalho e escolar, na rejeição familiar e na invisibilidade de direitos. Em 2019, o Supremo Tribunal Federal enquadrou a homofobia e a transfobia como crimes equiparáveis ao racismo, um avanço jurídico importante, mas a efetivação da proteção ainda é frágil. A ausência de uma legislação específica federal e a baixa notificação dos casos dificultam o enfrentamento. A escola e a família, quando acolhedoras, são fatores de proteção decisivos. Para a proposta, pense em: educação para a diversidade e o respeito desde o ensino básico, capacitação de agentes de segurança e saúde, criação de canais seguros de denúncia, políticas de inclusão no mercado de trabalho e campanhas de conscientização social.',
   },
 ];
 
