@@ -130,20 +130,26 @@ const RedacaoSetupModal: React.FC<Props> = ({ onStart }) => {
         })}
       </div>
 
-      {/* CTA */}
-      <div className="sticky bottom-0 bg-gray-50 dark:bg-gray-950 pt-3 pb-2 -mx-1 px-1">
-        <button
-          onClick={() => selectedTheme && onStart(selectedTheme)}
-          disabled={!selectedTheme}
-          className={`w-full py-4 rounded-2xl font-black text-xs uppercase tracking-[0.15em] flex items-center justify-center gap-3 transition-all active:scale-[0.98] ${
-            selectedTheme
-              ? 'bg-violet-600 text-white shadow-lg shadow-violet-500/20 hover:bg-violet-700'
-              : 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-600 cursor-not-allowed'
-          }`}
-        >
-          <i className="fas fa-pen" />
-          {selectedTheme ? 'Começar Redação · 90min' : 'Selecione um tema'}
-        </button>
+      {/* CTA — sticky no rodapé com fade-out gradiente para suavizar a transição */}
+      <div className="sticky bottom-0 -mx-4 md:-mx-6 lg:-mx-8 px-4 md:px-6 lg:px-8 pt-8 pb-3 pointer-events-none">
+        <div
+          aria-hidden
+          className="absolute inset-x-0 top-0 h-8 bg-gradient-to-b from-transparent to-gray-50 dark:to-gray-950"
+        />
+        <div className="relative bg-gray-50/85 dark:bg-gray-950/85 backdrop-blur-md rounded-2xl pointer-events-auto">
+          <button
+            onClick={() => selectedTheme && onStart(selectedTheme)}
+            disabled={!selectedTheme}
+            className={`w-full py-4 rounded-2xl font-black text-xs uppercase tracking-[0.15em] flex items-center justify-center gap-3 transition-all active:scale-[0.98] ${
+              selectedTheme
+                ? 'bg-violet-600 text-white shadow-lg shadow-violet-500/20 hover:bg-violet-700'
+                : 'bg-white dark:bg-white/[0.04] border border-gray-200 dark:border-white/10 text-gray-400 dark:text-gray-500 cursor-not-allowed'
+            }`}
+          >
+            <i className={`fas ${selectedTheme ? 'fa-pen' : 'fa-hand-pointer'}`} />
+            {selectedTheme ? 'Começar Redação · 90min' : 'Selecione um tema acima'}
+          </button>
+        </div>
       </div>
     </div>
   );
