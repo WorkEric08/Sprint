@@ -178,7 +178,7 @@ const StatsOverview: React.FC<Props> = ({ subjects, edital, blockLogs, targetBan
       <div className="md:flex md:gap-8 md:items-start lg:gap-10">
 
         {/* ── Coluna esquerda: anel + lista de matérias + streak/conquistas (lg) ── */}
-        <div className="md:w-64 lg:w-80 md:shrink-0 md:sticky md:top-0 md:max-h-screen md:overflow-y-auto">
+        <div className="md:w-64 lg:w-80 md:shrink-0 md:sticky md:top-0 md:max-h-screen md:overflow-y-auto md:overflow-x-hidden">
           <div className="flex flex-col items-center justify-center py-3 md:py-6">
             {/* Anel de progresso — maior no lg */}
             <div className="relative w-48 h-48 lg:w-60 lg:h-60">

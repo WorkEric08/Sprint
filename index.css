@@ -119,6 +119,34 @@ input[type=number] {
   transition: background-color 0.3s ease, border-color 0.3s ease, color 0.15s ease;
 }
 
+/* Calendário: scrollbar horizontal visível no desktop, oculta no mobile */
+@media (min-width: 768px) {
+  .calendar-hscroll {
+    scrollbar-width: thin;
+    scrollbar-color: #d1d5db transparent;
+  }
+  .calendar-hscroll::-webkit-scrollbar {
+    display: block;
+    height: 5px;
+  }
+  .calendar-hscroll::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .calendar-hscroll::-webkit-scrollbar-thumb {
+    background: #d1d5db;
+    border-radius: 10px;
+  }
+  .dark .calendar-hscroll::-webkit-scrollbar-thumb {
+    background: #374151;
+  }
+  .calendar-hscroll::-webkit-scrollbar-thumb:hover {
+    background: #9ca3af;
+  }
+  .dark .calendar-hscroll::-webkit-scrollbar-thumb:hover {
+    background: #4b5563;
+  }
+}
+
 /* Padrão de cabeçalho para telas full-screen: absorve a safe area do topo
    (status bar translúcida no PWA) mantendo um mínimo de 1rem. */
 .safe-top {
