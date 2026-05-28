@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Subject, SprintResolvedItem, BlockType, ReviewItem, BLOCK_TYPE_COLORS, Edital, SimuladoTemplate, SimuladoRecord } from '../types';
 import CicloEditView from './CicloEditView';
 import CicloAddView from './CicloAddView';
@@ -315,7 +316,7 @@ const CicloView: React.FC<Props> = ({
       {isAdding && <CicloAddView onSave={handleAddSave} onClose={() => setIsAdding(false)} />}
 
       {/* Reset confirm */}
-      {confirmReset && subjectToReset && (
+      {confirmReset && subjectToReset && createPortal(
         <div className="fixed inset-0 z-[60] bg-white/80 dark:bg-gray-950/80 backdrop-blur-md flex items-center justify-center p-6 animate-in fade-in duration-200">
           <div className="bg-white dark:bg-gray-900 w-full max-w-sm rounded-3xl p-8 shadow-2xl border border-gray-100 dark:border-gray-800 text-center space-y-6">
             <div className="w-16 h-16 bg-amber-50 dark:bg-amber-900/20 rounded-full flex items-center justify-center mx-auto">
@@ -338,11 +339,12 @@ const CicloView: React.FC<Props> = ({
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Delete confirm */}
-      {confirmDelete && subjectToDelete && (
+      {confirmDelete && subjectToDelete && createPortal(
         <div className="fixed inset-0 z-[60] bg-white/80 dark:bg-gray-950/80 backdrop-blur-md flex items-center justify-center p-6 animate-in fade-in duration-200">
           <div className="bg-white dark:bg-gray-900 w-full max-w-sm rounded-3xl p-8 shadow-2xl border border-gray-100 dark:border-gray-800 text-center space-y-6">
             <div className="w-16 h-16 bg-red-50 dark:bg-red-900/20 rounded-full flex items-center justify-center mx-auto">
@@ -364,7 +366,8 @@ const CicloView: React.FC<Props> = ({
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {editingSubject && (

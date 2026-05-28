@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { Subject } from '../types';
 import { useBackButton } from '../hooks/useBackButton';
 
@@ -43,8 +44,11 @@ const BreakTimerView: React.FC<Props> = ({ duration, nextSubject, onComplete, on
   const strokeDasharray = 283;
   const strokeDashoffset = strokeDasharray - (progress / 100) * strokeDasharray;
 
-  return (
-    <div className="fixed inset-0 z-[60] bg-white dark:bg-gray-950 flex flex-col items-center justify-between p-8 animate-in fade-in zoom-in duration-300">
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[60] bg-white dark:bg-gray-950 flex flex-col items-center justify-between px-8 pb-8 animate-in fade-in zoom-in duration-300"
+      style={{ paddingTop: 'max(env(safe-area-inset-top, 0px), 2rem)' }}
+    >
       {/* Header */}
       <div className="w-full flex justify-between items-center">
         <div className="flex items-center gap-2">
@@ -129,7 +133,8 @@ const BreakTimerView: React.FC<Props> = ({ duration, nextSubject, onComplete, on
       </div>
 
       <div className="absolute -bottom-24 -right-24 w-64 h-64 rounded-full opacity-5 blur-3xl pointer-events-none bg-indigo-500" />
-    </div>
+    </div>,
+    document.body
   );
 };
 

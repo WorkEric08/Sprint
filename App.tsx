@@ -98,7 +98,6 @@ const App: React.FC = () => {
   const { reviewItems, pendingCount, createOrUpdateItem, applyResult } = useReviews();
   const { records: simuladoRecords } = useSimulados();
   const { unlocked: achievements, newlyUnlocked, clearNewlyUnlocked, checkAll: checkAchievements } = useAchievements();
-  const { records: redacaoSessions } = useSimulados(); // reuse pattern
   const selectedEdital = React.useMemo(() => {
     if (selectedEditalId === 'custom') {
       try {

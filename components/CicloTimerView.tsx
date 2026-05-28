@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { Subject, PostBlockData, BlockType, BLOCK_TYPE_COLORS, BLOCK_TYPE_LABELS } from '../types';
 import { useBackButton } from '../hooks/useBackButton';
 import PostBlockModal from './PostBlockModal';
@@ -62,8 +63,11 @@ const CicloTimerView: React.FC<Props> = ({ subject, blockType = 'study', cycleIn
 
   const blocksCompleted = subject.completedBlocks.length;
 
-  return (
-    <div className="fixed inset-0 z-[60] bg-white dark:bg-gray-950 flex flex-col items-center justify-between p-8 animate-in fade-in zoom-in duration-300">
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[60] bg-white dark:bg-gray-950 flex flex-col items-center justify-between px-8 pb-8 animate-in fade-in zoom-in duration-300"
+      style={{ paddingTop: 'max(env(safe-area-inset-top, 0px), 2rem)' }}
+    >
       {/* Header */}
       <div className="w-full flex justify-between items-center">
         <div className="flex items-center gap-3">
@@ -223,7 +227,8 @@ const CicloTimerView: React.FC<Props> = ({ subject, blockType = 'study', cycleIn
           }}
         />
       )}
-    </div>
+    </div>,
+    document.body
   );
 };
 

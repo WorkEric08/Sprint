@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { Objective } from '../types';
 
 interface Props {
@@ -60,8 +61,11 @@ const TimerView: React.FC<Props> = ({ objective, onClose, onComplete }) => {
   const strokeDasharray = 283; 
   const strokeDashoffset = strokeDasharray - (progress / 100) * strokeDasharray;
 
-  return (
-    <div className="fixed inset-0 z-[60] bg-white dark:bg-gray-950 flex flex-col items-center justify-between p-8 animate-in fade-in zoom-in duration-300">
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[60] bg-white dark:bg-gray-950 flex flex-col items-center justify-between px-8 pb-8 animate-in fade-in zoom-in duration-300"
+      style={{ paddingTop: 'max(env(safe-area-inset-top, 0px), 2rem)' }}
+    >
       {/* Header */}
       <div className="w-full flex justify-between items-center">
         <div className="flex items-center gap-3">
@@ -177,7 +181,8 @@ const TimerView: React.FC<Props> = ({ objective, onClose, onComplete }) => {
         className="absolute -bottom-24 -left-24 w-64 h-64 rounded-full opacity-5 blur-3xl pointer-events-none"
         style={{ backgroundColor: objective.color }}
       ></div>
-    </div>
+    </div>,
+    document.body
   );
 };
 
