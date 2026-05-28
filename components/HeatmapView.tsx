@@ -362,7 +362,7 @@ const HeatmapView: React.FC<HeatmapProps> = ({ streakEnabled: _streakEnabled = t
 
         {/* Scroll container: full card width, padding-x gives ring room at edges */}
         <div ref={scrollRef} className="overflow-x-scroll-area pb-1">
-          <div className="flex gap-5 pl-2 pr-4 py-1">
+          <div className="flex gap-5 pl-2 py-1">
             {monthsForDisplay.map(({ year, month }) => {
               const cells = buildMonthCells(year, month);
               const activeDays = cells.filter(dk => dk && (dayMap.get(dk)?.blocks ?? 0) > 0).length;
@@ -442,6 +442,9 @@ const HeatmapView: React.FC<HeatmapProps> = ({ streakEnabled: _streakEnabled = t
                 </div>
               );
             })}
+            {/* Espaçador direito — padding-right em overflow:auto é ignorado por browsers;
+                um elemento real garante o espaço para o ring não ser clipado */}
+            <div className="shrink-0 w-[14px]" aria-hidden="true" />
           </div>
         </div>
 
