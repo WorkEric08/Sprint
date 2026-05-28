@@ -3,7 +3,6 @@ import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import StatsOverview from './components/StatsOverview';
 import CicloView from './components/CicloView';
 import SettingsPanel from './components/SettingsPanel';
-import ErrorNotebookView from './components/ErrorNotebookView';
 import ReviewQueueView from './components/ReviewQueueView';
 import EditalPickerModal from './components/EditalPickerModal';
 import { useSettings } from './hooks/useSettings';
@@ -69,7 +68,6 @@ const App: React.FC = () => {
   });
 
   const [isUpdating, setIsUpdating] = useState(false);
-  const [showErrorNotebook, setShowErrorNotebook] = useState(false);
   const [showEditalPicker, setShowEditalPicker] = useState(false);
 
   // Oculta a bottom nav quando qualquer tela secundária full-screen está aberta
@@ -94,7 +92,7 @@ const App: React.FC = () => {
   } = useSettings();
   const { subjects, setSubjects, loading: subjectsLoading } = useSubjects();
   const { objectives, loading: objectivesLoading } = useObjectives();
-  const { errorEntries, updateErrorNote, blockLogs } = useBlockLogs();
+  const { blockLogs } = useBlockLogs();
   const { reviewItems, pendingCount, createOrUpdateItem, applyResult } = useReviews();
   const { records: simuladoRecords } = useSimulados();
   const { unlocked: achievements, newlyUnlocked, clearNewlyUnlocked, checkAll: checkAchievements } = useAchievements();
@@ -295,8 +293,7 @@ const App: React.FC = () => {
               <StatsOverview
                 objectives={objectives}
                 subjects={subjects}
-                onOpenErrorNotebook={() => setShowErrorNotebook(true)}
-                edital={selectedEdital}
+                  edital={selectedEdital}
                 blockLogs={blockLogs}
                 targetBanca={targetBanca}
                 streakState={streakState}
@@ -396,15 +393,6 @@ const App: React.FC = () => {
           state={streakState}
           userName={userName}
           onDismiss={() => setShowWelcomeBack(false)}
-        />
-      )}
-
-      {/* Caderno de Erros */}
-      {showErrorNotebook && (
-        <ErrorNotebookView
-          errorEntries={errorEntries}
-          onUpdateNote={updateErrorNote}
-          onClose={() => setShowErrorNotebook(false)}
         />
       )}
 

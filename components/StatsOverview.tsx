@@ -17,7 +17,6 @@ import { AchievementRecord, StreakState } from '../types';
 interface Props {
   objectives: Objective[];
   subjects: Subject[];
-  onOpenErrorNotebook: () => void;
   edital: Edital | null;
   blockLogs: BlockLog[];
   targetBanca: string | null;
@@ -108,7 +107,7 @@ function useSubtopicStats() {
   return stats;
 }
 
-const StatsOverview: React.FC<Props> = ({ subjects, onOpenErrorNotebook, edital, blockLogs, targetBanca, streakState, achievements, userName, streakEnabled = true }) => {
+const StatsOverview: React.FC<Props> = ({ subjects, edital, blockLogs, targetBanca, streakState, achievements, userName, streakEnabled = true }) => {
   const [showSimuladoHistory, setShowSimuladoHistory] = useState(false);
   const [showShare, setShowShare] = useState(false);
   const { records: simuladoRecords, deleteRecord: deleteSimuladoRecord } = useSimulados();
@@ -463,24 +462,6 @@ const StatsOverview: React.FC<Props> = ({ subjects, onOpenErrorNotebook, edital,
             </button>
           )}
 
-          {/* ── Caderno de Erros entry point ── */}
-          <button
-            onClick={onOpenErrorNotebook}
-            className="w-full flex items-center justify-between p-3.5 bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 hover:border-indigo-200 dark:hover:border-indigo-900/50 transition-all active:scale-[0.98] group"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-red-50 dark:bg-red-900/20 flex items-center justify-center">
-                <i className="fas fa-book text-red-500 text-sm" />
-              </div>
-              <div className="text-left">
-                <p className="text-sm font-black text-gray-800 dark:text-gray-100">Caderno de Erros</p>
-                <p className="text-[10px] font-bold text-gray-400 dark:text-gray-600 uppercase tracking-wider mt-0.5">
-                  Ver registros e anotações
-                </p>
-              </div>
-            </div>
-            <i className="fas fa-chevron-right text-gray-300 dark:text-gray-700 text-xs group-hover:text-indigo-400 transition-colors" />
-          </button>
         </div>
       </div>
 

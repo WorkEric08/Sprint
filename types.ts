@@ -48,22 +48,6 @@ export interface BlockLog {
   banca?: string; // Fase 5: Feature 2 — sempre opcional
 }
 
-// ── Feature 2 (Fase 1): Caderno de Erros ─────────────────────────────────
-
-export interface ErrorEntry {
-  id: string;
-  blockLogId: string;
-  subjectId: string;
-  subjectTitle: string;
-  subjectColor: string;
-  subtopic: string;
-  timestamp: number;
-  questionsTotal: number;
-  questionsCorrect: number;
-  questionsWrong: number;
-  note: string;
-}
-
 // ── Feature 1 (Fase 2): Revisão Espaçada ─────────────────────────────────
 // Intervals in days: D+1, D+3, D+7, D+15, D+30, D+60
 

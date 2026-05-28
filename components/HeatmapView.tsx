@@ -1,21 +1,20 @@
-import React, { useMemo, useState, useEffect, useRef } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { BlockLog } from '../types';
 import { db } from '../db';
-import {
-  toLocalDateKey,
-  last52WeekMondays,
-  addDays,
-  todayKey,
-  computeToleratedStreak,
-} from '../utils/dateUtils';
+import { toLocalDateKey, todayKey, computeToleratedStreak } from '../utils/dateUtils';
 
-const DAYS_OF_WEEK = ['S', 'T', 'Q', 'Q', 'S', 'S', 'D']; // Seg–Dom (pt-BR)
-const CELL = 13;       // px – tamanho da célula (maior para toque)
-const GAP = 2;         // px – espaço entre células
-const COL_W = CELL + GAP; // 15px por coluna de semana
-const LABEL_W = 22;    // px – coluna de rótulos de dia
+// Mon–Sun labels (pt-BR initials)
+const DAY_LABELS = ['S', 'T', 'Q', 'Q', 'S', 'S', 'D'];
 
-// ── Day cell data ──────────────────────────────────────────────────────────
+const MONTH_NAMES: string[] = [
+  'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+  'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro',
+];
+
+// How many months to display (current + previous N-1)
+const MONTHS_COUNT = 4;
+
+// ── Types ──────────────────────────────────────────────────────────────────
 
 interface DayData {
   dateKey: string;
@@ -26,34 +25,53 @@ interface DayData {
   isFuture: boolean;
 }
 
-// ── Color intensity (indigo scale) ────────────────────────────────────────
+// ── Color helpers ──────────────────────────────────────────────────────────
 
-function intensityClass(blocks: number, isFuture: boolean): string {
-  if (isFuture) return 'bg-gray-100 dark:bg-gray-800/40 opacity-30';
-  if (blocks === 0) return 'bg-gray-100 dark:bg-gray-800/60';
-  if (blocks === 1) return 'bg-indigo-200 dark:bg-indigo-900/60';
-  if (blocks === 2) return 'bg-indigo-300 dark:bg-indigo-800/70';
-  if (blocks <= 4) return 'bg-indigo-400 dark:bg-indigo-700/80';
+function cellBg(blocks: number, isFuture: boolean): string {
+  if (isFuture) return '';
+  if (blocks === 0) return 'bg-gray-100 dark:bg-gray-800/50';
+  if (blocks === 1) return 'bg-indigo-200 dark:bg-indigo-900/70';
+  if (blocks === 2) return 'bg-indigo-300 dark:bg-indigo-800/80';
+  if (blocks <= 4) return 'bg-indigo-400 dark:bg-indigo-700';
   if (blocks <= 6) return 'bg-indigo-500 dark:bg-indigo-600';
   return 'bg-indigo-600 dark:bg-indigo-500';
 }
 
-// ── Month label positions ─────────────────────────────────────────────────
+function cellTextColor(blocks: number, isFuture: boolean): string {
+  if (isFuture) return 'text-gray-200 dark:text-gray-800';
+  if (blocks === 0) return 'text-gray-400 dark:text-gray-600';
+  if (blocks <= 2) return 'text-indigo-800 dark:text-indigo-200';
+  return 'text-white';
+}
 
-function getMonthLabelMap(mondays: string[]): Map<number, string> {
-  const seen = new Set<string>();
-  const map = new Map<number, string>();
-  mondays.forEach((monday, col) => {
-    const [y, m] = monday.split('-');
-    const key = `${y}-${m}`;
-    if (!seen.has(key)) {
-      seen.add(key);
-      const date = new Date(Number(y), Number(m) - 1, 1);
-      const label = date.toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '');
-      map.set(col, label);
-    }
-  });
-  return map;
+// ── Calendar helpers ───────────────────────────────────────────────────────
+
+function getMonthsToShow(): { year: number; month: number }[] {
+  const result: { year: number; month: number }[] = [];
+  const now = new Date();
+  for (let i = 0; i < MONTHS_COUNT; i++) {
+    let m = now.getMonth() - i;
+    let y = now.getFullYear();
+    while (m < 0) { m += 12; y--; }
+    result.push({ year: y, month: m });
+  }
+  return result; // newest first
+}
+
+// Returns array of YYYY-MM-DD strings (or null for empty slots)
+function buildMonthCells(year: number, month: number): (string | null)[] {
+  const firstDay = new Date(year, month, 1);
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  // Convert Sun=0…Sat=6 to Mon=0…Sun=6
+  const startDow = (firstDay.getDay() + 6) % 7;
+  const cells: (string | null)[] = Array(startDow).fill(null);
+  for (let d = 1; d <= daysInMonth; d++) {
+    cells.push(
+      `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+    );
+  }
+  while (cells.length % 7 !== 0) cells.push(null);
+  return cells;
 }
 
 // ── Main component ─────────────────────────────────────────────────────────
@@ -65,47 +83,35 @@ interface HeatmapProps {
 const HeatmapView: React.FC<HeatmapProps> = ({ streakEnabled = true }) => {
   const [blockLogs, setBlockLogs] = useState<BlockLog[]>([]);
   const [selected, setSelected] = useState<DayData | null>(null);
-  const [showLeftFade, setShowLeftFade] = useState(false);
-  const scrollRef = useRef<HTMLDivElement>(null);
   const today = todayKey();
 
   useEffect(() => {
     db.blockLogs.toArray().then(setBlockLogs).catch(console.error);
   }, []);
 
-  // Auto-scroll para mostrar hoje (final do grid) assim que o container monta
-  useEffect(() => {
-    const el = scrollRef.current;
-    if (!el) return;
-    el.scrollLeft = el.scrollWidth;
-  }, []);
+  const months = useMemo(() => getMonthsToShow(), []);
 
-  // Controla fade esquerdo conforme o usuário rola
-  useEffect(() => {
-    const el = scrollRef.current;
-    if (!el) return;
-    const onScroll = () => setShowLeftFade(el.scrollLeft > 8);
-    el.addEventListener('scroll', onScroll, { passive: true });
-    return () => el.removeEventListener('scroll', onScroll);
-  }, []);
-
-  const mondays = useMemo(() => last52WeekMondays(), []);
-
+  // Build day data map from block logs
   const dayMap = useMemo<Map<string, DayData>>(() => {
     const map = new Map<string, DayData>();
-    mondays.forEach(monday => {
-      for (let i = 0; i < 7; i++) {
-        const dateKey = addDays(monday, i);
-        map.set(dateKey, {
-          dateKey,
+
+    // Pre-populate all days across the visible months
+    months.forEach(({ year, month }) => {
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      for (let d = 1; d <= daysInMonth; d++) {
+        const dk = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+        map.set(dk, {
+          dateKey: dk,
           blocks: 0,
           questions: 0,
           correct: 0,
-          isToday: dateKey === today,
-          isFuture: dateKey > today,
+          isToday: dk === today,
+          isFuture: dk > today,
         });
       }
     });
+
+    // Accumulate block logs
     blockLogs.forEach(log => {
       const key = toLocalDateKey(log.timestamp);
       const existing = map.get(key);
@@ -115,8 +121,9 @@ const HeatmapView: React.FC<HeatmapProps> = ({ streakEnabled = true }) => {
         existing.correct += log.questionsCorrect;
       }
     });
+
     return map;
-  }, [blockLogs, mondays, today]);
+  }, [blockLogs, months, today]);
 
   const activeDayKeys = useMemo<Set<string>>(() => {
     const s = new Set<string>();
@@ -125,10 +132,10 @@ const HeatmapView: React.FC<HeatmapProps> = ({ streakEnabled = true }) => {
   }, [dayMap]);
 
   const streak = useMemo(() => computeToleratedStreak(activeDayKeys), [activeDayKeys]);
-  const totalBlocks = useMemo(() => [...dayMap.values()].reduce((a, d) => a + d.blocks, 0), [dayMap]);
-  const monthLabelMap = useMemo(() => getMonthLabelMap(mondays), [mondays]);
-
-  const gridWidth = LABEL_W + mondays.length * COL_W;
+  const totalBlocks = useMemo(
+    () => [...dayMap.values()].reduce((a, d) => a + d.blocks, 0),
+    [dayMap]
+  );
 
   return (
     <div className="space-y-4">
@@ -156,7 +163,7 @@ const HeatmapView: React.FC<HeatmapProps> = ({ streakEnabled = true }) => {
             <div className="flex items-center gap-2 mb-2">
               <i className="fas fa-rotate text-indigo-500 text-sm" />
               <span className="text-[9px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">
-                Total (1 ano)
+                Blocos
               </span>
             </div>
             <p className="text-3xl font-black text-gray-800 dark:text-white leading-none">
@@ -170,7 +177,7 @@ const HeatmapView: React.FC<HeatmapProps> = ({ streakEnabled = true }) => {
           <div className="flex items-center gap-2 mb-2">
             <i className="fas fa-rotate text-indigo-500 text-sm" />
             <span className="text-[9px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">
-              Total de blocos · 1 ano
+              Total de blocos
             </span>
           </div>
           <p className="text-3xl font-black text-gray-800 dark:text-white leading-none">
@@ -180,115 +187,97 @@ const HeatmapView: React.FC<HeatmapProps> = ({ streakEnabled = true }) => {
         </div>
       )}
 
-      {/* ── Heatmap grid ── */}
-      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-4">
-        {/* Wrapper relativo para os fades de scroll */}
-        <div className="relative">
-          {/* Fade esquerdo – indica histórico disponível ao rolar */}
+      {/* ── Monthly calendars ── */}
+      {months.map(({ year, month }) => {
+        const cells = buildMonthCells(year, month);
+        // Count active days in this month
+        const activeDays = cells.filter(
+          dk => dk && dayMap.get(dk)?.blocks && (dayMap.get(dk)?.blocks ?? 0) > 0
+        ).length;
+
+        return (
           <div
-            className={`absolute inset-y-0 left-0 w-8 pointer-events-none z-10 transition-opacity duration-200 rounded-l-lg bg-gradient-to-r from-white dark:from-gray-900 to-transparent ${showLeftFade ? 'opacity-100' : 'opacity-0'}`}
-          />
+            key={`${year}-${month}`}
+            className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-4"
+          >
+            {/* Month header */}
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-sm font-black text-gray-800 dark:text-gray-100 uppercase tracking-tight">
+                {MONTH_NAMES[month]}
+                <span className="text-gray-400 dark:text-gray-600 font-bold ml-1.5 text-xs">
+                  {year}
+                </span>
+              </p>
+              {activeDays > 0 && (
+                <span className="text-[9px] font-black text-indigo-500 dark:text-indigo-400 uppercase tracking-widest">
+                  {activeDays} {activeDays === 1 ? 'dia' : 'dias'}
+                </span>
+              )}
+            </div>
 
-          {/* Container de scroll horizontal */}
-          <div ref={scrollRef} className="overflow-x-scroll-area">
-            <div style={{ width: `${gridWidth}px` }}>
+            {/* Day-of-week header */}
+            <div className="grid grid-cols-7 gap-1 mb-1">
+              {DAY_LABELS.map((label, i) => (
+                <div
+                  key={i}
+                  className="text-center text-[9px] font-black text-gray-300 dark:text-gray-700 uppercase"
+                >
+                  {label}
+                </div>
+              ))}
+            </div>
 
-              {/* Rótulos de mês – um slot por coluna de semana */}
-              <div
-                className="flex"
-                style={{ paddingLeft: `${LABEL_W}px`, marginBottom: '4px' }}
-              >
-                {mondays.map((monday, col) => (
-                  <div key={monday} style={{ width: `${COL_W}px`, flexShrink: 0 }}>
-                    {monthLabelMap.has(col) && (
-                      <span className="text-[9px] font-black text-gray-400 dark:text-gray-600 uppercase tracking-widest whitespace-nowrap">
-                        {monthLabelMap.get(col)}
+            {/* Day cells */}
+            <div className="grid grid-cols-7 gap-1">
+              {cells.map((dateKey, i) => {
+                if (!dateKey) {
+                  return <div key={i} className="aspect-square" />;
+                }
+
+                const data = dayMap.get(dateKey);
+                const blocks = data?.blocks ?? 0;
+                const isFuture = data?.isFuture ?? dateKey > today;
+                const isToday = data?.isToday ?? false;
+                const isSelected = selected?.dateKey === dateKey;
+                const day = parseInt(dateKey.split('-')[2], 10);
+
+                return (
+                  <button
+                    key={dateKey}
+                    onClick={() => {
+                      if (isFuture || !data) return;
+                      setSelected(prev => prev?.dateKey === dateKey ? null : data);
+                    }}
+                    className={[
+                      'aspect-square rounded-xl flex items-center justify-center transition-all duration-150 relative',
+                      cellBg(blocks, isFuture),
+                      isToday && !isSelected
+                        ? 'ring-2 ring-indigo-500 ring-offset-1 ring-offset-white dark:ring-offset-gray-900'
+                        : '',
+                      isSelected
+                        ? 'ring-2 ring-indigo-400 ring-offset-1 ring-offset-white dark:ring-offset-gray-900 scale-110'
+                        : '',
+                      !isFuture ? 'active:scale-90' : 'cursor-default',
+                    ].join(' ')}
+                  >
+                    <span className={`text-[11px] font-bold leading-none ${cellTextColor(blocks, isFuture)}`}>
+                      {day}
+                    </span>
+                    {/* Block count dot for heavy days */}
+                    {blocks >= 5 && (
+                      <span className="absolute bottom-0.5 right-0.5 text-[7px] font-black text-white/70 leading-none">
+                        {blocks}
                       </span>
                     )}
-                  </div>
-                ))}
-              </div>
-
-              {/* Corpo do grid */}
-              <div className="flex" style={{ gap: `${GAP}px` }}>
-                {/* Coluna de rótulos de dia-da-semana */}
-                <div
-                  className="flex flex-col flex-shrink-0"
-                  style={{ width: `${LABEL_W}px`, gap: `${GAP}px` }}
-                >
-                  {DAYS_OF_WEEK.map((d, i) => (
-                    <div
-                      key={i}
-                      style={{ height: `${CELL}px` }}
-                      className="flex items-center justify-end pr-1 text-[9px] font-bold text-gray-300 dark:text-gray-700"
-                    >
-                      {i % 2 === 0 ? d : ''}
-                    </div>
-                  ))}
-                </div>
-
-                {/* Colunas de semana */}
-                {mondays.map(monday => (
-                  <div key={monday} className="flex flex-col flex-shrink-0" style={{ gap: `${GAP}px` }}>
-                    {Array.from({ length: 7 }).map((_, dayOffset) => {
-                      const dateKey = addDays(monday, dayOffset);
-                      const data = dayMap.get(dateKey);
-                      if (!data) return (
-                        <div key={dayOffset} style={{ width: `${CELL}px`, height: `${CELL}px` }} />
-                      );
-
-                      const isSelected = selected?.dateKey === dateKey;
-
-                      return (
-                        <button
-                          key={dayOffset}
-                          onClick={() => !data.isFuture && setSelected(prev => prev?.dateKey === dateKey ? null : data)}
-                          title={dateKey}
-                          style={{ width: `${CELL}px`, height: `${CELL}px` }}
-                          className={[
-                            'rounded-[3px] transition-all duration-150 flex-shrink-0',
-                            intensityClass(data.blocks, data.isFuture),
-                            data.isToday
-                              ? 'ring-1 ring-indigo-500 ring-offset-[1px] ring-offset-white dark:ring-offset-gray-900'
-                              : '',
-                            isSelected
-                              ? 'ring-2 ring-indigo-400 ring-offset-[1px] ring-offset-white dark:ring-offset-gray-900 scale-125'
-                              : '',
-                            data.isFuture
-                              ? 'cursor-default'
-                              : 'cursor-pointer hover:scale-125 active:scale-95',
-                          ].join(' ')}
-                        />
-                      );
-                    })}
-                  </div>
-                ))}
-              </div>
-
-              {/* Legenda */}
-              <div className="flex items-center gap-1.5 mt-3 justify-end">
-                <span className="text-[9px] font-bold text-gray-400 dark:text-gray-600">Menos</span>
-                {[
-                  'bg-gray-100 dark:bg-gray-800/60',
-                  'bg-indigo-200 dark:bg-indigo-900/60',
-                  'bg-indigo-300 dark:bg-indigo-800/70',
-                  'bg-indigo-400 dark:bg-indigo-700/80',
-                  'bg-indigo-600 dark:bg-indigo-500',
-                ].map((cls, i) => (
-                  <div
-                    key={i}
-                    style={{ width: `${CELL}px`, height: `${CELL}px` }}
-                    className={`rounded-[3px] flex-shrink-0 ${cls}`}
-                  />
-                ))}
-                <span className="text-[9px] font-bold text-gray-400 dark:text-gray-600">Mais</span>
-              </div>
+                  </button>
+                );
+              })}
             </div>
           </div>
-        </div>
-      </div>
+        );
+      })}
 
-      {/* ── Painel de detalhe do dia ── */}
+      {/* ── Day detail panel ── */}
       {selected && !selected.isFuture && (
         <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-4 animate-in fade-in slide-in-from-bottom-2 duration-200">
           <div className="flex items-center justify-between mb-3">
@@ -304,7 +293,7 @@ const HeatmapView: React.FC<HeatmapProps> = ({ streakEnabled = true }) => {
             </div>
             <button
               onClick={() => setSelected(null)}
-              className="w-7 h-7 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-400"
+              className="w-7 h-7 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-400 active:scale-90 transition-transform"
             >
               <i className="fas fa-times text-[10px]" />
             </button>

@@ -212,8 +212,8 @@ const PostBlockModal: React.FC<Props> = ({
                   {accuracy}% de acerto
                 </span>
                 {wrongCount > 0 && (
-                  <span className="text-[10px] font-bold text-gray-400 dark:text-gray-600">
-                    · {wrongCount} {wrongCount === 1 ? 'erro' : 'erros'} → Caderno
+                  <span className="text-[10px] font-bold text-red-400 dark:text-red-600">
+                    · {wrongCount} {wrongCount === 1 ? 'erro' : 'erros'}
                   </span>
                 )}
               </div>
