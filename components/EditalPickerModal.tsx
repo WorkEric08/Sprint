@@ -3,6 +3,7 @@ import { Edital, Subject } from '../types';
 import { EDITAIS } from '../data/editais';
 import { useSecondaryScreen } from '../contexts/OverlayContext';
 import CicloEditView from './CicloEditView';
+import CicloAddView from './CicloAddView';
 
 interface Props {
   currentEditalId: string | null;
@@ -13,11 +14,6 @@ interface Props {
 }
 
 const ENEM = EDITAIS.find(e => e.id === 'enem')!;
-
-const FAST_COLORS = [
-  '#ff5d15', '#eb761d', '#d8a800', '#8ec81c', '#22b77a', '#1aa9a5', '#09a9d1',
-  '#0997e5', '#3170e5', '#635bd6', '#934de5', '#c942c7', '#dc437e', '#e3445e',
-];
 
 const CUSTOM_KEY = 'sprint_custom_edital';
 
@@ -73,18 +69,8 @@ const EditalPickerModal: React.FC<Props> = ({
       return stored ? (JSON.parse(stored) as CustomData).subjects : [];
     } catch { return []; }
   });
-  const [newSubjectName, setNewSubjectName] = useState('');
-  const [newSubjectColor, setNewSubjectColor] = useState(FAST_COLORS[0]);
-  const [showAddForm, setShowAddForm] = useState(false);
+  const [showAddView, setShowAddView] = useState(false);
   const [editingIdx, setEditingIdx] = useState<number | null>(null);
-
-  const addCustomSubject = () => {
-    if (!newSubjectName.trim()) return;
-    setCustomSubjects(prev => [...prev, { name: newSubjectName.trim(), color: newSubjectColor }]);
-    setNewSubjectName('');
-    setNewSubjectColor(FAST_COLORS[0]);
-    setShowAddForm(false);
-  };
 
   const removeCustomSubject = (idx: number) =>
     setCustomSubjects(prev => prev.filter((_, i) => i !== idx));
@@ -342,57 +328,13 @@ const EditalPickerModal: React.FC<Props> = ({
               </div>
             ))}
 
-            {/* Add form */}
-            {showAddForm ? (
-              <div className="bg-white dark:bg-gray-900 border border-indigo-200 dark:border-indigo-800 rounded-2xl p-4 space-y-3">
-                <input
-                  type="text"
-                  value={newSubjectName}
-                  onChange={e => setNewSubjectName(e.target.value)}
-                  placeholder="Nome da matéria"
-                  maxLength={40}
-                  className="w-full bg-transparent text-sm font-black text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-600 placeholder:font-normal focus:outline-none border-b border-gray-100 dark:border-gray-800 pb-2"
-                  autoFocus
-                />
-                <div className="flex flex-wrap gap-2">
-                  {FAST_COLORS.map(c => (
-                    <button
-                      key={c}
-                      onClick={() => setNewSubjectColor(c)}
-                      className="w-7 h-7 rounded-full transition-transform active:scale-90"
-                      style={{
-                        backgroundColor: c,
-                        outline: newSubjectColor === c ? `2px solid ${c}` : 'none',
-                        outlineOffset: '2px',
-                      }}
-                    />
-                  ))}
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    onClick={addCustomSubject}
-                    disabled={!newSubjectName.trim()}
-                    className="flex-1 py-2.5 bg-indigo-600 text-white rounded-xl font-black text-[10px] uppercase tracking-widest disabled:opacity-40 active:scale-[0.98] transition-all"
-                  >
-                    Adicionar
-                  </button>
-                  <button
-                    onClick={() => { setShowAddForm(false); setNewSubjectName(''); }}
-                    className="px-4 py-2.5 bg-gray-100 dark:bg-gray-800 text-gray-500 rounded-xl font-black text-[10px] uppercase tracking-widest active:scale-[0.98] transition-all"
-                  >
-                    Cancelar
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <button
-                onClick={() => setShowAddForm(true)}
-                className="w-full py-3 border-2 border-dashed border-gray-200 dark:border-gray-800 rounded-2xl text-[10px] font-black text-gray-400 dark:text-gray-600 uppercase tracking-widest flex items-center justify-center gap-2 hover:border-indigo-300 dark:hover:border-indigo-800 hover:text-indigo-500 transition-all"
-              >
-                <i className="fas fa-plus text-[9px]" />
-                Adicionar matéria
-              </button>
-            )}
+            <button
+              onClick={() => setShowAddView(true)}
+              className="w-full py-3 border-2 border-dashed border-gray-200 dark:border-gray-800 rounded-2xl text-[10px] font-black text-gray-400 dark:text-gray-600 uppercase tracking-widest flex items-center justify-center gap-2 hover:border-indigo-300 dark:hover:border-indigo-800 hover:text-indigo-500 transition-all"
+            >
+              <i className="fas fa-plus text-[9px]" />
+              Adicionar matéria
+            </button>
           </div>
 
           {/* CTA */}
@@ -407,6 +349,17 @@ const EditalPickerModal: React.FC<Props> = ({
             </button>
           </div>
         </div>
+      )}
+
+      {/* CicloAddView reutilizado para adicionar matéria ao edital customizado */}
+      {showAddView && (
+        <CicloAddView
+          onSave={data => {
+            setCustomSubjects(prev => [...prev, { name: data.title, color: data.color }]);
+            setShowAddView(false);
+          }}
+          onClose={() => setShowAddView(false)}
+        />
       )}
 
       {/* CicloEditView reutilizado para editar matéria do edital customizado */}
