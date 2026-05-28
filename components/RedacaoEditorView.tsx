@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { RedacaoTheme, RedacaoSession, RedacaoCompetencyScores } from '../types';
+import TabPageHeader from './TabPageHeader';
 
 interface Props {
   theme: RedacaoTheme;
@@ -147,40 +148,32 @@ const RedacaoEditorView: React.FC<Props> = ({ theme, existingSession, onSave, on
     : displayMs <= 30 * 60 * 1000 ? '#f59e0b'
     : '#6366f1';
 
+  const saveStatus = isSaving ? 'Salvando…' : lastSaved ? '✓ Salvo' : 'Rascunho';
+
   return (
     <div className="space-y-4">
-      {/* Header */}
-      <div className="flex items-center justify-between gap-3">
-        <div className="min-w-0">
-          <h2 className="text-lg font-black text-gray-800 dark:text-gray-100 uppercase tracking-tight md:text-xl truncate">
-            {theme.title}
-          </h2>
-          <div className="flex items-center gap-2 mt-1">
-            {isSaving ? (
-              <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">Salvando…</span>
-            ) : lastSaved ? (
-              <span className="text-[10px] font-bold text-gray-400 dark:text-gray-600 uppercase tracking-widest">✓ Salvo</span>
-            ) : (
-              <span className="text-[10px] font-bold text-gray-400 dark:text-gray-600 uppercase tracking-widest">Rascunho</span>
-            )}
-            <span className="text-[10px] font-bold text-gray-400 dark:text-gray-600 uppercase tracking-widest">· {wordCount} palavras</span>
+      <TabPageHeader
+        icon="pen"
+        title={theme.title}
+        subtitle={`${saveStatus} · ${wordCount} palavras`}
+        accent="violet"
+        action={
+          <div className="flex items-center gap-3">
+            <div className="text-xl md:text-2xl font-black tabular-nums" style={{ color: timerColor }}>
+              {formatMS(displayMs)}
+            </div>
+            <button
+              onClick={() => setShowChecklist(p => !p)}
+              className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
+                showChecklist ? 'bg-violet-100 dark:bg-violet-900/30 text-violet-600' : 'bg-gray-100 dark:bg-gray-800 text-gray-400'
+              }`}
+              aria-label="Alternar checklist"
+            >
+              <i className="fas fa-list-check text-sm" />
+            </button>
           </div>
-        </div>
-
-        <div className="flex items-center gap-3 shrink-0">
-          <div className="text-2xl font-black tabular-nums" style={{ color: timerColor }}>
-            {formatMS(displayMs)}
-          </div>
-          <button
-            onClick={() => setShowChecklist(p => !p)}
-            className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
-              showChecklist ? 'bg-violet-100 dark:bg-violet-900/30 text-violet-600' : 'bg-gray-100 dark:bg-gray-800 text-gray-400'
-            }`}
-          >
-            <i className="fas fa-list-check text-sm" />
-          </button>
-        </div>
-      </div>
+        }
+      />
 
       {/* Editor + checklist */}
       <div className="grid gap-4 lg:grid-cols-[1fr,18rem]">

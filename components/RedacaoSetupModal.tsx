@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { RedacaoTheme, RedacaoThemeAxis } from '../types';
 import { REDACAO_THEMES, AXIS_LABELS, AXIS_COLORS } from '../data/redacaoThemes';
+import TabPageHeader from './TabPageHeader';
 
 interface Props {
   onStart: (theme: RedacaoTheme) => void;
@@ -31,14 +32,12 @@ const RedacaoSetupModal: React.FC<Props> = ({ onStart }) => {
 
   return (
     <div className="space-y-4">
-      <div>
-        <h2 className="text-lg font-black text-gray-800 dark:text-gray-100 uppercase tracking-tight md:text-xl">
-          Praticar Redação
-        </h2>
-        <p className="text-[10px] font-bold text-gray-400 dark:text-gray-600 uppercase tracking-widest mt-1">
-          90min · Auto-save · 5 competências
-        </p>
-      </div>
+      <TabPageHeader
+        icon="pen"
+        title="Redação"
+        subtitle="90min · Auto-save · 5 competências"
+        accent="violet"
+      />
 
       {/* Search */}
       <div className="relative">

@@ -326,10 +326,7 @@ const App: React.FC = () => {
             </div>
           )}
           {activeTab === 'reviews' && (
-            <div className="animate-in fade-in slide-in-from-bottom-2 duration-300 lg:max-w-4xl xl:max-w-5xl 2xl:max-w-6xl lg:mx-auto">
-              <h2 className="text-lg lg:text-2xl font-black text-gray-800 dark:text-gray-100 uppercase tracking-tight mb-4 lg:mb-6">
-                Revisões
-              </h2>
+            <div className="animate-in fade-in slide-in-from-bottom-2 duration-300 lg:max-w-4xl xl:max-w-5xl lg:mx-auto">
               <ReviewQueueView
                 reviewItems={reviewItems}
                 onApplyResult={applyResult}
@@ -337,7 +334,7 @@ const App: React.FC = () => {
             </div>
           )}
           {activeTab === 'simulado' && (
-            <div className="animate-in fade-in slide-in-from-bottom-2 duration-300 lg:max-w-3xl xl:max-w-4xl lg:mx-auto">
+            <div className="animate-in fade-in slide-in-from-bottom-2 duration-300 lg:max-w-4xl xl:max-w-5xl lg:mx-auto">
               <SimuladoView
                 userName={userName}
                 onSaveRecord={saveSimuladoRecord}
@@ -353,7 +350,7 @@ const App: React.FC = () => {
             </div>
           )}
           {activeTab === 'settings' && (
-            <div className="animate-in fade-in slide-in-from-bottom-2 duration-300 lg:max-w-3xl xl:max-w-4xl lg:mx-auto">
+            <div className="animate-in fade-in slide-in-from-bottom-2 duration-300 lg:max-w-4xl xl:max-w-5xl lg:mx-auto">
               <SettingsPanel
                 theme={theme}
                 onToggleTheme={toggleTheme}

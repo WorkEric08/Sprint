@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { usePWAInstall } from '../hooks/usePWAInstall';
 import { EDITAIS } from '../data/editais';
 import DatePickerModal from './DatePickerModal';
+import TabPageHeader from './TabPageHeader';
 import { isDevModeUser } from '../utils/devMode';
 
 const CUSTOM_KEY = 'sprint_custom_edital';
@@ -114,9 +115,12 @@ const SettingsPanel: React.FC<Props> = ({
 
   return (
     <div className="space-y-6">
-      <h2 className="text-lg font-black text-gray-800 dark:text-gray-100 uppercase tracking-tight md:text-xl">
-        Configurações
-      </h2>
+      <TabPageHeader
+        icon="gear"
+        title="Configurações"
+        subtitle={userName ? `Perfil: ${userName}` : 'Personalize seu app'}
+        accent="slate"
+      />
 
       {/* Perfil + Aparência lado a lado no desktop */}
       <div className="grid gap-4 md:grid-cols-2">

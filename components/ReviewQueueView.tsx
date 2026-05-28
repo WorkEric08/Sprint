@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { ReviewItem } from '../types';
+import TabPageHeader from './TabPageHeader';
 import {
   isPendingNow,
   isOverdue,
@@ -71,6 +72,13 @@ const ReviewQueueView: React.FC<Props> = ({ reviewItems, onApplyResult }) => {
 
   return (
     <div className="space-y-4 pb-24">
+      <TabPageHeader
+        icon="bookmark"
+        title="Revisões"
+        subtitle={`${pending.length} pendente${pending.length === 1 ? '' : 's'} · ${consolidated.length} dominado${consolidated.length === 1 ? '' : 's'}`}
+        accent="amber"
+      />
+
       {/* ── Header stats ── */}
       <div className="grid grid-cols-3 gap-3">
         <div className="bg-white dark:bg-gray-900 rounded-2xl p-3 border border-gray-100 dark:border-gray-800 text-center">

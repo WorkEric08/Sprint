@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { SimuladoTemplate } from '../types';
 import { WakeLockManager } from '../utils/wakeLock';
+import TabPageHeader from './TabPageHeader';
 
 interface Props {
   template: SimuladoTemplate;
@@ -125,23 +126,18 @@ const SimuladoRunnerView: React.FC<Props> = ({ template, onFinish, isDevMode }) 
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-lg font-black text-gray-800 dark:text-gray-100 uppercase tracking-tight md:text-xl">
-            {template.name}
-          </h2>
-          <p className="text-[10px] font-bold text-gray-400 dark:text-gray-600 uppercase tracking-widest mt-1">
-            Iniciado às {new Date(startedAtRef.current).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
-          </p>
-        </div>
-        {template.strictMode && (
-          <div className="flex items-center gap-1 bg-red-50 dark:bg-red-900/20 px-2.5 py-1 rounded-full">
-            <i className="fas fa-lock text-red-500 text-[8px]" />
-            <span className="text-[9px] font-black text-red-500 uppercase tracking-widest">Strict</span>
+      <TabPageHeader
+        icon="stopwatch"
+        title={template.name}
+        subtitle={`Iniciado às ${new Date(startedAtRef.current).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`}
+        accent="indigo"
+        action={template.strictMode ? (
+          <div className="flex items-center gap-1.5 bg-red-50 dark:bg-red-900/20 px-3 py-1.5 rounded-full">
+            <i className="fas fa-lock text-red-500 text-[9px]" />
+            <span className="text-[10px] font-black text-red-500 uppercase tracking-widest">Strict</span>
           </div>
-        )}
-      </div>
+        ) : undefined}
+      />
 
       {/* Main timer */}
       <div className="bg-white dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-800 p-6 md:p-8 flex flex-col items-center gap-8">

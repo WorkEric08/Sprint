@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { SimuladoTemplate } from '../types';
 import { SIMULADO_TEMPLATES } from '../data/simuladoTemplates';
+import TabPageHeader from './TabPageHeader';
 
 interface Props {
   onStart: (template: SimuladoTemplate) => void;
@@ -34,14 +35,12 @@ const SimuladoSetupModal: React.FC<Props> = ({ onStart }) => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-lg font-black text-gray-800 dark:text-gray-100 uppercase tracking-tight md:text-xl">
-          Iniciar Simulado
-        </h2>
-        <p className="text-[10px] font-bold text-gray-400 dark:text-gray-600 uppercase tracking-widest mt-1">
-          Modo foco máximo · Wake Lock ativo
-        </p>
-      </div>
+      <TabPageHeader
+        icon="stopwatch"
+        title="Simulado"
+        subtitle="Modo foco máximo · Wake Lock ativo"
+        accent="indigo"
+      />
 
       {/* Template selection */}
       <div className="space-y-2">
