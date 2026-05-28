@@ -361,7 +361,7 @@ const HeatmapView: React.FC<HeatmapProps> = ({ streakEnabled: _streakEnabled = t
         </div>
 
         {/* Scroll container: full card width, padding-x gives ring room at edges */}
-        <div ref={scrollRef} className="overflow-x-scroll-area px-2 pb-1">
+        <div ref={scrollRef} className="overflow-x-scroll-area pl-2 pr-[10px] pb-1">
           <div className="flex gap-5 py-1">
             {monthsForDisplay.map(({ year, month }) => {
               const cells = buildMonthCells(year, month);
