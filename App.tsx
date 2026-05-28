@@ -75,9 +75,14 @@ const App: React.FC = () => {
   // Oculta a bottom nav quando qualquer tela secundária full-screen está aberta
   const hasSecondaryScreen = useHasSecondaryScreen();
 
-  // Refs para medição da nav — declarados cedo para manter ordem de hooks estável
+  // Refs para medição da nav — declarados cedo para manter ordem de hooks estável.
+  // sessionStorage persiste no reload do force-update (window.location.reload),
+  // então na próxima carga o padding já está correto desde o primeiro render.
   const navRef = useRef<HTMLElement>(null);
-  const [navHeight, setNavHeight] = useState(0);
+  const [navHeight, setNavHeight] = useState<number>(() => {
+    try { return parseInt(sessionStorage.getItem('sprint_nav_h') || '0', 10) || 0; }
+    catch { return 0; }
+  });
 
   const {
     theme, setTheme, userName, setUserName,
@@ -187,7 +192,11 @@ const App: React.FC = () => {
   useLayoutEffect(() => {
     const el = navRef.current;
     if (!el) return;
-    const update = () => setNavHeight(el.offsetHeight);
+    const update = () => {
+      const h = el.offsetHeight;
+      setNavHeight(h);
+      try { sessionStorage.setItem('sprint_nav_h', String(h)); } catch {}
+    };
     update();
     const ro = new ResizeObserver(update);
     ro.observe(el);
