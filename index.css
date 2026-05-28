@@ -76,15 +76,15 @@ html, body {
 }
 
 .dark .scroll-container::-webkit-scrollbar-thumb {
-  background: #1f1538;
+  background: #0f1d3a;
 }
 
 .scroll-container::-webkit-scrollbar-thumb:hover {
-  background: #6d28d9;
+  background: #1e3a8a;
 }
 
 .dark .scroll-container::-webkit-scrollbar-thumb:hover {
-  background: #5b21b6;
+  background: #1e40af;
 }
 
 /* Android: Ocultar scrollbar se desejado (opcional, mas comum em apps) */
@@ -131,7 +131,7 @@ input[type=number] {
     scrollbar-color: #9ca3af transparent;
   }
   .dark .calendar-hscroll {
-    scrollbar-color: #1f1538 transparent;
+    scrollbar-color: #0f1d3a transparent;
   }
   .calendar-hscroll::-webkit-scrollbar {
     display: block;
@@ -145,13 +145,13 @@ input[type=number] {
     border-radius: 10px;
   }
   .dark .calendar-hscroll::-webkit-scrollbar-thumb {
-    background: #1f1538;
+    background: #0f1d3a;
   }
   .calendar-hscroll::-webkit-scrollbar-thumb:hover {
-    background: #6d28d9;
+    background: #1e3a8a;
   }
   .dark .calendar-hscroll::-webkit-scrollbar-thumb:hover {
-    background: #5b21b6;
+    background: #1e40af;
   }
 }
 
@@ -169,7 +169,7 @@ input[type=number] {
   }
 
   .dark .scroll-container {
-    scrollbar-color: #1f1538 transparent;
+    scrollbar-color: #0f1d3a transparent;
   }
 }
 
@@ -183,7 +183,7 @@ input[type=number] {
   scrollbar-color: #9ca3af transparent;
 }
 .dark .sidebar-scroll:hover {
-  scrollbar-color: #1f1538 transparent;
+  scrollbar-color: #0f1d3a transparent;
 }
 .sidebar-scroll::-webkit-scrollbar {
   width: 4px;
@@ -200,13 +200,13 @@ input[type=number] {
   background: #9ca3af;
 }
 .dark .sidebar-scroll:hover::-webkit-scrollbar-thumb {
-  background: #1f1538;
+  background: #0f1d3a;
 }
 .sidebar-scroll::-webkit-scrollbar-thumb:hover {
-  background: #6d28d9 !important;
+  background: #1e3a8a !important;
 }
 .dark .sidebar-scroll::-webkit-scrollbar-thumb:hover {
-  background: #5b21b6 !important;
+  background: #1e40af !important;
 }
 
 /* Cursor pointer para elementos interativos no desktop */
