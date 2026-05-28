@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Subject, SprintQueueItem, SprintResolvedItem, BlockType, ReviewItem, BLOCK_TYPE_LABELS, BLOCK_TYPE_COLORS } from '../types';
 import { useBackButton } from '../hooks/useBackButton';
 import { isPendingNow } from '../utils/reviewAlgorithm';
@@ -111,10 +112,10 @@ const SprintBuilderView: React.FC<Props> = ({
     onStart(resolved);
   };
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-50 bg-gray-50 dark:bg-gray-950 flex flex-col animate-in fade-in duration-200">
       {/* Header */}
-      <div className="flex items-center gap-3 px-4 pt-4 pb-3 border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-950">
+      <div className="flex items-center gap-3 px-4 pb-3 safe-top border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-950">
         <button
           onClick={onClose}
           className="w-9 h-9 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 active:scale-90 transition-transform shrink-0"
@@ -332,7 +333,8 @@ const SprintBuilderView: React.FC<Props> = ({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 

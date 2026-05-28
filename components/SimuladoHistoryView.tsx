@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { SimuladoRecord } from '../types';
 import {
   LineChart, Line, XAxis, YAxis, Tooltip,
@@ -54,10 +55,10 @@ const SimuladoHistoryView: React.FC<Props> = ({ records, onDelete, onClose }) =>
     };
   }, [records]);
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-[60] bg-gray-50 dark:bg-gray-950 flex flex-col animate-in fade-in duration-200">
       {/* Header */}
-      <div className="flex items-center gap-3 px-4 pt-4 pb-3 border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 shrink-0">
+      <div className="flex items-center gap-3 px-4 pb-3 safe-top border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 shrink-0">
         <button
           onClick={onClose}
           className="w-9 h-9 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-gray-500 active:scale-90 transition-transform"
@@ -298,7 +299,8 @@ const SimuladoHistoryView: React.FC<Props> = ({ records, onDelete, onClose }) =>
           </div>
         </div>
       )}
-    </div>
+    </div>,
+    document.body
   );
 };
 

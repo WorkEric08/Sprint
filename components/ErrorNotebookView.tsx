@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { ErrorEntry } from '../types';
 import { useSecondaryScreen } from '../contexts/OverlayContext';
 
@@ -73,10 +74,10 @@ const ErrorNotebookView: React.FC<Props> = ({ errorEntries, onUpdateNote, onClos
     setEditingNoteId(null);
   };
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-50 bg-gray-50 dark:bg-gray-950 flex flex-col animate-in fade-in duration-200">
       {/* Header */}
-      <div className="flex items-center gap-3 px-4 pt-4 pb-3 border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 shrink-0">
+      <div className="flex items-center gap-3 px-4 pb-3 safe-top border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 shrink-0">
         <button
           onClick={onClose}
           className="w-9 h-9 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 active:scale-90 transition-transform shrink-0"
@@ -261,7 +262,8 @@ const ErrorNotebookView: React.FC<Props> = ({ errorEntries, onUpdateNote, onClos
           ))
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 

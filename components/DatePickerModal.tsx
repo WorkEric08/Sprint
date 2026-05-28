@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useBackButton } from '../hooks/useBackButton';
 
 interface Props {
@@ -69,7 +70,7 @@ const DatePickerModal: React.FC<Props> = ({ value, onSelect, onClear, onClose })
     onClose();
   };
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-[95] flex items-center justify-center p-4 animate-in fade-in duration-200">
       {/* Backdrop */}
       <div
@@ -177,7 +178,8 @@ const DatePickerModal: React.FC<Props> = ({ value, onSelect, onClear, onClose })
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 

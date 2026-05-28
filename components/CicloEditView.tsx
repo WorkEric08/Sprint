@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Subject } from '../types';
 import { HexColorPicker } from "react-colorful";
 import { useBackButton } from '../hooks/useBackButton';
@@ -30,10 +31,10 @@ const CicloEditView: React.FC<Props> = ({ subject, onSave, onClose }) => {
     onSave({ title, color, duration, blockCount });
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex flex-col md:items-center md:justify-center md:bg-black/50 md:backdrop-blur-sm animate-in fade-in duration-200">
+  return createPortal(
+    <div className="fixed inset-0 z-[110] flex flex-col md:items-center md:justify-center md:bg-black/50 md:backdrop-blur-sm animate-in fade-in duration-200">
       <div className="bg-gray-50 dark:bg-gray-950 flex flex-col w-full h-full md:h-auto md:max-h-[90vh] md:max-w-lg md:rounded-3xl md:overflow-hidden md:shadow-2xl">
-      <div className="flex items-center gap-3 px-4 pt-4 pb-3 border-b border-gray-100 dark:border-gray-800 md:px-6">
+      <div className="flex items-center gap-3 px-4 pb-3 safe-top border-b border-gray-100 dark:border-gray-800 md:px-6">
         <button
           onClick={onClose}
           className="w-9 h-9 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 active:scale-90 transition-transform hover:bg-gray-200 dark:hover:bg-gray-700"
@@ -166,7 +167,8 @@ const CicloEditView: React.FC<Props> = ({ subject, onSave, onClose }) => {
         </button>
       </form>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 
