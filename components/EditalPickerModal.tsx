@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Edital, Subject } from '../types';
 import { EDITAIS } from '../data/editais';
 import { useSecondaryScreen } from '../contexts/OverlayContext';
+import CicloEditView from './CicloEditView';
 
 interface Props {
   currentEditalId: string | null;
@@ -75,6 +76,7 @@ const EditalPickerModal: React.FC<Props> = ({
   const [newSubjectName, setNewSubjectName] = useState('');
   const [newSubjectColor, setNewSubjectColor] = useState(FAST_COLORS[0]);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [editingIdx, setEditingIdx] = useState<number | null>(null);
 
   const addCustomSubject = () => {
     if (!newSubjectName.trim()) return;
@@ -315,16 +317,27 @@ const EditalPickerModal: React.FC<Props> = ({
             </p>
 
             {customSubjects.map((cs, idx) => (
-              <div key={idx} className="flex items-center gap-3 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl px-4 py-3">
+              <div key={idx} className="flex items-center gap-2 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl px-4 py-3">
                 <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: cs.color }} />
-                <span className="flex-1 text-sm font-black text-gray-800 dark:text-gray-100 uppercase tracking-tight truncate">
+                <button
+                  onClick={() => setEditingIdx(idx)}
+                  className="flex-1 text-left text-sm font-black text-gray-800 dark:text-gray-100 uppercase tracking-tight truncate active:opacity-60 transition-opacity"
+                >
                   {cs.name}
-                </span>
+                </button>
+                <button
+                  onClick={() => setEditingIdx(idx)}
+                  className="w-7 h-7 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-gray-400 active:scale-90 transition-transform"
+                  title="Editar matéria"
+                >
+                  <i className="fas fa-pencil text-[10px]" />
+                </button>
                 <button
                   onClick={() => removeCustomSubject(idx)}
-                  className="w-7 h-7 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-gray-400 active:scale-90 transition-transform"
+                  className="w-7 h-7 flex items-center justify-center rounded-full bg-red-50 dark:bg-red-900/20 text-red-400 active:scale-90 transition-transform"
+                  title="Excluir matéria"
                 >
-                  <i className="fas fa-times text-[10px]" />
+                  <i className="fas fa-trash text-[10px]" />
                 </button>
               </div>
             ))}
@@ -394,6 +407,29 @@ const EditalPickerModal: React.FC<Props> = ({
             </button>
           </div>
         </div>
+      )}
+
+      {/* CicloEditView reutilizado para editar matéria do edital customizado */}
+      {editingIdx !== null && customSubjects[editingIdx] && (
+        <CicloEditView
+          subject={{
+            id: String(editingIdx),
+            title: customSubjects[editingIdx].name,
+            color: customSubjects[editingIdx].color,
+            duration: 50,
+            blockCount: 20,
+            completedBlocks: [],
+          }}
+          onSave={data => {
+            setCustomSubjects(prev =>
+              prev.map((cs, i) =>
+                i === editingIdx ? { name: data.title, color: data.color } : cs
+              )
+            );
+            setEditingIdx(null);
+          }}
+          onClose={() => setEditingIdx(null)}
+        />
       )}
     </div>
   );
