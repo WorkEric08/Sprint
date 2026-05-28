@@ -14,6 +14,7 @@ const MONTH_NAMES: string[] = [
 
 const MONTHS_COUNT = 4;
 const GOAL_STORAGE_KEY = 'sprint_calendar_goal';
+const NOTES_STORAGE_KEY = 'sprint_day_notes';
 const MAX_GOAL_LIMIT = 12;
 
 // ── Types ──────────────────────────────────────────────────────────────────
@@ -32,7 +33,7 @@ interface GoalSettings {
   max: number;
 }
 
-// ── Goal persistence ───────────────────────────────────────────────────────
+// ── Persistence ────────────────────────────────────────────────────────────
 
 function loadGoal(): GoalSettings {
   try {
@@ -49,7 +50,18 @@ function persistGoal(goal: GoalSettings): void {
   try { localStorage.setItem(GOAL_STORAGE_KEY, JSON.stringify(goal)); } catch {}
 }
 
-// ── Color helpers (goal-aware) ─────────────────────────────────────────────
+function loadNotes(): Record<string, string> {
+  try {
+    const raw = localStorage.getItem(NOTES_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch { return {}; }
+}
+
+function persistNotes(notes: Record<string, string>): void {
+  try { localStorage.setItem(NOTES_STORAGE_KEY, JSON.stringify(notes)); } catch {}
+}
+
+// ── Color helpers ──────────────────────────────────────────────────────────
 
 type GoalLevel = 'none' | 'below' | 'partial' | 'full';
 
@@ -74,7 +86,7 @@ function cellText(level: GoalLevel, isFuture: boolean): string {
   switch (level) {
     case 'none':    return 'text-gray-400 dark:text-gray-600';
     case 'below':   return 'text-violet-800 dark:text-violet-200';
-    case 'partial': return 'text-white';
+    case 'partial':
     case 'full':    return 'text-white';
   }
 }
@@ -146,104 +158,58 @@ const GoalModal: React.FC<GoalModalProps> = ({ current, onSave, onClose }) => {
     if (v <= min) setMin(v - 1);
   };
 
-  const handleSave = () => {
-    onSave({ min, max });
-    onClose();
-  };
+  const handleSave = () => { onSave({ min, max }); onClose(); };
 
-  const allPreviewRows: { level: GoalLevel; label: string; range: string }[] = [
+  const allRows: { level: GoalLevel; label: string; range: string }[] = [
     { level: 'below',   label: 'Início',  range: `1–${min - 1} bloco${min - 1 !== 1 ? 's' : ''}` },
     { level: 'partial', label: 'Parcial', range: `${min}–${max - 1} bloco${max - 1 !== 1 ? 's' : ''}` },
     { level: 'full',    label: 'Meta!',   range: `${max}+ bloco${max !== 1 ? 's' : ''}` },
   ];
-  const preview = allPreviewRows.filter((row, i) => i === 0 ? min > 1 : true);
+  const preview = allRows.filter((_, i) => i === 0 ? min > 1 : true);
 
   return createPortal(
     <div className="fixed inset-0 z-[110] flex items-center justify-center p-5 animate-in fade-in duration-200">
-      {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-md"
-        onClick={onClose}
-      />
-
-      {/* Card */}
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-md" onClick={onClose} />
       <div className="relative bg-white dark:bg-gray-900 rounded-3xl w-full max-w-sm border border-gray-100 dark:border-gray-800 shadow-2xl animate-in zoom-in-95 duration-200 overflow-hidden">
-
-        {/* Header */}
         <div className="px-6 pt-6 pb-4 border-b border-gray-100 dark:border-gray-800">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-base font-black text-gray-800 dark:text-gray-100 uppercase tracking-tight">
-                Meta de Blocos
-              </h3>
-              <p className="text-[10px] font-bold text-gray-400 dark:text-gray-600 uppercase tracking-widest mt-0.5">
-                Define as cores do calendário
-              </p>
+              <h3 className="text-base font-black text-gray-800 dark:text-gray-100 uppercase tracking-tight">Meta de Blocos</h3>
+              <p className="text-[10px] font-bold text-gray-400 dark:text-gray-600 uppercase tracking-widest mt-0.5">Define as cores do calendário</p>
             </div>
-            <button
-              onClick={onClose}
-              className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-400 active:scale-90 transition-transform"
-            >
+            <button onClick={onClose} className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-400 active:scale-90 transition-transform">
               <i className="fas fa-times text-[11px]" />
             </button>
           </div>
         </div>
 
         <div className="px-6 py-5 space-y-6">
-
-          {/* Sliders */}
           <div className="space-y-5">
-
-            {/* Min */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <label className="text-[10px] font-black text-gray-500 dark:text-gray-500 uppercase tracking-widest">
-                  Mínimo diário
-                </label>
-                <span className="text-sm font-black text-violet-600 dark:text-violet-400">
-                  {min} {min === 1 ? 'bloco' : 'blocos'}
-                </span>
+                <label className="text-[10px] font-black text-gray-500 dark:text-gray-500 uppercase tracking-widest">Mínimo diário</label>
+                <span className="text-sm font-black text-violet-600 dark:text-violet-400">{min} {min === 1 ? 'bloco' : 'blocos'}</span>
               </div>
-              <input
-                type="range"
-                min={1}
-                max={MAX_GOAL_LIMIT - 1}
-                value={min}
+              <input type="range" min={1} max={MAX_GOAL_LIMIT - 1} value={min}
                 onChange={e => handleMinChange(Number(e.target.value))}
                 className="w-full h-1.5 rounded-full appearance-none cursor-pointer"
-                style={{ accentColor: '#7c3aed' }}
-              />
+                style={{ accentColor: '#7c3aed' }} />
             </div>
-
-            {/* Max */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <label className="text-[10px] font-black text-gray-500 dark:text-gray-500 uppercase tracking-widest">
-                  Máximo diário
-                </label>
-                <span className="text-sm font-black text-violet-800 dark:text-violet-300">
-                  {max} {max === 1 ? 'bloco' : 'blocos'}
-                </span>
+                <label className="text-[10px] font-black text-gray-500 dark:text-gray-500 uppercase tracking-widest">Máximo diário</label>
+                <span className="text-sm font-black text-violet-800 dark:text-violet-300">{max} {max === 1 ? 'bloco' : 'blocos'}</span>
               </div>
-              <input
-                type="range"
-                min={2}
-                max={MAX_GOAL_LIMIT}
-                value={max}
+              <input type="range" min={2} max={MAX_GOAL_LIMIT} value={max}
                 onChange={e => handleMaxChange(Number(e.target.value))}
                 className="w-full h-1.5 rounded-full appearance-none cursor-pointer"
-                style={{ accentColor: '#4c1d95' }}
-              />
+                style={{ accentColor: '#4c1d95' }} />
             </div>
           </div>
 
-          {/* Legend preview */}
           <div className="space-y-2">
-            <p className="text-[9px] font-black text-gray-400 dark:text-gray-600 uppercase tracking-widest">
-              Legenda
-            </p>
+            <p className="text-[9px] font-black text-gray-400 dark:text-gray-600 uppercase tracking-widest">Legenda</p>
             <div className="space-y-2">
-              {/* No activity */}
               <div className="flex items-center gap-3">
                 <div className="w-7 h-7 rounded-lg bg-gray-100 dark:bg-gray-800/50 shrink-0" />
                 <div>
@@ -253,10 +219,7 @@ const GoalModal: React.FC<GoalModalProps> = ({ current, onSave, onClose }) => {
               </div>
               {preview.map(({ level, label, range }) => (
                 <div key={level} className="flex items-center gap-3">
-                  <div
-                    className="w-7 h-7 rounded-lg shrink-0 transition-colors duration-300"
-                    style={{ backgroundColor: levelColor(level) }}
-                  />
+                  <div className="w-7 h-7 rounded-lg shrink-0 transition-colors duration-300" style={{ backgroundColor: levelColor(level) }} />
                   <div>
                     <p className="text-xs font-bold text-gray-700 dark:text-gray-300">{label}</p>
                     <p className="text-[9px] text-gray-400 dark:text-gray-600">{range}</p>
@@ -266,12 +229,9 @@ const GoalModal: React.FC<GoalModalProps> = ({ current, onSave, onClose }) => {
             </div>
           </div>
 
-          {/* Save */}
-          <button
-            onClick={handleSave}
+          <button onClick={handleSave}
             className="w-full py-3.5 rounded-2xl font-black text-[11px] uppercase tracking-[0.15em] text-white active:scale-[0.98] transition-all"
-            style={{ backgroundColor: '#7c3aed' }}
-          >
+            style={{ backgroundColor: '#7c3aed' }}>
             Salvar meta
           </button>
         </div>
@@ -287,12 +247,16 @@ interface HeatmapProps {
   streakEnabled?: boolean;
 }
 
-const HeatmapView: React.FC<HeatmapProps> = ({ streakEnabled = true }) => {
+const HeatmapView: React.FC<HeatmapProps> = ({ streakEnabled: _streakEnabled = true }) => {
   const [blockLogs, setBlockLogs] = useState<BlockLog[]>([]);
   const [selected, setSelected] = useState<DayData | null>(null);
   const [showSettings, setShowSettings] = useState(false);
   const [goal, setGoal] = useState<GoalSettings>(loadGoal);
+  const [dayNotes, setDayNotes] = useState<Record<string, string>>(loadNotes);
+  const [noteText, setNoteText] = useState('');
+  const [isEditingNote, setIsEditingNote] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const noteRef = useRef<HTMLTextAreaElement>(null);
   const today = todayKey();
 
   useEffect(() => {
@@ -304,6 +268,14 @@ const HeatmapView: React.FC<HeatmapProps> = ({ streakEnabled = true }) => {
       scrollRef.current.scrollLeft = scrollRef.current.scrollWidth;
     }
   }, []);
+
+  // Reset note state when selected day changes
+  useEffect(() => {
+    if (!selected) { setIsEditingNote(false); setNoteText(''); return; }
+    setNoteText(dayNotes[selected.dateKey] ?? '');
+    setIsEditingNote(false);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selected?.dateKey]);
 
   const months = useMemo(() => getMonthsToShow(), []);
   const monthsForDisplay = useMemo(() => [...months].reverse(), [months]);
@@ -335,15 +307,31 @@ const HeatmapView: React.FC<HeatmapProps> = ({ streakEnabled = true }) => {
     return s;
   }, [dayMap]);
 
-  const streak = useMemo(() => computeToleratedStreak(activeDayKeys), [activeDayKeys]);
-  const totalBlocks = useMemo(
-    () => [...dayMap.values()].reduce((a, d) => a + d.blocks, 0),
-    [dayMap]
-  );
+  // Keep streak/total for potential future use but don't render them
+  useMemo(() => computeToleratedStreak(activeDayKeys), [activeDayKeys]);
 
   const handleSaveGoal = (newGoal: GoalSettings) => {
     setGoal(newGoal);
     persistGoal(newGoal);
+  };
+
+  const saveNote = () => {
+    if (!selected) return;
+    const updated = { ...dayNotes };
+    const trimmed = noteText.trim();
+    if (trimmed) {
+      updated[selected.dateKey] = trimmed;
+    } else {
+      delete updated[selected.dateKey];
+    }
+    setDayNotes(updated);
+    persistNotes(updated);
+    setIsEditingNote(false);
+  };
+
+  const startEditNote = () => {
+    setIsEditingNote(true);
+    setTimeout(() => noteRef.current?.focus(), 50);
   };
 
   const selectedAccuracy = selected && selected.questions > 0
@@ -352,48 +340,6 @@ const HeatmapView: React.FC<HeatmapProps> = ({ streakEnabled = true }) => {
 
   return (
     <div className="space-y-4">
-
-      {/* ── Stats row ── */}
-      {streakEnabled ? (
-        <div className="grid grid-cols-2 gap-3">
-          <div className="bg-white dark:bg-gray-900 rounded-2xl p-4 border border-gray-100 dark:border-gray-800">
-            <div className="flex items-center gap-2 mb-2">
-              <i className="fas fa-fire text-orange-500 text-sm" />
-              <span className="text-[9px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">Sequência</span>
-            </div>
-            <p className="text-3xl font-black text-gray-800 dark:text-white leading-none">
-              {streak}
-              <span className="text-sm font-bold text-gray-400 ml-1">{streak === 1 ? 'dia' : 'dias'}</span>
-            </p>
-            {streak > 0 && (
-              <p className="text-[9px] font-bold text-orange-400 uppercase tracking-widest mt-1">
-                Tolerante · 1 gap/semana
-              </p>
-            )}
-          </div>
-          <div className="bg-white dark:bg-gray-900 rounded-2xl p-4 border border-gray-100 dark:border-gray-800">
-            <div className="flex items-center gap-2 mb-2">
-              <i className="fas fa-rotate text-violet-500 text-sm" />
-              <span className="text-[9px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">Blocos</span>
-            </div>
-            <p className="text-3xl font-black text-gray-800 dark:text-white leading-none">
-              {totalBlocks}
-              <span className="text-sm font-bold text-gray-400 ml-1">blocos</span>
-            </p>
-          </div>
-        </div>
-      ) : (
-        <div className="bg-white dark:bg-gray-900 rounded-2xl p-4 border border-gray-100 dark:border-gray-800">
-          <div className="flex items-center gap-2 mb-2">
-            <i className="fas fa-rotate text-violet-500 text-sm" />
-            <span className="text-[9px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">Total de blocos</span>
-          </div>
-          <p className="text-3xl font-black text-gray-800 dark:text-white leading-none">
-            {totalBlocks}
-            <span className="text-sm font-bold text-gray-400 ml-1">blocos</span>
-          </p>
-        </div>
-      )}
 
       {/* ── Calendar card ── */}
       <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-4">
@@ -411,16 +357,17 @@ const HeatmapView: React.FC<HeatmapProps> = ({ streakEnabled = true }) => {
           </button>
         </div>
 
-        {/* Horizontal scroll */}
+        {/* Horizontal scroll
+            px-1 py-1 on the inner flex gives rings room at every edge
+            so the selected/today ring-2 (2px) is never clipped by overflow-x-scroll-area */}
         <div ref={scrollRef} className="overflow-x-scroll-area">
-          <div className="flex gap-5">
+          <div className="flex gap-5 px-1 py-1">
             {monthsForDisplay.map(({ year, month }) => {
               const cells = buildMonthCells(year, month);
               const activeDays = cells.filter(dk => dk && (dayMap.get(dk)?.blocks ?? 0) > 0).length;
 
               return (
                 <div key={`${year}-${month}`} className="shrink-0 w-[220px]">
-                  {/* Month label */}
                   <div className="flex items-center justify-between mb-2.5">
                     <span className="text-xs font-black text-gray-700 dark:text-gray-300 uppercase tracking-tight">
                       {MONTH_NAMES[month]}
@@ -433,7 +380,6 @@ const HeatmapView: React.FC<HeatmapProps> = ({ streakEnabled = true }) => {
                     )}
                   </div>
 
-                  {/* Day-of-week labels */}
                   <div className="grid grid-cols-7 gap-[3px] mb-[3px]">
                     {DAY_LABELS.map((d, i) => (
                       <div key={i} className="text-center text-[8px] font-black text-gray-300 dark:text-gray-700 uppercase">
@@ -442,7 +388,6 @@ const HeatmapView: React.FC<HeatmapProps> = ({ streakEnabled = true }) => {
                     ))}
                   </div>
 
-                  {/* Day cells */}
                   <div className="grid grid-cols-7 gap-[3px]">
                     {cells.map((dateKey, i) => {
                       if (!dateKey) return <div key={i} className="aspect-square" />;
@@ -454,6 +399,7 @@ const HeatmapView: React.FC<HeatmapProps> = ({ streakEnabled = true }) => {
                       const isSelected = selected?.dateKey === dateKey;
                       const day = parseInt(dateKey.split('-')[2], 10);
                       const level = getGoalLevel(blocks, isFuture, goal);
+                      const hasNote = !!dayNotes[dateKey];
 
                       return (
                         <button
@@ -463,7 +409,7 @@ const HeatmapView: React.FC<HeatmapProps> = ({ streakEnabled = true }) => {
                             setSelected(prev => prev?.dateKey === dateKey ? null : data);
                           }}
                           className={[
-                            'aspect-square rounded-[5px] flex items-center justify-center transition-all duration-150',
+                            'aspect-square rounded-[5px] relative flex items-center justify-center transition-all duration-150',
                             isFuture ? 'bg-transparent' : cellBg(level),
                             isToday && !isSelected
                               ? 'ring-[1.5px] ring-violet-500 ring-offset-1 ring-offset-white dark:ring-offset-gray-900'
@@ -477,6 +423,17 @@ const HeatmapView: React.FC<HeatmapProps> = ({ streakEnabled = true }) => {
                           <span className={`text-[10px] font-bold leading-none select-none ${cellText(level, isFuture)}`}>
                             {day}
                           </span>
+                          {/* Note indicator dot */}
+                          {hasNote && !isFuture && (
+                            <span
+                              className="absolute bottom-[2px] left-1/2 -translate-x-1/2 w-[3px] h-[3px] rounded-full"
+                              style={{
+                                backgroundColor: level === 'none'
+                                  ? '#a78bfa'
+                                  : 'rgba(255,255,255,0.75)',
+                              }}
+                            />
+                          )}
                         </button>
                       );
                     })}
@@ -488,15 +445,10 @@ const HeatmapView: React.FC<HeatmapProps> = ({ streakEnabled = true }) => {
         </div>
 
         {/* Legend */}
-        <div className="flex items-center gap-3 mt-3 justify-end">
-          <span className="text-[8px] font-bold text-gray-300 dark:text-gray-700 uppercase tracking-widest">Meta</span>
+        <div className="flex items-center gap-2 mt-3 justify-end">
+          <span className="text-[8px] font-bold text-gray-300 dark:text-gray-700 uppercase tracking-widest mr-1">Meta</span>
           {(['below', 'partial', 'full'] as GoalLevel[]).map(level => (
-            <div key={level} className="flex items-center gap-1">
-              <div
-                className="w-3 h-3 rounded-[3px]"
-                style={{ backgroundColor: levelColor(level) }}
-              />
-            </div>
+            <div key={level} className="w-3 h-3 rounded-[3px]" style={{ backgroundColor: levelColor(level) }} />
           ))}
           <div className="w-3 h-3 rounded-[3px] bg-gray-100 dark:bg-gray-800/50" />
         </div>
@@ -513,14 +465,13 @@ const HeatmapView: React.FC<HeatmapProps> = ({ streakEnabled = true }) => {
               style={{ backgroundColor: levelColor(getGoalLevel(selected.blocks, false, goal)) }}
             />
 
-            <div className="p-4">
+            <div className="p-4 space-y-4">
+
               {/* Header */}
-              <div className="flex items-start justify-between mb-4">
+              <div className="flex items-start justify-between">
                 <div>
                   {selected.isToday && (
-                    <span className="inline-block text-[9px] font-black text-violet-500 uppercase tracking-widest mb-0.5">
-                      Hoje
-                    </span>
+                    <span className="inline-block text-[9px] font-black text-violet-500 uppercase tracking-widest mb-0.5">Hoje</span>
                   )}
                   <p className="text-sm font-black text-gray-800 dark:text-gray-100 leading-snug capitalize">
                     {formatDetailDate(selected.dateKey)}
@@ -534,75 +485,43 @@ const HeatmapView: React.FC<HeatmapProps> = ({ streakEnabled = true }) => {
                 </button>
               </div>
 
-              {selected.blocks === 0 ? (
-                <p className="text-sm text-gray-400 dark:text-gray-600">Nenhuma atividade registrada.</p>
-              ) : (
+              {/* Stats (only when there are blocks) */}
+              {selected.blocks > 0 && (
                 <div className="space-y-3">
                   <div className="grid grid-cols-3 gap-2">
-                    {/* Blocos */}
                     <div className="bg-violet-50 dark:bg-violet-900/20 rounded-xl p-3 text-center">
-                      <p className="text-2xl font-black text-violet-600 dark:text-violet-400 leading-none mb-1">
-                        {selected.blocks}
-                      </p>
+                      <p className="text-2xl font-black text-violet-600 dark:text-violet-400 leading-none mb-1">{selected.blocks}</p>
                       <p className="text-[8px] font-black text-violet-400 dark:text-violet-600 uppercase tracking-widest">
                         {selected.blocks === 1 ? 'Bloco' : 'Blocos'}
                       </p>
                     </div>
 
-                    {/* Questões */}
                     <div className="bg-gray-50 dark:bg-gray-800/60 rounded-xl p-3 text-center">
-                      <p className="text-2xl font-black text-gray-700 dark:text-gray-200 leading-none mb-1">
-                        {selected.questions}
-                      </p>
-                      <p className="text-[8px] font-black text-gray-400 dark:text-gray-600 uppercase tracking-widest">
-                        Questões
-                      </p>
+                      <p className="text-2xl font-black text-gray-700 dark:text-gray-200 leading-none mb-1">{selected.questions}</p>
+                      <p className="text-[8px] font-black text-gray-400 dark:text-gray-600 uppercase tracking-widest">Questões</p>
                     </div>
 
-                    {/* Acerto */}
-                    <div
-                      className="rounded-xl p-3 text-center"
+                    <div className="rounded-xl p-3 text-center"
                       style={{
-                        backgroundColor: selectedAccuracy === null
-                          ? undefined
-                          : selectedAccuracy >= 70
-                          ? 'rgba(34,197,94,0.1)'
-                          : 'rgba(239,68,68,0.08)',
-                      }}
-                    >
-                      <p
-                        className="text-2xl font-black leading-none mb-1"
-                        style={{
-                          color: selectedAccuracy === null ? '#9ca3af'
-                            : selectedAccuracy >= 70 ? '#16a34a' : '#dc2626',
-                        }}
-                      >
+                        backgroundColor: selectedAccuracy === null ? undefined
+                          : selectedAccuracy >= 70 ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.08)',
+                      }}>
+                      <p className="text-2xl font-black leading-none mb-1"
+                        style={{ color: selectedAccuracy === null ? '#9ca3af' : selectedAccuracy >= 70 ? '#16a34a' : '#dc2626' }}>
                         {selectedAccuracy !== null ? `${selectedAccuracy}%` : '—'}
                       </p>
-                      <p
-                        className="text-[8px] font-black uppercase tracking-widest"
-                        style={{
-                          color: selectedAccuracy === null ? '#9ca3af'
-                            : selectedAccuracy >= 70 ? '#16a34a' : '#dc2626',
-                          opacity: 0.7,
-                        }}
-                      >
+                      <p className="text-[8px] font-black uppercase tracking-widest"
+                        style={{ color: selectedAccuracy === null ? '#9ca3af' : selectedAccuracy >= 70 ? '#16a34a' : '#dc2626', opacity: 0.7 }}>
                         Acerto
                       </p>
                     </div>
                   </div>
 
-                  {/* Accuracy bar */}
                   {selected.questions > 0 && selectedAccuracy !== null && (
                     <div className="space-y-1">
                       <div className="h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
-                        <div
-                          className="h-full rounded-full transition-all duration-700 ease-out"
-                          style={{
-                            width: `${selectedAccuracy}%`,
-                            backgroundColor: selectedAccuracy >= 70 ? '#22c55e' : '#ef4444',
-                          }}
-                        />
+                        <div className="h-full rounded-full transition-all duration-700 ease-out"
+                          style={{ width: `${selectedAccuracy}%`, backgroundColor: selectedAccuracy >= 70 ? '#22c55e' : '#ef4444' }} />
                       </div>
                       <p className="text-[9px] font-bold text-gray-400 dark:text-gray-600">
                         {selected.correct} de {selected.questions} corretas
@@ -610,7 +529,6 @@ const HeatmapView: React.FC<HeatmapProps> = ({ streakEnabled = true }) => {
                     </div>
                   )}
 
-                  {/* Goal status badge */}
                   {(() => {
                     const level = getGoalLevel(selected.blocks, false, goal);
                     const labels: Record<GoalLevel, string> = {
@@ -621,10 +539,8 @@ const HeatmapView: React.FC<HeatmapProps> = ({ streakEnabled = true }) => {
                     };
                     if (level === 'none') return null;
                     return (
-                      <div
-                        className="flex items-center gap-2 px-3 py-2 rounded-xl"
-                        style={{ backgroundColor: `${levelColor(level)}22` }}
-                      >
+                      <div className="flex items-center gap-2 px-3 py-2 rounded-xl"
+                        style={{ backgroundColor: `${levelColor(level)}22` }}>
                         <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: levelColor(level) }} />
                         <p className="text-[10px] font-black uppercase tracking-widest" style={{ color: levelColor(level) }}>
                           {labels[level]}
@@ -634,6 +550,55 @@ const HeatmapView: React.FC<HeatmapProps> = ({ streakEnabled = true }) => {
                   })()}
                 </div>
               )}
+
+              {/* Note section — always visible for any selected non-future day */}
+              <div className={selected.blocks > 0 ? 'pt-1 border-t border-gray-100 dark:border-gray-800' : ''}>
+                {isEditingNote ? (
+                  <div className="space-y-2">
+                    <textarea
+                      ref={noteRef}
+                      value={noteText}
+                      onChange={e => setNoteText(e.target.value)}
+                      placeholder="Anote algo sobre esse dia…"
+                      rows={3}
+                      className="w-full bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2.5 text-sm text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-600 resize-none focus:outline-none focus:border-violet-400 dark:focus:border-violet-600 transition-colors"
+                    />
+                    <div className="flex gap-2">
+                      <button
+                        onClick={saveNote}
+                        className="flex-1 py-2.5 bg-violet-600 text-white rounded-xl font-black text-[10px] uppercase tracking-widest active:scale-[0.98] transition-transform"
+                      >
+                        Salvar
+                      </button>
+                      <button
+                        onClick={() => setIsEditingNote(false)}
+                        className="px-4 py-2.5 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded-xl font-black text-[10px] uppercase tracking-widest active:scale-[0.98] transition-transform"
+                      >
+                        Cancelar
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <button onClick={startEditNote} className="w-full text-left">
+                    {dayNotes[selected.dateKey] ? (
+                      <div className="bg-violet-50 dark:bg-violet-900/10 border border-violet-100 dark:border-violet-900/30 rounded-xl px-3 py-2.5">
+                        <p className="text-xs text-violet-800 dark:text-violet-200 leading-relaxed">
+                          {dayNotes[selected.dateKey]}
+                        </p>
+                        <p className="text-[9px] font-black text-violet-400 dark:text-violet-600 uppercase tracking-widest mt-1.5">
+                          Toque para editar
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2 py-1 text-gray-300 dark:text-gray-700 hover:text-violet-400 dark:hover:text-violet-500 transition-colors">
+                        <i className="fas fa-pen text-[9px]" />
+                        <span className="text-[11px] font-bold uppercase tracking-widest">Adicionar anotação</span>
+                      </div>
+                    )}
+                  </button>
+                )}
+              </div>
+
             </div>
           </div>
         </div>
