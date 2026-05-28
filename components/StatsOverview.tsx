@@ -175,10 +175,10 @@ const StatsOverview: React.FC<Props> = ({ subjects, edital, blockLogs, targetBan
     <div className="animate-in fade-in slide-in-from-bottom-2 duration-700 pb-2">
 
       {/* ── Desktop: two-column | Mobile: stacked ── */}
-      <div className="md:flex md:gap-8 md:items-start lg:gap-10">
+      <div className="md:flex md:gap-6 md:items-start lg:gap-10 xl:gap-14">
 
         {/* ── Coluna esquerda: anel + lista de matérias + streak/conquistas (lg) ── */}
-        <div className="md:w-64 lg:w-80 md:shrink-0 md:sticky md:top-0 md:max-h-screen md:overflow-y-auto md:overflow-x-hidden">
+        <div className="md:w-60 lg:w-72 xl:w-80 md:shrink-0 md:sticky md:top-0 md:max-h-screen md:overflow-y-auto md:overflow-x-hidden sidebar-scroll">
           <div className="flex flex-col items-center justify-center py-3 md:py-6">
             {/* Anel de progresso — maior no lg */}
             <div className="relative w-48 h-48 lg:w-60 lg:h-60">

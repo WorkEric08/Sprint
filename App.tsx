@@ -234,8 +234,8 @@ const App: React.FC = () => {
 
       <div className="flex flex-col md:flex-row h-full bg-gray-50 dark:bg-gray-950 w-full relative overflow-hidden transition-theme">
 
-        {/* ── Sidebar (tablet / desktop) ── */}
-        <aside className="hidden md:flex flex-col bg-white dark:bg-gray-900 border-r border-gray-100 dark:border-gray-800 w-16 lg:w-60 shrink-0">
+        {/* ── Sidebar (tablet / desktop) — escalada por breakpoint ── */}
+        <aside className="hidden md:flex flex-col bg-white dark:bg-gray-900 border-r border-gray-100 dark:border-gray-800 w-16 lg:w-56 xl:w-64 2xl:w-72 shrink-0">
           <div className="h-16 flex items-center justify-center lg:justify-start lg:px-5 gap-3 border-b border-gray-100 dark:border-gray-800 shrink-0">
             <div className="w-8 h-8 bg-indigo-600 rounded-xl flex items-center justify-center shrink-0 shadow-md shadow-indigo-500/30">
               <i className="fas fa-rotate text-white text-sm" />
@@ -245,26 +245,26 @@ const App: React.FC = () => {
             </span>
           </div>
 
-          <nav className="flex-1 p-2 space-y-1 pt-4">
+          <nav className="flex-1 p-2 space-y-1 pt-4 overflow-y-auto sidebar-scroll">
             {NAV_ITEMS.map(tab => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`w-full flex items-center justify-center lg:justify-start gap-3 py-3 lg:px-3 rounded-xl transition-all relative ${
+                className={`w-full flex items-center justify-center lg:justify-start gap-3 py-3 lg:px-3 xl:px-4 rounded-xl transition-all relative ${
                   activeTab === tab.id
                     ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400'
                     : 'text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/60'
                 }`}
               >
                 <div className="relative">
-                  <i className={`fas ${tab.icon} text-[15px] w-5 text-center`} />
+                  <i className={`fas ${tab.icon} text-[15px] xl:text-base w-5 text-center`} />
                   {tab.id === 'reviews' && pendingCount > 0 && (
                     <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-amber-500 text-white rounded-full text-[8px] font-black flex items-center justify-center">
                       {pendingCount > 9 ? '9+' : pendingCount}
                     </span>
                   )}
                 </div>
-                <span className="hidden lg:block text-[11px] font-black uppercase tracking-widest">
+                <span className="hidden lg:block text-[11px] xl:text-xs font-black uppercase tracking-widest">
                   {tab.label}
                 </span>
               </button>
@@ -283,13 +283,13 @@ const App: React.FC = () => {
           </div>
         </aside>
 
-        {/* ── Conteúdo principal ── */}
+        {/* ── Conteúdo principal — padding escalado + max-width em telas grandes ── */}
         <main
-          className="scroll-container flex-1 p-4 md:p-6 lg:p-8"
+          className="scroll-container flex-1 p-4 md:p-6 lg:p-8 xl:p-10 2xl:p-12"
           style={navHeight > 0 ? { paddingBottom: `${navHeight + 16}px` } : undefined}
         >
           {activeTab === 'stats' && (
-            <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+            <div className="animate-in fade-in slide-in-from-bottom-2 duration-300 2xl:max-w-[1600px] 2xl:mx-auto">
               <StatsOverview
                 objectives={objectives}
                 subjects={subjects}
@@ -304,7 +304,7 @@ const App: React.FC = () => {
             </div>
           )}
           {activeTab === 'ciclo' && (
-            <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+            <div className="animate-in fade-in slide-in-from-bottom-2 duration-300 2xl:max-w-[1600px] 2xl:mx-auto">
               <CicloView
                 userName={userName}
                 subjects={subjects}
@@ -320,8 +320,8 @@ const App: React.FC = () => {
             </div>
           )}
           {activeTab === 'reviews' && (
-            <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-              <h2 className="text-lg font-black text-gray-800 dark:text-gray-100 uppercase tracking-tight mb-4">
+            <div className="animate-in fade-in slide-in-from-bottom-2 duration-300 lg:max-w-4xl xl:max-w-5xl 2xl:max-w-6xl lg:mx-auto">
+              <h2 className="text-lg lg:text-2xl font-black text-gray-800 dark:text-gray-100 uppercase tracking-tight mb-4 lg:mb-6">
                 Revisões
               </h2>
               <ReviewQueueView
@@ -331,7 +331,7 @@ const App: React.FC = () => {
             </div>
           )}
           {activeTab === 'settings' && (
-            <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+            <div className="animate-in fade-in slide-in-from-bottom-2 duration-300 lg:max-w-3xl xl:max-w-4xl lg:mx-auto">
               <SettingsPanel
                 theme={theme}
                 onToggleTheme={toggleTheme}
