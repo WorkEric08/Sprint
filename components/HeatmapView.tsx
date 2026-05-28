@@ -414,10 +414,10 @@ const HeatmapView: React.FC<HeatmapProps> = ({ streakEnabled: _streakEnabled = t
                             'aspect-square rounded-[5px] relative flex items-center justify-center transition-all duration-150',
                             isFuture ? 'bg-transparent' : cellBg(level),
                             isToday && !isSelected
-                              ? 'ring-2 ring-violet-500 ring-offset-1 ring-offset-white dark:ring-offset-gray-900'
+                              ? 'ring-2 ring-violet-500 ring-offset-1 ring-offset-white dark:ring-offset-gray-900 z-10'
                               : '',
                             isSelected
-                              ? 'ring-2 ring-violet-500 ring-offset-1 ring-offset-white dark:ring-offset-gray-900 scale-110'
+                              ? 'ring-2 ring-violet-500 ring-offset-1 ring-offset-white dark:ring-offset-gray-900 scale-110 z-20'
                               : '',
                             !isFuture ? 'active:scale-90' : 'cursor-default',
                           ].join(' ')}
