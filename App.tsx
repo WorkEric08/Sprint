@@ -88,6 +88,7 @@ const App: React.FC = () => {
   // sessionStorage persiste no reload do force-update (window.location.reload),
   // então na próxima carga o padding já está correto desde o primeiro render.
   const navRef = useRef<HTMLElement>(null);
+  const mainRef = useRef<HTMLElement>(null);
   const [navHeight, setNavHeight] = useState<number>(() => {
     try { return parseInt(sessionStorage.getItem('sprint_nav_h') || '0', 10) || 0; }
     catch { return 0; }
@@ -211,6 +212,12 @@ const App: React.FC = () => {
     ro.observe(el);
     return () => ro.disconnect();
   }, [isLoading]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Ao trocar de aba, volta o conteúdo para o topo — cada tela deve abrir no início,
+  // não na posição de rolagem em que a aba anterior estava.
+  useEffect(() => {
+    mainRef.current?.scrollTo({ top: 0 });
+  }, [activeTab]);
 
   const toggleTheme = () => setTheme(theme === 'light' ? 'dark' : 'light');
 
@@ -338,6 +345,7 @@ const App: React.FC = () => {
 
         {/* ── Conteúdo principal — padding escalado + max-width em telas grandes ── */}
         <main
+          ref={mainRef}
           className="scroll-container flex-1 p-4 md:p-6 lg:p-8 xl:p-10 2xl:p-12"
           style={navHeight > 0 ? { paddingBottom: `${navHeight + 16}px` } : undefined}
         >
