@@ -8,6 +8,7 @@ import { useSecondaryScreen } from '../contexts/OverlayContext';
 interface Props {
   template: SimuladoTemplate;
   onFinish: (actualDurationMinutes: number, completed: boolean) => void;
+  isDevMode?: boolean;
 }
 
 // Milestone alerts (seconds remaining)
@@ -31,7 +32,7 @@ function urgencyColor(secondsLeft: number): string {
   return '#6366f1';                           // normal → indigo
 }
 
-const SimuladoRunnerView: React.FC<Props> = ({ template, onFinish }) => {
+const SimuladoRunnerView: React.FC<Props> = ({ template, onFinish, isDevMode }) => {
   useSecondaryScreen();
   const totalSeconds = template.durationMinutes * 60;
   const startedAtRef = useRef(Date.now());
@@ -118,9 +119,15 @@ const SimuladoRunnerView: React.FC<Props> = ({ template, onFinish }) => {
   };
 
   const handleExit = () => {
+    wakeLockRef.current.release();
+    if (isDevMode) {
+      // Em modo DevInfo, encerrar manualmente conta como simulado completo
+      // com o tempo total da prova (como se o cronômetro tivesse zerado).
+      onFinish(template.durationMinutes, true);
+      return;
+    }
     const elapsed = Date.now() - startedAtRef.current - totalPausedMsRef.current;
     const actualMin = Math.round(elapsed / 60000);
-    wakeLockRef.current.release();
     onFinish(actualMin, false);
   };
 
@@ -254,7 +261,9 @@ const SimuladoRunnerView: React.FC<Props> = ({ template, onFinish }) => {
             <div>
               <h3 className="text-lg font-black text-white uppercase tracking-tight">Encerrar simulado?</h3>
               <p className="text-sm text-gray-400 mt-2 leading-relaxed">
-                O tempo decorrido será registrado como duração real. Você ainda poderá inserir o gabarito depois.
+                {isDevMode
+                  ? `Modo DEV: o simulado será registrado como concluído com a duração total (${template.durationMinutes}min).`
+                  : 'O tempo decorrido será registrado como duração real. Você ainda poderá inserir o gabarito depois.'}
               </p>
             </div>
             <div className="space-y-3">

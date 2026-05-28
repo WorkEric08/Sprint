@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { usePWAInstall } from '../hooks/usePWAInstall';
 import { EDITAIS } from '../data/editais';
 import DatePickerModal from './DatePickerModal';
+import { isDevModeUser } from '../utils/devMode';
 
 const CUSTOM_KEY = 'sprint_custom_edital';
 function getEditalName(id: string | null): string {
@@ -44,11 +45,11 @@ const SettingsPanel: React.FC<Props> = ({
   const [toast, setToast] = useState<{ msg: string; type: 'on' | 'off' } | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const isDevMode = userName.trim().toLowerCase() === 'devinfo';
+  const isDevMode = isDevModeUser(userName);
 
   const handleNameChange = (name: string) => {
-    const wasDevMode = userName.trim().toLowerCase() === 'devinfo';
-    const nowDevMode = name.trim().toLowerCase() === 'devinfo';
+    const wasDevMode = isDevModeUser(userName);
+    const nowDevMode = isDevModeUser(name);
     if (!wasDevMode && nowDevMode) {
       if (toastTimer.current) clearTimeout(toastTimer.current);
       setToast({ msg: 'Modo desenvolvedor ativado', type: 'on' });

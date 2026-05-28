@@ -15,6 +15,7 @@ import StreakWidget from './StreakWidget';
 import { useBackButton } from '../hooks/useBackButton';
 import { useSimulados } from '../hooks/useSimulados';
 import { useRedacao } from '../hooks/useRedacao';
+import { isDevModeUser } from '../utils/devMode';
 import { RedacaoTheme, StreakState } from '../types';
 
 function getGreeting(): string {
@@ -56,6 +57,7 @@ const CicloView: React.FC<Props> = ({
   streakState,
   streakEnabled = true,
 }) => {
+  const isDevMode = isDevModeUser(userName);
   const [isAdding, setIsAdding] = useState(false);
   const [editingSubject, setEditingSubject] = useState<Subject | null>(null);
   const [isSprintBuilderOpen, setIsSprintBuilderOpen] = useState(false);
@@ -391,7 +393,7 @@ const CicloView: React.FC<Props> = ({
           items={sprintItems}
           onBlockComplete={handleBlockComplete}
           onClose={() => setSprintItems(null)}
-          isDevMode={userName.trim().toLowerCase() === 'devinfo'}
+          isDevMode={isDevMode}
         />
       )}
 
@@ -410,6 +412,7 @@ const CicloView: React.FC<Props> = ({
       {activeSimulado && (
         <SimuladoRunnerView
           template={activeSimulado.template}
+          isDevMode={isDevMode}
           onFinish={(actualMinutes, completed) => {
             setPostSimulado({
               template: activeSimulado.template,
@@ -437,6 +440,7 @@ const CicloView: React.FC<Props> = ({
       {activeRedacaoTheme && (
         <RedacaoEditorView
           theme={activeRedacaoTheme}
+          isDevMode={isDevMode}
           onSave={saveRedacaoSession}
           onClose={() => setActiveRedacaoTheme(null)}
         />

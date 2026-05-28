@@ -10,6 +10,7 @@ interface Props {
   existingSession?: RedacaoSession;
   onSave: (session: RedacaoSession) => void;
   onClose: () => void;
+  isDevMode?: boolean;
 }
 
 // Competency metadata
@@ -41,7 +42,7 @@ function formatMS(ms: number): string {
   return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
 }
 
-const RedacaoEditorView: React.FC<Props> = ({ theme, existingSession, onSave, onClose }) => {
+const RedacaoEditorView: React.FC<Props> = ({ theme, existingSession, onSave, onClose, isDevMode }) => {
   useSecondaryScreen();
   const { closing, handleClose } = useAnimatedClose(onClose);
   useBackButton(() => setShowExitConfirm(true));
@@ -127,6 +128,10 @@ const RedacaoEditorView: React.FC<Props> = ({ theme, existingSession, onSave, on
   };
 
   const handleSaveWithScores = () => {
+    // Em modo DevInfo, concluir manualmente conta como redação feita no tempo
+    // total (90min) — como se o cronômetro tivesse rodado por inteiro.
+    const elapsedMin = Math.round((Date.now() - startedAt.current) / 60000);
+    const durationMinutes = isDevMode ? TOTAL_MINUTES : elapsedMin;
     const session: RedacaoSession = {
       id: sessionId.current,
       themeId: theme.id,
@@ -134,7 +139,7 @@ const RedacaoEditorView: React.FC<Props> = ({ theme, existingSession, onSave, on
       startedAt: startedAt.current,
       lastSavedAt: Date.now(),
       completedAt: Date.now(),
-      durationMinutes: Math.round((Date.now() - startedAt.current) / 60000),
+      durationMinutes,
       text,
       wordCount,
       competencyScores: scores,
