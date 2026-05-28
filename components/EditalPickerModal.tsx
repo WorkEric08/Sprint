@@ -71,9 +71,12 @@ const EditalPickerModal: React.FC<Props> = ({
   });
   const [showAddView, setShowAddView] = useState(false);
   const [editingIdx, setEditingIdx] = useState<number | null>(null);
+  const [confirmDeleteIdx, setConfirmDeleteIdx] = useState<number | null>(null);
 
-  const removeCustomSubject = (idx: number) =>
+  const removeCustomSubject = (idx: number) => {
     setCustomSubjects(prev => prev.filter((_, i) => i !== idx));
+    setConfirmDeleteIdx(null);
+  };
 
   const handleConfirmCustom = () => {
     if (!customName.trim()) return;
@@ -319,7 +322,7 @@ const EditalPickerModal: React.FC<Props> = ({
                   <i className="fas fa-pencil text-[10px]" />
                 </button>
                 <button
-                  onClick={() => removeCustomSubject(idx)}
+                  onClick={() => setConfirmDeleteIdx(idx)}
                   className="w-7 h-7 flex items-center justify-center rounded-full bg-red-50 dark:bg-red-900/20 text-red-400 active:scale-90 transition-transform"
                   title="Excluir matéria"
                 >
@@ -347,6 +350,42 @@ const EditalPickerModal: React.FC<Props> = ({
               <i className="fas fa-check" />
               Salvar Edital
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de confirmação de exclusão */}
+      {confirmDeleteIdx !== null && customSubjects[confirmDeleteIdx] && (
+        <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-6 animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-gray-900 w-full max-w-sm rounded-3xl p-8 shadow-2xl border border-gray-100 dark:border-gray-800 text-center space-y-6">
+            <div className="w-16 h-16 bg-red-50 dark:bg-red-900/20 rounded-full flex items-center justify-center mx-auto">
+              <i className="fas fa-trash text-2xl text-red-500" />
+            </div>
+            <div className="space-y-2">
+              <h3 className="text-lg font-black text-gray-800 dark:text-white uppercase tracking-tight">
+                Excluir Matéria?
+              </h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
+                <span className="font-bold" style={{ color: customSubjects[confirmDeleteIdx].color }}>
+                  {customSubjects[confirmDeleteIdx].name}
+                </span>{' '}
+                será removida do edital personalizado.
+              </p>
+            </div>
+            <div className="space-y-3">
+              <button
+                onClick={() => removeCustomSubject(confirmDeleteIdx)}
+                className="w-full py-4 bg-red-500 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-red-600 transition-colors active:scale-[0.98]"
+              >
+                Sim, excluir
+              </button>
+              <button
+                onClick={() => setConfirmDeleteIdx(null)}
+                className="w-full py-4 bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded-2xl font-black text-[10px] uppercase tracking-widest"
+              >
+                Cancelar
+              </button>
+            </div>
           </div>
         </div>
       )}
