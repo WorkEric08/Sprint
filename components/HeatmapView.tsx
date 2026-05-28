@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { BlockLog } from '../types';
 import { db } from '../db';
 import {
@@ -9,14 +9,17 @@ import {
   computeToleratedStreak,
 } from '../utils/dateUtils';
 
-const DAYS_OF_WEEK = ['S', 'T', 'Q', 'Q', 'S', 'S', 'D']; // Mon–Sun (pt-BR)
+const DAYS_OF_WEEK = ['S', 'T', 'Q', 'Q', 'S', 'S', 'D']; // Seg–Dom (pt-BR)
+const CELL = 13;       // px – tamanho da célula (maior para toque)
+const GAP = 2;         // px – espaço entre células
+const COL_W = CELL + GAP; // 15px por coluna de semana
+const LABEL_W = 22;    // px – coluna de rótulos de dia
 
 // ── Day cell data ──────────────────────────────────────────────────────────
 
 interface DayData {
   dateKey: string;
   blocks: number;
-  totalMinutes: number;
   questions: number;
   correct: number;
   isToday: boolean;
@@ -26,7 +29,7 @@ interface DayData {
 // ── Color intensity (indigo scale) ────────────────────────────────────────
 
 function intensityClass(blocks: number, isFuture: boolean): string {
-  if (isFuture) return 'bg-transparent';
+  if (isFuture) return 'bg-gray-100 dark:bg-gray-800/40 opacity-30';
   if (blocks === 0) return 'bg-gray-100 dark:bg-gray-800/60';
   if (blocks === 1) return 'bg-indigo-200 dark:bg-indigo-900/60';
   if (blocks === 2) return 'bg-indigo-300 dark:bg-indigo-800/70';
@@ -37,20 +40,20 @@ function intensityClass(blocks: number, isFuture: boolean): string {
 
 // ── Month label positions ─────────────────────────────────────────────────
 
-function getMonthLabels(mondays: string[]): { col: number; label: string }[] {
+function getMonthLabelMap(mondays: string[]): Map<number, string> {
   const seen = new Set<string>();
-  const labels: { col: number; label: string }[] = [];
+  const map = new Map<number, string>();
   mondays.forEach((monday, col) => {
     const [y, m] = monday.split('-');
     const key = `${y}-${m}`;
     if (!seen.has(key)) {
       seen.add(key);
       const date = new Date(Number(y), Number(m) - 1, 1);
-      const label = date.toLocaleDateString('pt-BR', { month: 'short' });
-      labels.push({ col, label: label.replace('.', '') });
+      const label = date.toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '');
+      map.set(col, label);
     }
   });
-  return labels;
+  return map;
 }
 
 // ── Main component ─────────────────────────────────────────────────────────
@@ -62,26 +65,40 @@ interface HeatmapProps {
 const HeatmapView: React.FC<HeatmapProps> = ({ streakEnabled = true }) => {
   const [blockLogs, setBlockLogs] = useState<BlockLog[]>([]);
   const [selected, setSelected] = useState<DayData | null>(null);
+  const [showLeftFade, setShowLeftFade] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
   const today = todayKey();
 
   useEffect(() => {
     db.blockLogs.toArray().then(setBlockLogs).catch(console.error);
   }, []);
 
+  // Auto-scroll para mostrar hoje (final do grid) assim que o container monta
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    el.scrollLeft = el.scrollWidth;
+  }, []);
+
+  // Controla fade esquerdo conforme o usuário rola
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const onScroll = () => setShowLeftFade(el.scrollLeft > 8);
+    el.addEventListener('scroll', onScroll, { passive: true });
+    return () => el.removeEventListener('scroll', onScroll);
+  }, []);
+
   const mondays = useMemo(() => last52WeekMondays(), []);
 
-  // Build day data map: dateKey → DayData
   const dayMap = useMemo<Map<string, DayData>>(() => {
     const map = new Map<string, DayData>();
-
-    // Pre-populate all 364 days
     mondays.forEach(monday => {
       for (let i = 0; i < 7; i++) {
         const dateKey = addDays(monday, i);
         map.set(dateKey, {
           dateKey,
           blocks: 0,
-          totalMinutes: 0,
           questions: 0,
           correct: 0,
           isToday: dateKey === today,
@@ -89,25 +106,18 @@ const HeatmapView: React.FC<HeatmapProps> = ({ streakEnabled = true }) => {
         });
       }
     });
-
-    // Accumulate block logs
     blockLogs.forEach(log => {
       const key = toLocalDateKey(log.timestamp);
       const existing = map.get(key);
       if (existing) {
         existing.blocks++;
-        // Approximate minutes from subjects (we don't store duration in BlockLog)
-        // We'll derive from the subject's duration stored in subject table — but
-        // to avoid async complexity here, we track questionsTotal as a proxy metric
         existing.questions += log.questionsTotal;
         existing.correct += log.questionsCorrect;
       }
     });
-
     return map;
   }, [blockLogs, mondays, today]);
 
-  // Active day keys for streak
   const activeDayKeys = useMemo<Set<string>>(() => {
     const s = new Set<string>();
     dayMap.forEach((data, key) => { if (data.blocks > 0) s.add(key); });
@@ -116,13 +126,14 @@ const HeatmapView: React.FC<HeatmapProps> = ({ streakEnabled = true }) => {
 
   const streak = useMemo(() => computeToleratedStreak(activeDayKeys), [activeDayKeys]);
   const totalBlocks = useMemo(() => [...dayMap.values()].reduce((a, d) => a + d.blocks, 0), [dayMap]);
-  const monthLabels = useMemo(() => getMonthLabels(mondays), [mondays]);
+  const monthLabelMap = useMemo(() => getMonthLabelMap(mondays), [mondays]);
+
+  const gridWidth = LABEL_W + mondays.length * COL_W;
 
   return (
     <div className="space-y-4">
       {/* ── Stats row ── */}
       {streakEnabled ? (
-        /* Ofensiva habilitada: dois cards lado a lado */
         <div className="grid grid-cols-2 gap-3">
           <div className="bg-white dark:bg-gray-900 rounded-2xl p-4 border border-gray-100 dark:border-gray-800">
             <div className="flex items-center gap-2 mb-2">
@@ -155,7 +166,6 @@ const HeatmapView: React.FC<HeatmapProps> = ({ streakEnabled = true }) => {
           </div>
         </div>
       ) : (
-        /* Ofensiva desabilitada: só total de blocos, largura completa */
         <div className="bg-white dark:bg-gray-900 rounded-2xl p-4 border border-gray-100 dark:border-gray-800">
           <div className="flex items-center gap-2 mb-2">
             <i className="fas fa-rotate text-indigo-500 text-sm" />
@@ -171,79 +181,121 @@ const HeatmapView: React.FC<HeatmapProps> = ({ streakEnabled = true }) => {
       )}
 
       {/* ── Heatmap grid ── */}
-      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-4 overflow-x-auto">
-        <div style={{ minWidth: 680 }}>
-          {/* Month labels */}
-          <div className="flex mb-1 pl-7">
-            {monthLabels.map(({ col, label }) => (
+      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-4">
+        {/* Wrapper relativo para os fades de scroll */}
+        <div className="relative">
+          {/* Fade esquerdo – indica histórico disponível ao rolar */}
+          <div
+            className={`absolute inset-y-0 left-0 w-8 pointer-events-none z-10 transition-opacity duration-200 rounded-l-lg bg-gradient-to-r from-white dark:from-gray-900 to-transparent ${showLeftFade ? 'opacity-100' : 'opacity-0'}`}
+          />
+
+          {/* Container de scroll horizontal */}
+          <div ref={scrollRef} className="overflow-x-scroll-area">
+            <div style={{ width: `${gridWidth}px` }}>
+
+              {/* Rótulos de mês – um slot por coluna de semana */}
               <div
-                key={`${col}-${label}`}
-                className="text-[9px] font-black text-gray-400 dark:text-gray-600 uppercase tracking-widest"
-                style={{ marginLeft: col === 0 ? 0 : `${(col - (monthLabels.find(l => l.label === label)?.col ?? col)) * 12}px`, position: 'absolute', left: `${col * 12 + 28}px` }}
+                className="flex"
+                style={{ paddingLeft: `${LABEL_W}px`, marginBottom: '4px' }}
               >
-                {label}
+                {mondays.map((monday, col) => (
+                  <div key={monday} style={{ width: `${COL_W}px`, flexShrink: 0 }}>
+                    {monthLabelMap.has(col) && (
+                      <span className="text-[9px] font-black text-gray-400 dark:text-gray-600 uppercase tracking-widest whitespace-nowrap">
+                        {monthLabelMap.get(col)}
+                      </span>
+                    )}
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
 
-          {/* Grid: 7 rows (Mon-Sun) × 52 cols (weeks) */}
-          <div className="flex gap-0.5 mt-4">
-            {/* Day-of-week labels */}
-            <div className="flex flex-col gap-0.5 mr-1.5">
-              {DAYS_OF_WEEK.map((d, i) => (
+              {/* Corpo do grid */}
+              <div className="flex" style={{ gap: `${GAP}px` }}>
+                {/* Coluna de rótulos de dia-da-semana */}
                 <div
-                  key={i}
-                  className="w-5 h-[11px] flex items-center justify-end text-[8px] font-bold text-gray-300 dark:text-gray-700"
+                  className="flex flex-col flex-shrink-0"
+                  style={{ width: `${LABEL_W}px`, gap: `${GAP}px` }}
                 >
-                  {i % 2 === 0 ? d : ''}
+                  {DAYS_OF_WEEK.map((d, i) => (
+                    <div
+                      key={i}
+                      style={{ height: `${CELL}px` }}
+                      className="flex items-center justify-end pr-1 text-[9px] font-bold text-gray-300 dark:text-gray-700"
+                    >
+                      {i % 2 === 0 ? d : ''}
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
 
-            {/* Week columns */}
-            {mondays.map(monday => (
-              <div key={monday} className="flex flex-col gap-0.5">
-                {Array.from({ length: 7 }).map((_, dayOffset) => {
-                  const dateKey = addDays(monday, dayOffset);
-                  const data = dayMap.get(dateKey);
-                  if (!data) return <div key={dayOffset} className="w-[11px] h-[11px]" />;
+                {/* Colunas de semana */}
+                {mondays.map(monday => (
+                  <div key={monday} className="flex flex-col flex-shrink-0" style={{ gap: `${GAP}px` }}>
+                    {Array.from({ length: 7 }).map((_, dayOffset) => {
+                      const dateKey = addDays(monday, dayOffset);
+                      const data = dayMap.get(dateKey);
+                      if (!data) return (
+                        <div key={dayOffset} style={{ width: `${CELL}px`, height: `${CELL}px` }} />
+                      );
 
-                  return (
-                    <button
-                      key={dayOffset}
-                      onClick={() => setSelected(prev => prev?.dateKey === dateKey ? null : data)}
-                      title={dateKey}
-                      className={`w-[11px] h-[11px] rounded-[2px] transition-all ${
-                        intensityClass(data.blocks, data.isFuture)
-                      } ${data.isToday ? 'ring-1 ring-indigo-500 ring-offset-[1px] ring-offset-white dark:ring-offset-gray-900' : ''}
-                      ${selected?.dateKey === dateKey ? 'ring-1 ring-indigo-400' : ''}
-                      ${data.isFuture ? 'cursor-default' : 'cursor-pointer hover:ring-1 hover:ring-indigo-300'}`}
-                    />
-                  );
-                })}
+                      const isSelected = selected?.dateKey === dateKey;
+
+                      return (
+                        <button
+                          key={dayOffset}
+                          onClick={() => !data.isFuture && setSelected(prev => prev?.dateKey === dateKey ? null : data)}
+                          title={dateKey}
+                          style={{ width: `${CELL}px`, height: `${CELL}px` }}
+                          className={[
+                            'rounded-[3px] transition-all duration-150 flex-shrink-0',
+                            intensityClass(data.blocks, data.isFuture),
+                            data.isToday
+                              ? 'ring-1 ring-indigo-500 ring-offset-[1px] ring-offset-white dark:ring-offset-gray-900'
+                              : '',
+                            isSelected
+                              ? 'ring-2 ring-indigo-400 ring-offset-[1px] ring-offset-white dark:ring-offset-gray-900 scale-125'
+                              : '',
+                            data.isFuture
+                              ? 'cursor-default'
+                              : 'cursor-pointer hover:scale-125 active:scale-95',
+                          ].join(' ')}
+                        />
+                      );
+                    })}
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
 
-          {/* Legend */}
-          <div className="flex items-center gap-1.5 mt-3 justify-end">
-            <span className="text-[9px] font-bold text-gray-400 dark:text-gray-600">Menos</span>
-            {['bg-gray-100 dark:bg-gray-800/60', 'bg-indigo-200 dark:bg-indigo-900/60', 'bg-indigo-300 dark:bg-indigo-800/70', 'bg-indigo-400 dark:bg-indigo-700/80', 'bg-indigo-600 dark:bg-indigo-500'].map((cls, i) => (
-              <div key={i} className={`w-[11px] h-[11px] rounded-[2px] ${cls}`} />
-            ))}
-            <span className="text-[9px] font-bold text-gray-400 dark:text-gray-600">Mais</span>
+              {/* Legenda */}
+              <div className="flex items-center gap-1.5 mt-3 justify-end">
+                <span className="text-[9px] font-bold text-gray-400 dark:text-gray-600">Menos</span>
+                {[
+                  'bg-gray-100 dark:bg-gray-800/60',
+                  'bg-indigo-200 dark:bg-indigo-900/60',
+                  'bg-indigo-300 dark:bg-indigo-800/70',
+                  'bg-indigo-400 dark:bg-indigo-700/80',
+                  'bg-indigo-600 dark:bg-indigo-500',
+                ].map((cls, i) => (
+                  <div
+                    key={i}
+                    style={{ width: `${CELL}px`, height: `${CELL}px` }}
+                    className={`rounded-[3px] flex-shrink-0 ${cls}`}
+                  />
+                ))}
+                <span className="text-[9px] font-bold text-gray-400 dark:text-gray-600">Mais</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* ── Day detail panel ── */}
+      {/* ── Painel de detalhe do dia ── */}
       {selected && !selected.isFuture && (
         <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-4 animate-in fade-in slide-in-from-bottom-2 duration-200">
           <div className="flex items-center justify-between mb-3">
             <div>
               <p className="text-sm font-black text-gray-800 dark:text-gray-100">
                 {new Date(selected.dateKey + 'T12:00:00').toLocaleDateString('pt-BR', {
-                  weekday: 'long', day: 'numeric', month: 'long'
+                  weekday: 'long', day: 'numeric', month: 'long',
                 })}
               </p>
               {selected.isToday && (
@@ -273,11 +325,14 @@ const HeatmapView: React.FC<HeatmapProps> = ({ streakEnabled = true }) => {
                 <p className="text-[9px] font-bold text-gray-400 dark:text-gray-600 uppercase tracking-widest">Questões</p>
               </div>
               <div className="text-center">
-                <p className="text-xl font-black" style={{
-                  color: selected.questions > 0
-                    ? (selected.correct / selected.questions >= 0.7 ? '#22c55e' : '#ef4444')
-                    : undefined
-                }}>
+                <p
+                  className="text-xl font-black"
+                  style={{
+                    color: selected.questions > 0
+                      ? (selected.correct / selected.questions >= 0.7 ? '#22c55e' : '#ef4444')
+                      : undefined,
+                  }}
+                >
                   {selected.questions > 0
                     ? `${Math.round((selected.correct / selected.questions) * 100)}%`
                     : '—'}
