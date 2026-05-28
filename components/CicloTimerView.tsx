@@ -223,6 +223,16 @@ const CicloTimerView: React.FC<Props> = ({ subject, blockType = 'study', cycleIn
           }}
           onSkip={() => {
             setShowPostModal(false);
+            // Mesmo sem registrar questões, o bloco foi concluído: persiste um
+            // BlockLog mínimo para que o dia apareça colorido no calendário do
+            // Progresso (que conta blockLogs, não completedBlocks).
+            onBlockLogSave?.({
+              questionsTotal: 0,
+              questionsCorrect: 0,
+              subtopic: '',
+              selfScore: 3,
+              flaggedForReview: false,
+            });
             onNext();
           }}
         />
