@@ -48,6 +48,7 @@ const RedacaoView: React.FC<Props> = ({ userName, onSaveSession }) => {
     return (
       <RedacaoPaperView
         theme={phase.theme}
+        onSave={onSaveSession}
         onClose={() => setPhase({ kind: 'picker' })}
       />
     );
