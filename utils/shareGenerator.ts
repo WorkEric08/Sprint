@@ -239,59 +239,6 @@ export async function generateYearWrap(data: {
   return canvasToBlob(canvas);
 }
 
-/** Conquista — Feed 1:1 */
-export async function generateAchievementShare(data: {
-  title: string;
-  description: string;
-  icon: string;
-  userName: string;
-}): Promise<Blob> {
-  const [canvas, ctx] = setupCanvas(1080, 1080);
-
-  ctx.fillStyle = BRAND.bg;
-  ctx.fillRect(0, 0, 1080, 1080);
-
-  const grad = ctx.createRadialGradient(540, 540, 0, 540, 540, 760);
-  grad.addColorStop(0, 'rgba(99,102,241,0.2)');
-  grad.addColorStop(1, 'transparent');
-  ctx.fillStyle = grad;
-  ctx.fillRect(0, 0, 1080, 1080);
-
-  // Center badge
-  ctx.fillStyle = BRAND.bgCard;
-  roundRect(ctx, 290, 300, 500, 500, 80);
-  ctx.fill();
-
-  // Icon placeholder (text)
-  ctx.fillStyle = BRAND.grayL;
-  ctx.font = 'bold 180px system-ui';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText('★', 540, 555);
-
-  // Achievement title
-  ctx.fillStyle = BRAND.white;
-  ctx.font = 'bold 72px system-ui';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'alphabetic';
-  ctx.fillText(data.title, 540, 880);
-
-  ctx.fillStyle = BRAND.gray;
-  ctx.font = '40px system-ui';
-  ctx.fillText(data.description, 540, 940);
-
-  ctx.fillStyle = BRAND.indigoL;
-  ctx.font = 'bold 36px system-ui';
-  ctx.fillText(data.userName || 'Sprint', 540, 1000);
-
-  // Logo bottom
-  ctx.fillStyle = BRAND.gray;
-  ctx.font = '30px system-ui';
-  ctx.fillText('sprint.app', 540, 1040);
-
-  return canvasToBlob(canvas);
-}
-
 function canvasToBlob(canvas: HTMLCanvasElement): Promise<Blob> {
   return new Promise((resolve, reject) => {
     canvas.toBlob(blob => {

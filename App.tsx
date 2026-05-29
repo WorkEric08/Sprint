@@ -19,8 +19,6 @@ import { checkAndFireNotifications } from './services/notificationService';
 import { useSimulados } from './hooks/useSimulados';
 import { toLocalDateKey } from './utils/dateUtils';
 import { computeFullStreak, shouldShowWelcomeBack } from './utils/streakUtils';
-import { useAchievements } from './hooks/useAchievements';
-import AchievementToast from './components/AchievementToast';
 import WelcomeBackCard from './components/WelcomeBackCard';
 import { OverlayProvider, useHasSecondaryScreen } from './contexts/OverlayContext';
 
@@ -108,7 +106,6 @@ const App: React.FC = () => {
   const { reviewItems, pendingCount, createOrUpdateItem, applyResult } = useReviews();
   const { records: simuladoRecords, saveRecord: saveSimuladoRecord } = useSimulados();
   const { saveSession: saveRedacaoSession } = useRedacao();
-  const { unlocked: achievements, newlyUnlocked, clearNewlyUnlocked, checkAll: checkAchievements } = useAchievements();
   const selectedEdital = React.useMemo(() => {
     if (selectedEditalId === 'custom') {
       try {
@@ -134,7 +131,7 @@ const App: React.FC = () => {
     return computeFullStreak(activeDays);
   }, [subjects]);
 
-  // On data loaded: notifications + achievements + welcome back
+  // On data loaded: notifications + welcome back
   useEffect(() => {
     if (isLoading) return;
     const today = toLocalDateKey(Date.now());
@@ -153,14 +150,6 @@ const App: React.FC = () => {
       lastSimulado,
       examDate,
       examName: selectedEdital?.name ?? null,
-    });
-
-    // Achievements
-    checkAchievements({
-      blockLogs,
-      simuladoRecords,
-      redacaoSessions: [],
-      totalStudyDays: streakState.totalStudyDays,
     });
 
     // Welcome back
@@ -358,7 +347,6 @@ const App: React.FC = () => {
                 blockLogs={blockLogs}
                 targetBanca={targetBanca}
                 streakState={streakState}
-                achievements={achievements}
                 userName={userName}
                 streakEnabled={streakEnabled}
               />
@@ -452,14 +440,6 @@ const App: React.FC = () => {
           ))}
         </nav>
       </div>
-
-      {/* Fase 6: Achievement toast (non-blocking) */}
-      {newlyUnlocked && (
-        <AchievementToast
-          achievementId={newlyUnlocked}
-          onDismiss={clearNewlyUnlocked}
-        />
-      )}
 
       {/* Fase 6: Welcome back — só aparece se ofensiva habilitada */}
       {streakEnabled && showWelcomeBack && (

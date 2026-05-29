@@ -9,11 +9,10 @@ import SimuladoAreaCard from './SimuladoAreaCard';
 import SimuladoHistoryView from './SimuladoHistoryView';
 import BancaStatsCard from './BancaStatsCard';
 import StreakWidget from './StreakWidget';
-import AchievementsList from './AchievementsList';
 import ShareSheet from './ShareSheet';
 import { useSimulados } from '../hooks/useSimulados';
 import { isDevModeUser } from '../utils/devMode';
-import { AchievementRecord, StreakState } from '../types';
+import { StreakState } from '../types';
 
 interface Props {
   objectives: Objective[];
@@ -22,7 +21,6 @@ interface Props {
   blockLogs: BlockLog[];
   targetBanca: string | null;
   streakState: StreakState;
-  achievements: AchievementRecord[];
   userName: string;
   streakEnabled?: boolean;
 }
@@ -108,7 +106,7 @@ function useSubtopicStats() {
   return stats;
 }
 
-const StatsOverview: React.FC<Props> = ({ subjects, edital, blockLogs, targetBanca, streakState, achievements, userName, streakEnabled = true }) => {
+const StatsOverview: React.FC<Props> = ({ subjects, edital, blockLogs, targetBanca, streakState, userName, streakEnabled = true }) => {
   const [showSimuladoHistory, setShowSimuladoHistory] = useState(false);
   const [showShare, setShowShare] = useState(false);
   const { records: simuladoRecords, deleteRecord: deleteSimuladoRecord } = useSimulados();
@@ -249,28 +247,22 @@ const StatsOverview: React.FC<Props> = ({ subjects, edital, blockLogs, targetBan
             </div>
           )}
 
-          {/* Streak + Conquistas na sidebar — apenas lg+ */}
+          {/* Streak na sidebar — apenas lg+ */}
           {streakEnabled && (
-            <div className="hidden lg:block mt-6 pt-5 border-t border-gray-100 dark:border-gray-800">
+            <div className="hidden lg:block mt-6 pt-5 border-t border-gray-100 dark:border-gray-800 pb-8">
               <StreakWidget state={streakState} />
             </div>
           )}
-          <div className="hidden lg:block mt-4 pb-8">
-            <AchievementsList unlocked={achievements} />
-          </div>
         </div>
 
         {/* ── Coluna direita: métricas por período ── */}
         <div className="flex-1 space-y-4 px-2 md:px-0 md:pt-6 mt-4 md:mt-0 min-w-0">
-          {/* Streak + Conquistas — mobile/md apenas (no lg ficam na sidebar) */}
+          {/* Streak — mobile/md apenas (no lg fica na sidebar) */}
           {streakEnabled && (
             <div className="lg:hidden">
               <StreakWidget state={streakState} />
             </div>
           )}
-          <div className="lg:hidden">
-            <AchievementsList unlocked={achievements} />
-          </div>
 
           {/* Header de período */}
           <div className="flex items-center justify-between">
@@ -502,7 +494,7 @@ const StatsOverview: React.FC<Props> = ({ subjects, edital, blockLogs, targetBan
                 <div className="text-left">
                   <p className="text-sm font-black text-gray-800 dark:text-gray-100">Compartilhar</p>
                   <p className="text-[10px] font-bold text-gray-400 dark:text-gray-600 uppercase tracking-wider mt-0.5">
-                    Semana, conquistas, meu ano
+                    Semana e meu ano
                   </p>
                 </div>
               </div>

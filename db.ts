@@ -1,5 +1,5 @@
 import Dexie, { Table } from 'dexie';
-import { Subject, Objective, BlockLog, ReviewItem, SimuladoRecord, RedacaoSession, AchievementRecord } from './types';
+import { Subject, Objective, BlockLog, ReviewItem, SimuladoRecord, RedacaoSession } from './types';
 
 interface SettingRecord {
   key: string;
@@ -14,7 +14,6 @@ class SprintDB extends Dexie {
   reviewItems!: Table<ReviewItem>;
   simuladoRecords!: Table<SimuladoRecord>;
   redacaoSessions!: Table<RedacaoSession>;
-  achievements!: Table<AchievementRecord>;
 
   constructor() {
     super('SprintDB');
@@ -62,9 +61,14 @@ class SprintDB extends Dexie {
       redacaoSessions: 'id, completedAt, themeId',
     });
 
-    // v6 — conquistas
+    // v6 — conquistas (recurso removido; mantido no histórico de versões)
     this.version(6).stores({
       achievements: 'id, unlockedAt',
+    });
+
+    // v7 — remove a tabela de conquistas (recurso descontinuado)
+    this.version(7).stores({
+      achievements: null,
     });
   }
 }
