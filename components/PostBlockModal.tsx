@@ -89,7 +89,7 @@ const PostBlockModal: React.FC<Props> = ({
       />
 
       {/* Sheet (mobile) / centered modal (desktop) */}
-      <div className="relative w-full md:max-w-lg bg-white dark:bg-gray-900 rounded-t-3xl md:rounded-3xl shadow-2xl animate-in slide-in-from-bottom-4 md:slide-in-from-bottom-0 md:zoom-in-95 duration-300 max-h-[90vh] md:max-h-[88vh] overflow-y-auto">
+      <div className="relative w-full md:max-w-2xl bg-white dark:bg-gray-900 rounded-t-3xl md:rounded-3xl shadow-2xl animate-in slide-in-from-bottom-4 md:slide-in-from-bottom-0 md:zoom-in-95 duration-300 max-h-[90vh] md:max-h-[88vh] overflow-y-auto">
 
         {/* Handle + header */}
         <div className="sticky top-0 bg-white dark:bg-gray-900 pt-3 pb-2 px-5 z-10 border-b border-gray-100 dark:border-gray-800 md:rounded-t-3xl">
