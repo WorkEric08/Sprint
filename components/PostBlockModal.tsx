@@ -81,19 +81,19 @@ const PostBlockModal: React.FC<Props> = ({
     : null;
 
   return (
-    <div className="fixed inset-0 z-[80] flex flex-col justify-end animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-[80] flex flex-col justify-end md:justify-center md:items-center md:p-6 animate-in fade-in duration-200">
       {/* Backdrop */}
       <div
         className="absolute inset-0 bg-black/40 backdrop-blur-sm"
         onClick={onSkip}
       />
 
-      {/* Sheet */}
-      <div className="relative bg-white dark:bg-gray-900 rounded-t-3xl shadow-2xl animate-in slide-in-from-bottom-4 duration-300 max-h-[90vh] overflow-y-auto">
+      {/* Sheet (mobile) / centered modal (desktop) */}
+      <div className="relative w-full md:max-w-lg bg-white dark:bg-gray-900 rounded-t-3xl md:rounded-3xl shadow-2xl animate-in slide-in-from-bottom-4 md:slide-in-from-bottom-0 md:zoom-in-95 duration-300 max-h-[90vh] md:max-h-[88vh] overflow-y-auto">
 
         {/* Handle + header */}
-        <div className="sticky top-0 bg-white dark:bg-gray-900 pt-3 pb-2 px-5 z-10 border-b border-gray-100 dark:border-gray-800">
-          <div className="w-10 h-1 bg-gray-200 dark:bg-gray-700 rounded-full mx-auto mb-3" />
+        <div className="sticky top-0 bg-white dark:bg-gray-900 pt-3 pb-2 px-5 z-10 border-b border-gray-100 dark:border-gray-800 md:rounded-t-3xl">
+          <div className="w-10 h-1 bg-gray-200 dark:bg-gray-700 rounded-full mx-auto mb-3 md:hidden" />
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 min-w-0">
               <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: subjectColor }} />
