@@ -111,7 +111,7 @@ const CicloView: React.FC<Props> = ({
   return (
     <div className="space-y-4">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between md:-mt-6 md:-mx-6 md:px-6 lg:-mt-8 lg:-mx-8 lg:px-8 xl:-mt-10 xl:-mx-10 xl:px-10 2xl:-mt-12 2xl:-mx-12 2xl:px-12 md:h-16 md:border-b md:border-gray-100 dark:md:border-gray-800 md:mb-2">
         <div>
           <p className="text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">
             {getGreeting()}
