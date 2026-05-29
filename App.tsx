@@ -3,7 +3,6 @@ import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import StatsOverview from './components/StatsOverview';
 import CicloView from './components/CicloView';
 import SettingsPanel from './components/SettingsPanel';
-import ReviewQueueView from './components/ReviewQueueView';
 import EditalPickerModal from './components/EditalPickerModal';
 import SimuladoView from './components/SimuladoView';
 import RedacaoView from './components/RedacaoView';
@@ -22,12 +21,11 @@ import { computeFullStreak, shouldShowWelcomeBack } from './utils/streakUtils';
 import WelcomeBackCard from './components/WelcomeBackCard';
 import { OverlayProvider, useHasSecondaryScreen } from './contexts/OverlayContext';
 
-type TabId = 'stats' | 'ciclo' | 'reviews' | 'simulado' | 'redacao' | 'settings';
+type TabId = 'stats' | 'ciclo' | 'simulado' | 'redacao' | 'settings';
 
 const NAV_ITEMS: { id: TabId; icon: string; label: string }[] = [
   { id: 'stats',    icon: 'fa-chart-line', label: 'Progresso' },
   { id: 'ciclo',    icon: 'fa-rotate',     label: 'Ciclo' },
-  { id: 'reviews',  icon: 'fa-bookmark',   label: 'Revisões' },
   { id: 'simulado', icon: 'fa-stopwatch',  label: 'Simulado' },
   { id: 'redacao',  icon: 'fa-pen',        label: 'Redação' },
   { id: 'settings', icon: 'fa-gear',       label: 'Configurações' },
@@ -36,7 +34,7 @@ const NAV_ITEMS: { id: TabId; icon: string; label: string }[] = [
 // Bottom nav do PWA mobile: só as 4 ações do dia a dia (em ordem de fluxo).
 // "Progresso" e "Configurações" vivem na top bar (hub de perfil) — ver MobileTopBar.
 // A sidebar do desktop continua usando NAV_ITEMS completo.
-const MOBILE_NAV_IDS: TabId[] = ['ciclo', 'reviews', 'simulado', 'redacao'];
+const MOBILE_NAV_IDS: TabId[] = ['ciclo', 'simulado', 'redacao'];
 const MOBILE_NAV_ITEMS = NAV_ITEMS.filter(t => MOBILE_NAV_IDS.includes(t.id));
 
 // ── AppLoader ──────────────────────────────────────────────────────────────
@@ -307,11 +305,6 @@ const App: React.FC = () => {
               >
                 <div className="relative">
                   <i className={`fas ${tab.icon} text-[15px] xl:text-base w-5 text-center`} />
-                  {tab.id === 'reviews' && pendingCount > 0 && (
-                    <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-amber-500 text-white rounded-full text-[8px] font-black flex items-center justify-center">
-                      {pendingCount > 9 ? '9+' : pendingCount}
-                    </span>
-                  )}
                 </div>
                 <span className="hidden lg:block text-[11px] xl:text-xs font-black uppercase tracking-widest">
                   {tab.label}
@@ -368,14 +361,6 @@ const App: React.FC = () => {
               />
             </div>
           )}
-          {activeTab === 'reviews' && (
-            <div className="animate-in fade-in slide-in-from-bottom-2 duration-300 lg:max-w-4xl xl:max-w-5xl lg:mx-auto">
-              <ReviewQueueView
-                reviewItems={reviewItems}
-                onApplyResult={applyResult}
-              />
-            </div>
-          )}
           {activeTab === 'simulado' && (
             <div className="h-full animate-in fade-in slide-in-from-bottom-2 duration-300 lg:max-w-4xl xl:max-w-5xl lg:mx-auto">
               <SimuladoView
@@ -429,11 +414,6 @@ const App: React.FC = () => {
             >
               <div className="relative">
                 <i className={`fas ${tab.icon} text-xl`} />
-                {tab.id === 'reviews' && pendingCount > 0 && (
-                  <span className="absolute -top-1 -right-1.5 w-4 h-4 bg-amber-500 text-white rounded-full text-[8px] font-black flex items-center justify-center">
-                    {pendingCount > 9 ? '9+' : pendingCount}
-                  </span>
-                )}
               </div>
               <span className="text-[9px] font-semibold">{tab.label}</span>
             </button>
