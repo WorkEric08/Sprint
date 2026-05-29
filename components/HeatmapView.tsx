@@ -286,6 +286,17 @@ const HeatmapView: React.FC<HeatmapProps> = ({ streakEnabled: _streakEnabled = t
     });
   };
 
+  // Nível efetivo de um dia — idêntico ao usado no render: prioriza o nível
+  // pintado na simulação, senão deriva dos blocos reais contra o "hoje" efetivo.
+  // Um dia conta como "estudado" quando o nível não é 'none' (qualquer estudo,
+  // inclusive ao bater apenas o mínimo).
+  const effectiveLevel = (dateKey: string): GoalLevel => {
+    const painted = simActive ? simLevels[dateKey] : undefined;
+    if (painted) return painted;
+    const blocks = dayMap.get(dateKey)?.blocks ?? 0;
+    return getGoalLevel(blocks, dateKey > effToday, goal);
+  };
+
   useEffect(() => {
     db.blockLogs.toArray().then(setBlockLogs).catch(console.error);
   }, []);
@@ -421,11 +432,6 @@ const HeatmapView: React.FC<HeatmapProps> = ({ streakEnabled: _streakEnabled = t
                     </button>
                   ))}
                 </div>
-                <p className="text-[9px] font-bold text-amber-600/80 dark:text-amber-500/80 leading-snug">
-                  {simMode === 'paint'
-                    ? 'Toque num dia para ciclar a cor: sem estudo → início → parcial → meta.'
-                    : 'Toque num dia para defini-lo como “hoje” (move o anel e o limite de dias futuros).'}
-                </p>
                 <div className="flex items-center justify-between gap-2">
                   <span className="text-[9px] font-bold text-amber-600/80 dark:text-amber-500/80">
                     Hoje simulado: <span className="font-black">{simToday ? formatShortDate(simToday) : '—'}</span>
@@ -448,7 +454,7 @@ const HeatmapView: React.FC<HeatmapProps> = ({ streakEnabled: _streakEnabled = t
             <div className="shrink-0 w-[14px]" aria-hidden="true" />
             {monthsForDisplay.map(({ year, month }) => {
               const cells = buildMonthCells(year, month);
-              const activeDays = cells.filter(dk => dk && (dayMap.get(dk)?.blocks ?? 0) > 0).length;
+              const activeDays = cells.filter(dk => dk && effectiveLevel(dk) !== 'none').length;
 
               return (
                 <div key={`${year}-${month}`} className="shrink-0 w-[220px]">
