@@ -15,7 +15,8 @@ const MONTH_NAMES: string[] = [
 const MONTHS_COUNT = 4;
 const GOAL_STORAGE_KEY = 'sprint_calendar_goal';
 const NOTES_STORAGE_KEY = 'sprint_day_notes';
-const MAX_GOAL_LIMIT = 12;
+const MIN_GOAL_LIMIT = 60;   // limite do slider "mínimo diário"
+const MAX_GOAL_LIMIT = 120;  // limite do slider "máximo diário"
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -154,12 +155,12 @@ const GoalModal: React.FC<GoalModalProps> = ({ current, onSave, onClose }) => {
 
   const handleMinChange = (v: number) => {
     setMin(v);
-    if (v >= max) setMax(v + 1);
+    if (v >= max) setMax(Math.min(v + 1, MAX_GOAL_LIMIT));
   };
 
   const handleMaxChange = (v: number) => {
     setMax(v);
-    if (v <= min) setMin(v - 1);
+    if (v <= min) setMin(Math.max(v - 1, 1));
   };
 
   const handleSave = () => { onSave({ min, max }); onClose(); };
@@ -194,7 +195,7 @@ const GoalModal: React.FC<GoalModalProps> = ({ current, onSave, onClose }) => {
                 <label className="text-[10px] font-black text-gray-500 dark:text-gray-500 uppercase tracking-widest">Mínimo diário</label>
                 <span className="text-sm font-black text-violet-600 dark:text-violet-400">{min} {min === 1 ? 'bloco' : 'blocos'}</span>
               </div>
-              <input type="range" min={1} max={MAX_GOAL_LIMIT - 1} value={min}
+              <input type="range" min={1} max={MIN_GOAL_LIMIT} step={1} value={min}
                 onChange={e => handleMinChange(Number(e.target.value))}
                 className="w-full h-1.5 rounded-full appearance-none cursor-pointer"
                 style={{ accentColor: '#7c3aed' }} />
@@ -204,7 +205,7 @@ const GoalModal: React.FC<GoalModalProps> = ({ current, onSave, onClose }) => {
                 <label className="text-[10px] font-black text-gray-500 dark:text-gray-500 uppercase tracking-widest">Máximo diário</label>
                 <span className="text-sm font-black text-violet-800 dark:text-violet-300">{max} {max === 1 ? 'bloco' : 'blocos'}</span>
               </div>
-              <input type="range" min={2} max={MAX_GOAL_LIMIT} value={max}
+              <input type="range" min={1} max={MAX_GOAL_LIMIT} step={1} value={max}
                 onChange={e => handleMaxChange(Number(e.target.value))}
                 className="w-full h-1.5 rounded-full appearance-none cursor-pointer"
                 style={{ accentColor: '#4c1d95' }} />
