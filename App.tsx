@@ -377,7 +377,7 @@ const App: React.FC = () => {
             </div>
           )}
           {activeTab === 'simulado' && (
-            <div className="animate-in fade-in slide-in-from-bottom-2 duration-300 lg:max-w-4xl xl:max-w-5xl lg:mx-auto">
+            <div className="h-full animate-in fade-in slide-in-from-bottom-2 duration-300 lg:max-w-4xl xl:max-w-5xl lg:mx-auto">
               <SimuladoView
                 userName={userName}
                 onSaveRecord={saveSimuladoRecord}

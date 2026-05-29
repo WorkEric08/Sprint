@@ -8,6 +8,8 @@ interface Props {
   subtitle?: string;
   accent?: TabAccent;
   action?: React.ReactNode;
+  /** Override the default bottom margin (mb-6 md:mb-8) when a screen needs to fit without scroll. */
+  className?: string;
 }
 
 const ACCENT_CLASSES: Record<TabAccent, { bg: string; text: string }> = {
@@ -17,10 +19,10 @@ const ACCENT_CLASSES: Record<TabAccent, { bg: string; text: string }> = {
   slate:  { bg: 'bg-gray-100 dark:bg-gray-800/60',    text: 'text-gray-600 dark:text-gray-400'    },
 };
 
-const TabPageHeader: React.FC<Props> = ({ icon, title, subtitle, accent = 'indigo', action }) => {
+const TabPageHeader: React.FC<Props> = ({ icon, title, subtitle, accent = 'indigo', action, className }) => {
   const c = ACCENT_CLASSES[accent];
   return (
-    <div className="flex items-center justify-between gap-4 mb-6 md:mb-8">
+    <div className={className ?? 'flex items-center justify-between gap-4 mb-6 md:mb-8'}>
       <div className="flex items-center gap-3 min-w-0">
         <div className={`w-11 h-11 md:w-12 md:h-12 rounded-2xl ${c.bg} flex items-center justify-center shrink-0`}>
           <i className={`fas fa-${icon} ${c.text} text-base md:text-lg`} />
