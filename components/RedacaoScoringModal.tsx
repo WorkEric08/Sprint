@@ -39,53 +39,80 @@ const RedacaoScoringModal: React.FC<Props> = ({
   const totalScore = scores.c1 + scores.c2 + scores.c3 + scores.c4 + scores.c5;
 
   return createPortal(
-    <div className="fixed inset-0 z-[80] flex flex-col justify-end animate-in fade-in duration-200">
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-white dark:bg-gray-900 rounded-t-3xl shadow-2xl max-h-[90vh] overflow-y-auto md:max-w-2xl md:mx-auto md:rounded-3xl md:mb-8">
-        <div className="sticky top-0 bg-white dark:bg-gray-900 pt-3 pb-3 px-5 border-b border-gray-100 dark:border-gray-800 z-10">
-          <div className="w-10 h-1 bg-gray-200 dark:bg-gray-700 rounded-full mx-auto mb-3" />
+    <div className="fixed inset-0 z-[80] flex flex-col justify-end md:justify-center md:items-center md:p-6 animate-in fade-in duration-300">
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+
+      <div className="relative w-full md:max-w-2xl bg-white dark:bg-gray-900 rounded-t-3xl md:rounded-3xl shadow-2xl max-h-[90vh] md:max-h-[88vh] overflow-y-auto modal-scroll animate-in slide-in-from-bottom-4 md:slide-in-from-bottom-0 md:zoom-in-95 duration-300">
+        {/* Handle */}
+        <div className="sticky top-0 bg-white dark:bg-gray-900 pt-3 pb-3 px-5 z-10 border-b border-gray-100 dark:border-gray-800 md:rounded-t-3xl">
+          <div className="w-10 h-1 bg-gray-200 dark:bg-gray-700 rounded-full mx-auto mb-3 md:hidden" />
           <div className="flex items-center justify-between">
-            <h3 className="text-base font-black text-gray-800 dark:text-gray-100 uppercase tracking-tight">
-              Auto-avaliação
-            </h3>
-            <div className="text-right">
-              <p className="text-2xl font-black text-violet-600 dark:text-violet-400">{totalScore}</p>
-              <p className="text-[9px] font-bold text-gray-400 dark:text-gray-600">de 1000</p>
+            <div>
+              <h3 className="text-base font-black text-gray-800 dark:text-gray-100 uppercase tracking-tight">
+                Auto-avaliação
+              </h3>
+              <p className="text-[10px] font-bold text-gray-400 dark:text-gray-600 mt-0.5">
+                Redação ENEM · 5 competências
+              </p>
             </div>
+            {onClose && (
+              <button onClick={onClose} className="text-[11px] font-black text-gray-400 dark:text-gray-600 uppercase tracking-widest hover:text-violet-500 transition-colors px-2 py-1">
+                Pular
+              </button>
+            )}
           </div>
         </div>
 
-        <div className="px-5 py-4 space-y-4 pb-8">
-          <p className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">
-            Avalie cada competência (0–200)
-          </p>
-
-          {COMPETENCIES.map(c => (
-            <div key={c.key} className="space-y-2">
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-sm font-black text-gray-700 dark:text-gray-300">{c.label}: {c.title}</p>
-                  <p className="text-[10px] text-gray-400 dark:text-gray-600 leading-relaxed mt-0.5">{c.desc}</p>
-                </div>
-                <span className="text-lg font-black text-violet-600 dark:text-violet-400 ml-3 shrink-0">{scores[c.key]}</span>
-              </div>
-              <div className="flex gap-1.5">
-                {SCORE_STEPS.map(step => (
-                  <button
-                    key={step}
-                    onClick={() => setScores(prev => ({ ...prev, [c.key]: step }))}
-                    className={`flex-1 py-2 rounded-xl text-[10px] font-black transition-all active:scale-95 ${
-                      scores[c.key] === step
-                        ? 'bg-violet-500 text-white shadow-md'
-                        : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-500'
-                    }`}
-                  >
-                    {step}
-                  </button>
-                ))}
-              </div>
+        <div className="px-5 py-4 space-y-6 pb-8">
+          {/* Nota Estimada */}
+          <div className="bg-violet-50 dark:bg-violet-900/20 rounded-2xl p-4 text-center border border-violet-100 dark:border-violet-900/30">
+            <p className="text-[9px] font-black text-violet-500 uppercase tracking-widest mb-1">Nota Estimada</p>
+            <p className="text-4xl font-black text-violet-600 dark:text-violet-400">{totalScore}</p>
+            <p className="text-xs text-violet-400 mt-0.5">de 1000 pontos</p>
+            <div className="mt-3 h-2 bg-violet-100 dark:bg-violet-900/40 rounded-full overflow-hidden max-w-[280px] mx-auto">
+              <div className="h-full bg-violet-500 rounded-full transition-all duration-500" style={{ width: `${(totalScore / 1000) * 100}%` }} />
             </div>
-          ))}
+          </div>
+
+          <div className="space-y-3">
+            <p className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">
+              Avalie cada competência (0–200)
+            </p>
+
+            {COMPETENCIES.map(c => (
+              <div key={c.key} className="bg-gray-50 dark:bg-gray-800/40 rounded-2xl border border-gray-100 dark:border-gray-800 p-4 space-y-3">
+                <div className="flex items-start justify-between">
+                  <div className="space-y-0.5">
+                    <span className="text-xs font-black text-gray-700 dark:text-gray-300 uppercase tracking-tight">
+                      {c.label}: {c.title}
+                    </span>
+                    <p className="text-[10px] text-gray-400 dark:text-gray-500 leading-relaxed">
+                      {c.desc}
+                    </p>
+                  </div>
+                  <span className="text-base font-black text-violet-600 dark:text-violet-400 ml-3 shrink-0 tabular-nums">
+                    {scores[c.key]}
+                  </span>
+                </div>
+
+                <div className="flex gap-1.5">
+                  {SCORE_STEPS.map(step => (
+                    <button
+                      key={step}
+                      onClick={() => setScores(prev => ({ ...prev, [c.key]: step }))}
+                      className={`flex-1 py-2 rounded-xl text-[10px] font-black transition-all active:scale-95 ${
+                        scores[c.key] === step
+                          ? 'bg-violet-500 text-white shadow-md'
+                          : 'bg-white dark:bg-gray-800 text-gray-400 dark:text-gray-600 border border-gray-100 dark:border-gray-700'
+                      }`}
+                    >
+                      {step}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
 
           <div className="space-y-2">
             <p className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">
@@ -96,24 +123,13 @@ const RedacaoScoringModal: React.FC<Props> = ({
               onChange={e => setNotes(e.target.value)}
               placeholder="O que melhorar na próxima vez…"
               rows={3}
-              className="w-full bg-gray-50 dark:bg-gray-800/40 border border-gray-100 dark:border-gray-800 rounded-2xl px-4 py-3 text-sm text-gray-800 dark:text-gray-100 placeholder:text-gray-400 resize-none focus:outline-none focus:border-violet-300 transition-colors"
+              className="w-full bg-gray-50 dark:bg-gray-800/40 border border-gray-100 dark:border-gray-800 rounded-2xl px-4 py-3 text-sm text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-600 resize-none focus:outline-none focus:border-violet-300 dark:focus:border-violet-700 transition-colors leading-relaxed"
             />
-          </div>
-
-          <div className="bg-violet-50 dark:bg-violet-900/20 rounded-2xl p-4 border border-violet-100 dark:border-violet-900/30">
-            <p className="text-[9px] font-black text-violet-500 uppercase tracking-widest mb-2">Nota estimada</p>
-            <div className="flex items-end gap-2 mb-2">
-              <span className="text-4xl font-black text-violet-600 dark:text-violet-400">{totalScore}</span>
-              <span className="text-lg font-bold text-violet-400 mb-1">/ 1000</span>
-            </div>
-            <div className="h-2 bg-violet-100 dark:bg-violet-900/40 rounded-full overflow-hidden">
-              <div className="h-full bg-violet-500 rounded-full transition-all duration-500" style={{ width: `${(totalScore / 1000) * 100}%` }} />
-            </div>
           </div>
 
           <button
             onClick={() => onSave(scores, notes)}
-            className="w-full py-4 bg-violet-600 text-white rounded-2xl font-black text-xs uppercase tracking-[0.15em] flex items-center justify-center gap-2 active:scale-[0.98] transition-transform shadow-lg"
+            className="w-full py-4 bg-violet-600 hover:bg-violet-700 text-white rounded-2xl font-black text-xs uppercase tracking-[0.15em] flex items-center justify-center gap-2 active:scale-[0.98] transition-all shadow-lg shadow-violet-500/20"
           >
             <i className="fas fa-save" />
             {saveLabel}
