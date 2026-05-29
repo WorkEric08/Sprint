@@ -38,7 +38,7 @@ const SimuladoSetupModal: React.FC<Props> = ({ onStart }) => {
       <TabPageHeader
         icon="stopwatch"
         title="Simulado"
-        subtitle="Modo foco máximo · Wake Lock ativo"
+        subtitle="Modo foco máximo"
         accent="indigo"
       />
 
@@ -162,14 +162,6 @@ const SimuladoSetupModal: React.FC<Props> = ({ onStart }) => {
           </button>
         </div>
       )}
-
-      {/* Wake Lock info */}
-      <div className="flex items-center gap-2 px-1">
-        <i className="fas fa-mobile-screen text-indigo-400 text-xs" />
-        <p className="text-[10px] text-gray-400 dark:text-gray-600 leading-relaxed">
-          Wake Lock ativado automaticamente para impedir tela apagar. Teste em dispositivo real.
-        </p>
-      </div>
 
       {/* CTA */}
       <button
