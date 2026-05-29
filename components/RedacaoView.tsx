@@ -2,7 +2,9 @@ import React, { useState } from 'react';
 import { RedacaoTheme, RedacaoSession } from '../types';
 import { isDevModeUser } from '../utils/devMode';
 import RedacaoSetupModal from './RedacaoSetupModal';
+import RedacaoModeModal from './RedacaoModeModal';
 import RedacaoEditorView from './RedacaoEditorView';
+import RedacaoPaperView from './RedacaoPaperView';
 
 interface Props {
   userName: string;
@@ -11,7 +13,9 @@ interface Props {
 
 type Phase =
   | { kind: 'picker' }
-  | { kind: 'editor'; theme: RedacaoTheme };
+  | { kind: 'mode-picker'; theme: RedacaoTheme }
+  | { kind: 'editor'; theme: RedacaoTheme }
+  | { kind: 'paper'; theme: RedacaoTheme };
 
 const RedacaoView: React.FC<Props> = ({ userName, onSaveSession }) => {
   const [phase, setPhase] = useState<Phase>({ kind: 'picker' });
@@ -20,7 +24,31 @@ const RedacaoView: React.FC<Props> = ({ userName, onSaveSession }) => {
   if (phase.kind === 'picker') {
     return (
       <RedacaoSetupModal
-        onStart={theme => setPhase({ kind: 'editor', theme })}
+        onStart={theme => setPhase({ kind: 'mode-picker', theme })}
+      />
+    );
+  }
+
+  if (phase.kind === 'mode-picker') {
+    return (
+      <>
+        {/* Keep the picker visible behind the modal */}
+        <RedacaoSetupModal onStart={theme => setPhase({ kind: 'mode-picker', theme })} />
+        <RedacaoModeModal
+          theme={phase.theme}
+          onChooseDigital={() => setPhase({ kind: 'editor', theme: phase.theme })}
+          onChoosePaper={() => setPhase({ kind: 'paper', theme: phase.theme })}
+          onBack={() => setPhase({ kind: 'picker' })}
+        />
+      </>
+    );
+  }
+
+  if (phase.kind === 'paper') {
+    return (
+      <RedacaoPaperView
+        theme={phase.theme}
+        onClose={() => setPhase({ kind: 'picker' })}
       />
     );
   }
