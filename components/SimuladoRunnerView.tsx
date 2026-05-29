@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { SimuladoTemplate } from '../types';
 import { WakeLockManager } from '../utils/wakeLock';
 import TabPageHeader from './TabPageHeader';
+import { useRegisterNavigationGuard } from '../contexts/NavigationGuardContext';
 
 interface Props {
   template: SimuladoTemplate;
@@ -42,6 +43,14 @@ const SimuladoRunnerView: React.FC<Props> = ({ template, onFinish, isDevMode }) 
   const [isFinished, setIsFinished] = useState(false);
   const [showExitConfirm, setShowExitConfirm] = useState(false);
   const [milestoneAlert, setMilestoneAlert] = useState<string | null>(null);
+
+  // Bloqueia troca de aba enquanto o cronômetro do simulado estiver rodando
+  useRegisterNavigationGuard(!isPaused && !isFinished, {
+    title: 'Sair do simulado?',
+    message: 'O cronômetro está rodando. Se sair agora, o tempo decorrido será registrado como duração real.',
+    cancelLabel: 'Continuar simulado',
+    confirmLabel: 'Sair mesmo assim',
+  });
 
   useEffect(() => {
     const wl = wakeLockRef.current;

@@ -14,6 +14,8 @@ interface Props {
   autoStart?: boolean;
   /** triggered when time hits 0 */
   onTimeUp?: () => void;
+  /** triggered when the running state changes (used by navigation guards) */
+  onRunningChange?: (running: boolean) => void;
   /** show floating pill on mobile while running */
   showFloatingPill?: boolean;
   /** when true, hides the time-up modal (parent handles it, e.g. scoring) */
@@ -31,6 +33,7 @@ const RedacaoTimerCard = forwardRef<RedacaoTimerHandle, Props>(({
   totalMs,
   autoStart = false,
   onTimeUp,
+  onRunningChange,
   showFloatingPill = true,
   suppressTimeUpModal = false,
 }, ref) => {
@@ -60,6 +63,10 @@ const RedacaoTimerCard = forwardRef<RedacaoTimerHandle, Props>(({
     const id = setInterval(() => setNow(Date.now()), 500);
     return () => clearInterval(id);
   }, [isRunning]);
+
+  useEffect(() => {
+    onRunningChange?.(isRunning);
+  }, [isRunning, onRunningChange]);
 
   useEffect(() => {
     if (isRunning && remaining <= 0 && !timeUp) {

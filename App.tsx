@@ -20,6 +20,7 @@ import { toLocalDateKey } from './utils/dateUtils';
 import { computeFullStreak, shouldShowWelcomeBack } from './utils/streakUtils';
 import WelcomeBackCard from './components/WelcomeBackCard';
 import { OverlayProvider, useHasSecondaryScreen } from './contexts/OverlayContext';
+import { NavigationGuardProvider, useNavigationGuard } from './contexts/NavigationGuardContext';
 
 type TabId = 'stats' | 'ciclo' | 'simulado' | 'redacao' | 'settings';
 
@@ -60,7 +61,9 @@ const AppLoader: React.FC = () => {
 
   return (
     <OverlayProvider>
-      <App />
+      <NavigationGuardProvider>
+        <App />
+      </NavigationGuardProvider>
     </OverlayProvider>
   );
 };
@@ -79,6 +82,14 @@ const App: React.FC = () => {
 
   // Oculta a bottom nav quando qualquer tela secundária full-screen está aberta
   const hasSecondaryScreen = useHasSecondaryScreen();
+
+  // Intercepta navegação quando uma sessão (redação/simulado) com cronômetro
+  // ativo está em andamento — abre modal de confirmação antes de trocar de aba.
+  const { requestNavigation } = useNavigationGuard();
+  const goToTab = (tab: TabId) => {
+    if (tab === activeTab) return;
+    requestNavigation(() => setActiveTab(tab));
+  };
 
   // Refs para medição da nav — declarados cedo para manter ordem de hooks estável.
   // sessionStorage persiste no reload do force-update (window.location.reload),
@@ -255,7 +266,7 @@ const App: React.FC = () => {
           </div>
           <div className="flex items-center gap-2">
             <button
-              onClick={() => setActiveTab('stats')}
+              onClick={() => goToTab('stats')}
               aria-label="Progresso e perfil"
               className={`w-9 h-9 rounded-full flex items-center justify-center font-black transition-all active:scale-90 ${
                 activeTab === 'stats'
@@ -268,7 +279,7 @@ const App: React.FC = () => {
                 : <i className="fas fa-user text-sm" />}
             </button>
             <button
-              onClick={() => setActiveTab('settings')}
+              onClick={() => goToTab('settings')}
               aria-label="Configurações"
               className={`w-9 h-9 rounded-full flex items-center justify-center transition-all active:scale-90 active:rotate-45 ${
                 activeTab === 'settings'
@@ -296,7 +307,7 @@ const App: React.FC = () => {
             {NAV_ITEMS.map(tab => (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
+                onClick={() => goToTab(tab.id)}
                 className={`w-full flex items-center justify-center lg:justify-start gap-3 py-3 lg:px-3 xl:px-4 rounded-xl transition-all relative ${
                   activeTab === tab.id
                     ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400'
@@ -355,7 +366,7 @@ const App: React.FC = () => {
                 reviewItems={reviewItems}
                 edital={selectedEdital}
                 examDate={examDate}
-                onEditExamDate={() => setActiveTab('settings')}
+                onEditExamDate={() => goToTab('settings')}
                 streakState={streakState}
                 streakEnabled={streakEnabled}
               />
@@ -407,7 +418,7 @@ const App: React.FC = () => {
           {MOBILE_NAV_ITEMS.map(tab => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => goToTab(tab.id)}
               className={`flex-1 flex flex-col items-center gap-1 transition-all active:scale-90 relative ${
                 activeTab === tab.id ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-400 dark:text-gray-600'
               }`}

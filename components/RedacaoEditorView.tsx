@@ -4,6 +4,7 @@ import { AXIS_LABELS, AXIS_COLORS } from '../data/redacaoThemes';
 import TabPageHeader from './TabPageHeader';
 import RedacaoTimerCard, { RedacaoTimerHandle } from './RedacaoTimerCard';
 import RedacaoScoringModal from './RedacaoScoringModal';
+import { useRegisterNavigationGuard } from '../contexts/NavigationGuardContext';
 
 interface Props {
   theme: RedacaoTheme;
@@ -55,6 +56,15 @@ const RedacaoEditorView: React.FC<Props> = ({ theme, existingSession, onSave, on
   const [showScoring, setShowScoring] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<number | null>(existingSession?.lastSavedAt ?? null);
+  const [timerRunning, setTimerRunning] = useState(false);
+
+  // Bloqueia troca de aba enquanto o cronômetro estiver rodando
+  useRegisterNavigationGuard(timerRunning, {
+    title: 'Sair da redação?',
+    message: 'O cronômetro está rodando e sua redação ainda não foi concluída. Se sair, o progresso fica salvo como rascunho.',
+    cancelLabel: 'Continuar redação',
+    confirmLabel: 'Sair mesmo assim',
+  });
 
   const wordCount = countWords(text);
 
@@ -155,6 +165,7 @@ const RedacaoEditorView: React.FC<Props> = ({ theme, existingSession, onSave, on
         totalMs={TOTAL_MS}
         autoStart={true}
         onTimeUp={() => setShowScoring(true)}
+        onRunningChange={setTimerRunning}
         suppressTimeUpModal
       />
 

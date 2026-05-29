@@ -4,6 +4,7 @@ import { AXIS_LABELS, AXIS_COLORS } from '../data/redacaoThemes';
 import TabPageHeader from './TabPageHeader';
 import RedacaoTimerCard, { RedacaoTimerHandle } from './RedacaoTimerCard';
 import RedacaoScoringModal from './RedacaoScoringModal';
+import { useRegisterNavigationGuard } from '../contexts/NavigationGuardContext';
 
 interface Props {
   theme: RedacaoTheme;
@@ -24,6 +25,14 @@ const RedacaoPaperView: React.FC<Props> = ({ theme, onSave, onClose }) => {
   const timerRef = useRef<RedacaoTimerHandle>(null);
 
   const [showScoring, setShowScoring] = useState(false);
+  const [timerRunning, setTimerRunning] = useState(false);
+
+  useRegisterNavigationGuard(timerRunning, {
+    title: 'Sair da redação?',
+    message: 'O cronômetro está rodando. Se sair agora, o tempo será perdido e a redação não será registrada.',
+    cancelLabel: 'Continuar redação',
+    confirmLabel: 'Sair mesmo assim',
+  });
 
   const handleFinish = () => {
     timerRef.current?.pause();
@@ -74,6 +83,7 @@ const RedacaoPaperView: React.FC<Props> = ({ theme, onSave, onClose }) => {
         totalMs={TOTAL_MS}
         autoStart={false}
         onTimeUp={() => setShowScoring(true)}
+        onRunningChange={setTimerRunning}
         suppressTimeUpModal
       />
 
