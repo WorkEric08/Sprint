@@ -16,7 +16,11 @@ export function useRedacao(): UseRedacaoReturn {
 
   const reload = useCallback(async () => {
     try {
-      const all = await db.redacaoSessions.orderBy('startedAt').reverse().toArray();
+      // startedAt não é indexado (índice: id, completedAt, themeId) — ordenar
+      // por ele via Dexie lançaria SchemaError. Buscamos tudo e ordenamos em JS,
+      // consistente com a ordenação de saveSession.
+      const all = await db.redacaoSessions.toArray();
+      all.sort((a, b) => b.startedAt - a.startedAt);
       setSessions(all);
     } catch (e) {
       console.error('Failed to load redação sessions', e);
