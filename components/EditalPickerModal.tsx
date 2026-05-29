@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Edital, Subject } from '../types';
 import { EDITAIS } from '../data/editais';
 import { useBackButton } from '../hooks/useBackButton';
-import { useAnimatedClose } from '../hooks/useAnimatedClose';
 import { useSecondaryScreen } from '../contexts/OverlayContext';
 import CicloEditView from './CicloEditView';
 import CicloAddView from './CicloAddView';
@@ -36,7 +35,6 @@ const EditalPickerModal: React.FC<Props> = ({
   onClose,
 }) => {
   useSecondaryScreen();
-  const { closing, handleClose } = useAnimatedClose(onClose);
 
   const [step, setStep] = useState<Step>('pick');
 
@@ -56,7 +54,7 @@ const EditalPickerModal: React.FC<Props> = ({
       completedBlocks: [],
     }));
     if (newSubjects.length > 0) onApplySubjects([...currentSubjects, ...newSubjects]);
-    handleClose();
+    onClose();
   };
 
   // ── Custom edital ─────────────────────────────────────────────────────────
@@ -102,251 +100,254 @@ const EditalPickerModal: React.FC<Props> = ({
         })),
       ]);
     }
-    handleClose();
+    onClose();
   };
 
-  // ── Header title ──────────────────────────────────────────────────────────
+  // ── Navigation ────────────────────────────────────────────────────────────
   const headerTitle =
-    step === 'pick' ? 'Selecionar Edital' :
-    step === 'confirm-enem' ? 'Confirmar ENEM' :
+    step === 'pick'          ? 'Selecionar Edital' :
+    step === 'confirm-enem'  ? 'Confirmar ENEM'    :
     'Edital Personalizado';
 
   const handleBack = () => {
     if (step !== 'pick') { setStep('pick'); return; }
-    handleClose();
+    onClose();
   };
 
   useBackButton(handleBack);
 
   return (
-    <div className={`fixed inset-0 z-[90] flex flex-col bg-gray-50 dark:bg-gray-950 ${closing ? 'animate-out fade-out slide-out-to-bottom-4 duration-[200ms]' : 'animate-in fade-in slide-in-from-bottom-4 duration-300'}`}>
-      {/* Header */}
-      <div
-        className="flex items-center gap-3 px-4 pb-3 border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 shrink-0"
-        style={{ paddingTop: 'max(env(safe-area-inset-top, 0px), 0.5rem)' }}
-      >
-        <button
-          onClick={handleBack}
-          className="w-9 h-9 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-gray-500 active:scale-90 transition-transform"
-        >
-          <i className="fas fa-arrow-left text-sm" />
-        </button>
-        <h2 className="text-base font-black text-gray-800 dark:text-gray-100 uppercase tracking-tight">
-          {headerTitle}
-        </h2>
-      </div>
+    <div className="fixed inset-0 z-[90] flex flex-col justify-end md:justify-center md:items-center md:p-6 animate-in fade-in duration-200">
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
 
-      {/* ── Step: pick ─────────────────────────────────────────────────────── */}
-      {step === 'pick' && (
-        <div className="flex-1 overflow-y-auto p-4 space-y-3">
+      {/* Sheet */}
+      <div className="relative w-full md:max-w-2xl bg-white dark:bg-gray-900 rounded-t-3xl md:rounded-3xl shadow-2xl max-h-[90vh] md:max-h-[88vh] overflow-y-auto modal-scroll animate-in slide-in-from-bottom-4 md:slide-in-from-bottom-0 md:zoom-in-95 duration-300">
 
-          {/* ENEM */}
-          <button
-            onClick={() => setStep('confirm-enem')}
-            className={`w-full text-left bg-white dark:bg-gray-900 rounded-2xl border p-4 transition-all active:scale-[0.98] ${
-              currentEditalId === 'enem'
-                ? 'border-indigo-300 dark:border-indigo-700'
-                : 'border-gray-100 dark:border-gray-800 hover:border-indigo-200 dark:hover:border-indigo-900/50'
-            }`}
-          >
-            <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="text-[9px] font-black text-gray-400 dark:text-gray-600 uppercase tracking-widest">
-                    INEP/MEC
-                  </span>
-                  {currentEditalId === 'enem' && (
-                    <span className="text-[9px] font-black text-indigo-500 uppercase tracking-widest bg-indigo-50 dark:bg-indigo-900/20 px-2 py-0.5 rounded-full">
-                      Ativo
-                    </span>
-                  )}
-                </div>
-                <p className="font-black text-gray-800 dark:text-gray-100 text-sm uppercase tracking-tight">
-                  ENEM
-                </p>
-                <p className="text-[10px] text-gray-400 dark:text-gray-600 mt-1">
-                  {ENEM.subjects.length} matérias · Matriz de Referência oficial
-                </p>
-              </div>
-              <div className="flex -space-x-1 shrink-0">
-                {ENEM.subjects.slice(0, 5).map((s, i) => (
-                  <div
-                    key={i}
-                    className="w-4 h-4 rounded-full border-2 border-white dark:border-gray-900"
-                    style={{ backgroundColor: s.color }}
-                  />
-                ))}
-              </div>
-            </div>
-          </button>
-
-          {/* Customizado */}
-          <button
-            onClick={() => setStep('create-custom')}
-            className={`w-full text-left bg-white dark:bg-gray-900 rounded-2xl border p-4 transition-all active:scale-[0.98] ${
-              currentEditalId === 'custom'
-                ? 'border-indigo-300 dark:border-indigo-700'
-                : 'border-gray-100 dark:border-gray-800 hover:border-indigo-200 dark:hover:border-indigo-900/50'
-            }`}
-          >
-            <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="text-[9px] font-black text-gray-400 dark:text-gray-600 uppercase tracking-widest">
-                    Personalizado
-                  </span>
-                  {currentEditalId === 'custom' && (
-                    <span className="text-[9px] font-black text-indigo-500 uppercase tracking-widest bg-indigo-50 dark:bg-indigo-900/20 px-2 py-0.5 rounded-full">
-                      Ativo
-                    </span>
-                  )}
-                </div>
-                <p className="font-black text-gray-800 dark:text-gray-100 text-sm uppercase tracking-tight">
-                  Customizado
-                </p>
-                <p className="text-[10px] text-gray-400 dark:text-gray-600 mt-1">
-                  {customName
-                    ? `${customName} · ${customSubjects.length} matéria${customSubjects.length !== 1 ? 's' : ''}`
-                    : 'Crie seu próprio edital com matérias personalizadas'}
-                </p>
-              </div>
-              <div className="w-9 h-9 rounded-xl bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center shrink-0">
-                <i className="fas fa-sliders text-indigo-500 text-sm" />
-              </div>
-            </div>
-          </button>
+        {/* Sticky header */}
+        <div className="sticky top-0 z-10 bg-white dark:bg-gray-900 pt-3 pb-3 px-5 border-b border-gray-100 dark:border-gray-800 md:rounded-t-3xl">
+          <div className="w-10 h-1 bg-gray-200 dark:bg-gray-700 rounded-full mx-auto mb-3 md:hidden" />
+          <div className="flex items-center gap-3">
+            <button
+              onClick={handleBack}
+              className="w-9 h-9 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-gray-500 active:scale-90 transition-transform shrink-0"
+            >
+              <i className="fas fa-arrow-left text-sm" />
+            </button>
+            <h2 className="text-base font-black text-gray-800 dark:text-gray-100 uppercase tracking-tight">
+              {headerTitle}
+            </h2>
+          </div>
         </div>
-      )}
 
-      {/* ── Step: confirm ENEM ─────────────────────────────────────────────── */}
-      {step === 'confirm-enem' && (
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
-          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-4">
-            <p className="text-[10px] font-black text-gray-400 dark:text-gray-600 uppercase tracking-widest mb-1">
-              INEP/MEC · Novembro
-            </p>
-            <p className="font-black text-gray-800 dark:text-gray-100 text-base uppercase tracking-tight">ENEM</p>
-          </div>
+        {/* ── Step: pick ───────────────────────────────────────────────────── */}
+        {step === 'pick' && (
+          <div className="p-5 space-y-3 pb-8">
 
-          <div className="rounded-2xl p-3.5 text-xs leading-relaxed bg-blue-50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/30 text-blue-800 dark:text-blue-300">
-            {ENEM.disclaimer}
-          </div>
-
-          <div className="space-y-2">
-            <p className="text-[10px] font-black text-gray-400 dark:text-gray-600 uppercase tracking-widest">
-              {toCreateEnem.length > 0
-                ? `${toCreateEnem.length} matérias serão criadas`
-                : 'Todas as matérias já existem'}
-            </p>
-            {ENEM.subjects.map(es => {
-              const exists = currentSubjects.some(s => s.title.toLowerCase() === es.name.toLowerCase());
-              return (
-                <div
-                  key={es.name}
-                  className={`flex items-center gap-3 p-3 rounded-2xl border ${
-                    exists
-                      ? 'bg-gray-50 dark:bg-gray-800/40 border-gray-100 dark:border-gray-800 opacity-60'
-                      : 'bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-800'
-                  }`}
-                >
-                  <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: es.color }} />
-                  <span className="flex-1 text-sm font-black text-gray-800 dark:text-gray-100 uppercase tracking-tight">
-                    {es.name}
-                  </span>
-                  <div className="flex items-center gap-2">
-                    <span className="text-[9px] font-bold text-gray-400 dark:text-gray-600">{es.weight}%</span>
-                    {exists
-                      ? <span className="text-[9px] font-black text-gray-400 uppercase">Já existe</span>
-                      : <i className="fas fa-plus text-[9px] text-indigo-500" />
-                    }
+            {/* ENEM */}
+            <button
+              onClick={() => setStep('confirm-enem')}
+              className={`w-full text-left bg-gray-50 dark:bg-gray-800/40 rounded-2xl border p-4 transition-all active:scale-[0.98] ${
+                currentEditalId === 'enem'
+                  ? 'border-indigo-300 dark:border-indigo-700'
+                  : 'border-gray-100 dark:border-gray-800 hover:border-indigo-200 dark:hover:border-indigo-900/50'
+              }`}
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-[9px] font-black text-gray-400 dark:text-gray-600 uppercase tracking-widest">
+                      INEP/MEC
+                    </span>
+                    {currentEditalId === 'enem' && (
+                      <span className="text-[9px] font-black text-indigo-500 uppercase tracking-widest bg-indigo-50 dark:bg-indigo-900/20 px-2 py-0.5 rounded-full">
+                        Ativo
+                      </span>
+                    )}
                   </div>
+                  <p className="font-black text-gray-800 dark:text-gray-100 text-sm uppercase tracking-tight">
+                    ENEM
+                  </p>
+                  <p className="text-[10px] text-gray-400 dark:text-gray-600 mt-1">
+                    {ENEM.subjects.length} matérias · Matriz de Referência oficial
+                  </p>
                 </div>
-              );
-            })}
-          </div>
-
-          <div className="space-y-2 pb-4">
-            <button
-              onClick={handleConfirmEnem}
-              className="w-full py-4 bg-indigo-600 text-white rounded-2xl font-black text-xs uppercase tracking-[0.15em] flex items-center justify-center gap-2 active:scale-[0.98] transition-transform shadow-lg shadow-indigo-500/20"
-            >
-              <i className="fas fa-check" />
-              Aplicar ENEM
+                <div className="flex -space-x-1 shrink-0">
+                  {ENEM.subjects.slice(0, 5).map((s, i) => (
+                    <div
+                      key={i}
+                      className="w-4 h-4 rounded-full border-2 border-white dark:border-gray-900"
+                      style={{ backgroundColor: s.color }}
+                    />
+                  ))}
+                </div>
+              </div>
             </button>
+
+            {/* Customizado */}
             <button
-              onClick={() => { onSelect(ENEM.id); onClose(); }}
-              className="w-full py-3 text-gray-400 dark:text-gray-600 text-[10px] font-black uppercase tracking-widest"
+              onClick={() => setStep('create-custom')}
+              className={`w-full text-left bg-gray-50 dark:bg-gray-800/40 rounded-2xl border p-4 transition-all active:scale-[0.98] ${
+                currentEditalId === 'custom'
+                  ? 'border-indigo-300 dark:border-indigo-700'
+                  : 'border-gray-100 dark:border-gray-800 hover:border-indigo-200 dark:hover:border-indigo-900/50'
+              }`}
             >
-              Selecionar sem criar matérias
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-[9px] font-black text-gray-400 dark:text-gray-600 uppercase tracking-widest">
+                      Personalizado
+                    </span>
+                    {currentEditalId === 'custom' && (
+                      <span className="text-[9px] font-black text-indigo-500 uppercase tracking-widest bg-indigo-50 dark:bg-indigo-900/20 px-2 py-0.5 rounded-full">
+                        Ativo
+                      </span>
+                    )}
+                  </div>
+                  <p className="font-black text-gray-800 dark:text-gray-100 text-sm uppercase tracking-tight">
+                    Customizado
+                  </p>
+                  <p className="text-[10px] text-gray-400 dark:text-gray-600 mt-1">
+                    {customName
+                      ? `${customName} · ${customSubjects.length} matéria${customSubjects.length !== 1 ? 's' : ''}`
+                      : 'Crie seu próprio edital com matérias personalizadas'}
+                  </p>
+                </div>
+                <div className="w-9 h-9 rounded-xl bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center shrink-0">
+                  <i className="fas fa-sliders text-indigo-500 text-sm" />
+                </div>
+              </div>
             </button>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* ── Step: create custom ────────────────────────────────────────────── */}
-      {step === 'create-custom' && (
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        {/* ── Step: confirm ENEM ───────────────────────────────────────────── */}
+        {step === 'confirm-enem' && (
+          <div className="p-5 space-y-4 pb-8">
+            <div className="bg-gray-50 dark:bg-gray-800/40 rounded-2xl border border-gray-100 dark:border-gray-800 p-4">
+              <p className="text-[10px] font-black text-gray-400 dark:text-gray-600 uppercase tracking-widest mb-1">
+                INEP/MEC · Novembro
+              </p>
+              <p className="font-black text-gray-800 dark:text-gray-100 text-base uppercase tracking-tight">ENEM</p>
+            </div>
 
-          {/* Nome */}
-          <div className="space-y-2">
-            <p className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">
-              Nome do concurso / prova
-            </p>
-            <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl px-4 py-3">
-              <input
-                type="text"
-                value={customName}
-                onChange={e => setCustomName(e.target.value)}
-                placeholder="Ex: OAB, ANATEL, Minha Prova..."
-                maxLength={50}
-                className="w-full bg-transparent text-sm font-black text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-600 placeholder:font-normal focus:outline-none"
-              />
+            <div className="rounded-2xl p-3.5 text-xs leading-relaxed bg-blue-50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/30 text-blue-800 dark:text-blue-300">
+              {ENEM.disclaimer}
+            </div>
+
+            <div className="space-y-2">
+              <p className="text-[10px] font-black text-gray-400 dark:text-gray-600 uppercase tracking-widest">
+                {toCreateEnem.length > 0
+                  ? `${toCreateEnem.length} matérias serão criadas`
+                  : 'Todas as matérias já existem'}
+              </p>
+              {ENEM.subjects.map(es => {
+                const exists = currentSubjects.some(s => s.title.toLowerCase() === es.name.toLowerCase());
+                return (
+                  <div
+                    key={es.name}
+                    className={`flex items-center gap-3 p-3 rounded-2xl border ${
+                      exists
+                        ? 'bg-gray-50 dark:bg-gray-800/40 border-gray-100 dark:border-gray-800 opacity-60'
+                        : 'bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-800'
+                    }`}
+                  >
+                    <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: es.color }} />
+                    <span className="flex-1 text-sm font-black text-gray-800 dark:text-gray-100 uppercase tracking-tight">
+                      {es.name}
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[9px] font-bold text-gray-400 dark:text-gray-600">{es.weight}%</span>
+                      {exists
+                        ? <span className="text-[9px] font-black text-gray-400 uppercase">Já existe</span>
+                        : <i className="fas fa-plus text-[9px] text-indigo-500" />
+                      }
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="space-y-2">
+              <button
+                onClick={handleConfirmEnem}
+                className="w-full py-4 bg-indigo-600 text-white rounded-2xl font-black text-xs uppercase tracking-[0.15em] flex items-center justify-center gap-2 active:scale-[0.98] transition-transform shadow-lg shadow-indigo-500/20"
+              >
+                <i className="fas fa-check" />
+                Aplicar ENEM
+              </button>
+              <button
+                onClick={() => { onSelect(ENEM.id); onClose(); }}
+                className="w-full py-3 text-gray-400 dark:text-gray-600 text-[10px] font-black uppercase tracking-widest"
+              >
+                Selecionar sem criar matérias
+              </button>
             </div>
           </div>
+        )}
 
-          {/* Matérias */}
-          <div className="space-y-2">
-            <p className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">
-              Matérias ({customSubjects.length})
-            </p>
+        {/* ── Step: create custom ──────────────────────────────────────────── */}
+        {step === 'create-custom' && (
+          <div className="p-5 space-y-4 pb-8">
 
-            {customSubjects.map((cs, idx) => (
-              <div key={idx} className="flex items-center gap-2 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl px-4 py-3">
-                <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: cs.color }} />
-                <button
-                  onClick={() => setEditingIdx(idx)}
-                  className="flex-1 text-left text-sm font-black text-gray-800 dark:text-gray-100 uppercase tracking-tight truncate active:opacity-60 transition-opacity"
-                >
-                  {cs.name}
-                </button>
-                <button
-                  onClick={() => setEditingIdx(idx)}
-                  className="w-7 h-7 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-gray-400 active:scale-90 transition-transform"
-                  title="Editar matéria"
-                >
-                  <i className="fas fa-pencil text-[10px]" />
-                </button>
-                <button
-                  onClick={() => setConfirmDeleteIdx(idx)}
-                  className="w-7 h-7 flex items-center justify-center rounded-full bg-red-50 dark:bg-red-900/20 text-red-400 active:scale-90 transition-transform"
-                  title="Excluir matéria"
-                >
-                  <i className="fas fa-trash text-[10px]" />
-                </button>
+            {/* Nome */}
+            <div className="space-y-2">
+              <p className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">
+                Nome do concurso / prova
+              </p>
+              <div className="bg-gray-50 dark:bg-gray-800/40 border border-gray-100 dark:border-gray-800 rounded-2xl px-4 py-3">
+                <input
+                  type="text"
+                  value={customName}
+                  onChange={e => setCustomName(e.target.value)}
+                  placeholder="Ex: OAB, ANATEL, Minha Prova..."
+                  maxLength={50}
+                  className="w-full bg-transparent text-sm font-black text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-600 placeholder:font-normal focus:outline-none"
+                />
               </div>
-            ))}
+            </div>
 
-            <button
-              onClick={() => setShowAddView(true)}
-              className="w-full py-3 border-2 border-dashed border-gray-200 dark:border-gray-800 rounded-2xl text-[10px] font-black text-gray-400 dark:text-gray-600 uppercase tracking-widest flex items-center justify-center gap-2 hover:border-indigo-300 dark:hover:border-indigo-800 hover:text-indigo-500 transition-all"
-            >
-              <i className="fas fa-plus text-[9px]" />
-              Adicionar matéria
-            </button>
-          </div>
+            {/* Matérias */}
+            <div className="space-y-2">
+              <p className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">
+                Matérias ({customSubjects.length})
+              </p>
 
-          {/* CTA */}
-          <div className="pb-4">
+              {customSubjects.map((cs, idx) => (
+                <div key={idx} className="flex items-center gap-2 bg-gray-50 dark:bg-gray-800/40 border border-gray-100 dark:border-gray-800 rounded-2xl px-4 py-3">
+                  <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: cs.color }} />
+                  <button
+                    onClick={() => setEditingIdx(idx)}
+                    className="flex-1 text-left text-sm font-black text-gray-800 dark:text-gray-100 uppercase tracking-tight truncate active:opacity-60 transition-opacity"
+                  >
+                    {cs.name}
+                  </button>
+                  <button
+                    onClick={() => setEditingIdx(idx)}
+                    className="w-7 h-7 flex items-center justify-center rounded-full bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 text-gray-400 active:scale-90 transition-transform"
+                  >
+                    <i className="fas fa-pencil text-[10px]" />
+                  </button>
+                  <button
+                    onClick={() => setConfirmDeleteIdx(idx)}
+                    className="w-7 h-7 flex items-center justify-center rounded-full bg-red-50 dark:bg-red-900/20 text-red-400 active:scale-90 transition-transform"
+                  >
+                    <i className="fas fa-trash text-[10px]" />
+                  </button>
+                </div>
+              ))}
+
+              <button
+                onClick={() => setShowAddView(true)}
+                className="w-full py-3 border-2 border-dashed border-gray-200 dark:border-gray-800 rounded-2xl text-[10px] font-black text-gray-400 dark:text-gray-600 uppercase tracking-widest flex items-center justify-center gap-2 hover:border-indigo-300 dark:hover:border-indigo-800 hover:text-indigo-500 transition-all"
+              >
+                <i className="fas fa-plus text-[9px]" />
+                Adicionar matéria
+              </button>
+            </div>
+
+            {/* CTA */}
             <button
               onClick={handleConfirmCustom}
               disabled={!customName.trim()}
@@ -356,12 +357,12 @@ const EditalPickerModal: React.FC<Props> = ({
               Salvar Edital
             </button>
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
-      {/* Modal de confirmação de exclusão */}
+      {/* Confirm delete — sub-modal */}
       {confirmDeleteIdx !== null && customSubjects[confirmDeleteIdx] && (
-        <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-6 animate-in fade-in duration-200">
+        <div className="absolute inset-0 z-10 bg-black/60 backdrop-blur-sm flex items-center justify-center p-6 animate-in fade-in duration-200">
           <div className="bg-white dark:bg-gray-900 w-full max-w-sm rounded-3xl p-8 shadow-2xl border border-gray-100 dark:border-gray-800 text-center space-y-6">
             <div className="w-16 h-16 bg-red-50 dark:bg-red-900/20 rounded-full flex items-center justify-center mx-auto">
               <i className="fas fa-trash text-2xl text-red-500" />
@@ -395,7 +396,7 @@ const EditalPickerModal: React.FC<Props> = ({
         </div>
       )}
 
-      {/* CicloAddView reutilizado para adicionar matéria ao edital customizado */}
+      {/* CicloAddView para adicionar matéria ao edital customizado */}
       {showAddView && (
         <CicloAddView
           onSave={data => {
@@ -406,7 +407,7 @@ const EditalPickerModal: React.FC<Props> = ({
         />
       )}
 
-      {/* CicloEditView reutilizado para editar matéria do edital customizado */}
+      {/* CicloEditView para editar matéria do edital customizado */}
       {editingIdx !== null && customSubjects[editingIdx] && (
         <CicloEditView
           subject={{
