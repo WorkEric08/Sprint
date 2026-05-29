@@ -5,30 +5,65 @@ import TabPageHeader from './TabPageHeader';
 
 interface Props {
   onStart: (theme: RedacaoTheme) => void;
+  completedIds?: Set<string>;
+  onResetCompleted?: () => void;
 }
 
-const RedacaoSetupModal: React.FC<Props> = ({ onStart }) => {
+type FilterMode = 'all' | RedacaoThemeAxis | 'feitas';
+
+const RedacaoSetupModal: React.FC<Props> = ({ onStart, completedIds, onResetCompleted }) => {
+  const completed = completedIds ?? new Set<string>();
   const [selectedTheme, setSelectedTheme] = useState<RedacaoTheme | null>(null);
-  const [selectedAxis, setSelectedAxis] = useState<RedacaoThemeAxis | 'all'>('all');
+  const [selectedAxis, setSelectedAxis] = useState<FilterMode>('all');
   const [search, setSearch] = useState('');
 
-  // Tópicos disponíveis (apenas os que possuem temas), com contagem.
+  // Counts per axis — exclude completed themes from the regular filters.
   const axes = useMemo(() => {
     const counts = new Map<RedacaoThemeAxis, number>();
-    REDACAO_THEMES.forEach(t => counts.set(t.axis, (counts.get(t.axis) ?? 0) + 1));
+    REDACAO_THEMES.forEach(t => {
+      if (completed.has(t.id)) return;
+      counts.set(t.axis, (counts.get(t.axis) ?? 0) + 1);
+    });
     return [...counts.entries()]
       .sort((a, b) => AXIS_LABELS[a[0]].localeCompare(AXIS_LABELS[b[0]]))
       .map(([axis, count]) => ({ axis, count }));
-  }, []);
+  }, [completed]);
+
+  const totalAvailable = REDACAO_THEMES.length - completed.size;
+  const feitasCount = completed.size;
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     return REDACAO_THEMES.filter(t => {
-      if (selectedAxis !== 'all' && t.axis !== selectedAxis) return false;
+      if (selectedAxis === 'feitas') {
+        if (!completed.has(t.id)) return false;
+      } else {
+        if (completed.has(t.id)) return false; // hide done themes from normal filters
+        if (selectedAxis !== 'all' && t.axis !== selectedAxis) return false;
+      }
       if (q && !t.title.toLowerCase().includes(q)) return false;
       return true;
     });
-  }, [selectedAxis, search]);
+  }, [selectedAxis, search, completed]);
+
+  // Reset selection if the currently selected theme falls outside the active filter
+  React.useEffect(() => {
+    if (selectedTheme && !filtered.find(t => t.id === selectedTheme.id)) {
+      setSelectedTheme(null);
+    }
+  }, [filtered, selectedTheme]);
+
+  const isFeitasMode = selectedAxis === 'feitas';
+
+  const handleReset = () => {
+    if (!onResetCompleted || feitasCount === 0) return;
+    const ok = window.confirm(
+      `Resetar todas as ${feitasCount} ${feitasCount === 1 ? 'redação marcada como feita' : 'redações marcadas como feitas'}? Elas voltam para os filtros originais.`
+    );
+    if (!ok) return;
+    onResetCompleted();
+    setSelectedAxis('all');
+  };
 
   return (
     <div className="space-y-4">
@@ -61,7 +96,7 @@ const RedacaoSetupModal: React.FC<Props> = ({ onStart }) => {
               : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400'
           }`}
         >
-          Todos · {REDACAO_THEMES.length}
+          Todos · {totalAvailable}
         </button>
         {axes.map(({ axis, count }) => {
           const active = selectedAxis === axis;
@@ -79,12 +114,44 @@ const RedacaoSetupModal: React.FC<Props> = ({ onStart }) => {
             </button>
           );
         })}
+        {feitasCount > 0 && (
+          <button
+            onClick={() => setSelectedAxis('feitas')}
+            className={`shrink-0 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all inline-flex items-center gap-1.5 ${
+              isFeitasMode
+                ? 'bg-emerald-500 text-white'
+                : 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400'
+            }`}
+          >
+            <i className="fas fa-check-circle text-[9px]" />
+            Feitas · {feitasCount}
+          </button>
+        )}
       </div>
+
+      {/* Aviso + reset quando em modo "Feitas" */}
+      {isFeitasMode && feitasCount > 0 && (
+        <div className="flex items-center gap-3 px-4 py-3 bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-100 dark:border-emerald-900/30 rounded-2xl animate-in fade-in duration-200">
+          <i className="fas fa-circle-info text-emerald-500 text-sm shrink-0" />
+          <p className="text-[11px] text-emerald-700 dark:text-emerald-400 flex-1 leading-snug">
+            Estas são redações já feitas. Selecione para refazer ou{' '}
+            <button
+              onClick={handleReset}
+              className="font-black underline decoration-dotted underline-offset-2"
+            >
+              resetar todas
+            </button>
+            .
+          </p>
+        </div>
+      )}
 
       {/* Theme list */}
       <div className="space-y-2">
         {filtered.length === 0 && (
-          <div className="text-center py-12 text-gray-400 dark:text-gray-600 text-sm">Nenhum tema encontrado</div>
+          <div className="text-center py-12 text-gray-400 dark:text-gray-600 text-sm">
+            {isFeitasMode ? 'Nenhuma redação marcada como feita.' : 'Nenhum tema encontrado.'}
+          </div>
         )}
         {filtered.map(theme => {
           const isSelected = selectedTheme?.id === theme.id;
@@ -101,12 +168,19 @@ const RedacaoSetupModal: React.FC<Props> = ({ onStart }) => {
             >
               <div className="flex items-start gap-3">
                 <div className="min-w-0 flex-1">
-                  <span
-                    className="inline-block text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full mb-1.5"
-                    style={{ backgroundColor: AXIS_COLORS[theme.axis] + '20', color: AXIS_COLORS[theme.axis] }}
-                  >
-                    {AXIS_LABELS[theme.axis]}
-                  </span>
+                  <div className="flex items-center gap-1.5 mb-1.5 flex-wrap">
+                    <span
+                      className="inline-block text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full"
+                      style={{ backgroundColor: AXIS_COLORS[theme.axis] + '20', color: AXIS_COLORS[theme.axis] }}
+                    >
+                      {AXIS_LABELS[theme.axis]}
+                    </span>
+                    {isFeitasMode && (
+                      <span className="inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-widest text-emerald-600 dark:text-emerald-400">
+                        <i className="fas fa-check-circle text-[9px]" /> Feita
+                      </span>
+                    )}
+                  </div>
                   <p className={`text-sm font-bold leading-snug ${isSelected ? 'text-indigo-700 dark:text-indigo-300' : 'text-gray-800 dark:text-gray-200'}`}>
                     {theme.title}
                   </p>
@@ -145,8 +219,10 @@ const RedacaoSetupModal: React.FC<Props> = ({ onStart }) => {
                 : 'bg-white dark:bg-white/[0.04] border border-gray-200 dark:border-white/10 text-gray-400 dark:text-gray-500 cursor-not-allowed'
             }`}
           >
-            <i className={`fas ${selectedTheme ? 'fa-pen' : 'fa-hand-pointer'}`} />
-            {selectedTheme ? 'Começar Redação · 90min' : 'Selecione um tema acima'}
+            <i className={`fas ${selectedTheme ? (isFeitasMode ? 'fa-rotate-right' : 'fa-pen') : 'fa-hand-pointer'}`} />
+            {selectedTheme
+              ? (isFeitasMode ? 'Refazer Redação · 90min' : 'Começar Redação · 90min')
+              : 'Selecione um tema acima'}
           </button>
         </div>
       </div>

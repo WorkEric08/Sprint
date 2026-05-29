@@ -55,7 +55,9 @@
       "Bash(node -e \"const p=require\\('./package.json'\\); console.log\\('deps:', JSON.stringify\\({...p.dependencies,...p.devDependencies},null,1\\)\\)\")",
       "Bash(ls node_modules/dexie-react-hooks)",
       "Bash(git rm *)",
-      "Bash(xargs grep -l \"redacao\\\\|Redacao\")"
+      "Bash(xargs grep -l \"redacao\\\\|Redacao\")",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\Pichau\\\\Desktop\\\\Sprint\" -Recurse -Force)",
+      "Bash(Select-Object -First 50)"
     ]
   }
 }

@@ -1,12 +1,13 @@
 
 import React, { useMemo, useState } from 'react';
-import { Objective, Subject, BlockLog, BlockType, BLOCK_TYPE_LABELS, BLOCK_TYPE_COLORS, Edital } from '../types';
+import { Objective, Subject, BlockLog, BlockType, BLOCK_TYPE_LABELS, BLOCK_TYPE_COLORS, Edital, RedacaoSession } from '../types';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import { db } from '../db';
 import HeatmapView from './HeatmapView';
 import EditalCoverageCard from './EditalCoverageCard';
 import SimuladoAreaCard from './SimuladoAreaCard';
 import SimuladoHistoryView from './SimuladoHistoryView';
+import RedacaoHistoryView from './RedacaoHistoryView';
 import BancaStatsCard from './BancaStatsCard';
 import StreakWidget from './StreakWidget';
 import ShareSheet from './ShareSheet';
@@ -23,6 +24,8 @@ interface Props {
   streakState: StreakState;
   userName: string;
   streakEnabled?: boolean;
+  redacaoSessions: RedacaoSession[];
+  onDeleteRedacaoSession: (id: string) => Promise<void>;
 }
 
 type Period = 'day' | 'week' | 'month';
@@ -106,8 +109,9 @@ function useSubtopicStats() {
   return stats;
 }
 
-const StatsOverview: React.FC<Props> = ({ subjects, edital, blockLogs, targetBanca, streakState, userName, streakEnabled = true }) => {
+const StatsOverview: React.FC<Props> = ({ subjects, edital, blockLogs, targetBanca, streakState, userName, streakEnabled = true, redacaoSessions, onDeleteRedacaoSession }) => {
   const [showSimuladoHistory, setShowSimuladoHistory] = useState(false);
+  const [showRedacaoHistory, setShowRedacaoHistory] = useState(false);
   const [showShare, setShowShare] = useState(false);
   const { records: simuladoRecords, deleteRecord: deleteSimuladoRecord } = useSimulados();
   const isDarkMode = document.documentElement.classList.contains('dark');
@@ -481,6 +485,27 @@ const StatsOverview: React.FC<Props> = ({ subjects, edital, blockLogs, targetBan
             <i className="fas fa-chevron-right text-gray-300 dark:text-gray-700 text-xs group-hover:text-indigo-400 transition-colors" />
           </button>
 
+          {/* ── Histórico de Redações ── */}
+          <button
+            onClick={() => setShowRedacaoHistory(true)}
+            className="w-full flex items-center justify-between p-3.5 bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 hover:border-violet-200 dark:hover:border-violet-900/50 transition-all active:scale-[0.98] group"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-violet-50 dark:bg-violet-900/20 flex items-center justify-center">
+                <i className="fas fa-pen text-violet-500 text-sm" />
+              </div>
+              <div className="text-left">
+                <p className="text-sm font-black text-gray-800 dark:text-gray-100">Histórico de Redações</p>
+                <p className="text-[10px] font-bold text-gray-400 dark:text-gray-600 uppercase tracking-wider mt-0.5">
+                  {redacaoSessions.length === 0
+                    ? 'Nenhuma redação realizada'
+                    : `${redacaoSessions.length} ${redacaoSessions.length === 1 ? 'redação' : 'redações'} · Ver evolução`}
+                </p>
+              </div>
+            </div>
+            <i className="fas fa-chevron-right text-gray-300 dark:text-gray-700 text-xs group-hover:text-violet-400 transition-colors" />
+          </button>
+
           {/* ── Fase 6: Compartilhar — só aparece se ofensiva habilitada ── */}
           {streakEnabled && (
             <button
@@ -522,6 +547,15 @@ const StatsOverview: React.FC<Props> = ({ subjects, edital, blockLogs, targetBan
           records={simuladoRecords}
           onDelete={deleteSimuladoRecord}
           onClose={() => setShowSimuladoHistory(false)}
+        />
+      )}
+
+      {/* Redação history overlay */}
+      {showRedacaoHistory && (
+        <RedacaoHistoryView
+          sessions={redacaoSessions}
+          onDelete={onDeleteRedacaoSession}
+          onClose={() => setShowRedacaoHistory(false)}
         />
       )}
     </div>

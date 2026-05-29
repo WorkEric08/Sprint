@@ -114,7 +114,7 @@ const App: React.FC = () => {
   const { blockLogs } = useBlockLogs();
   const { reviewItems, pendingCount, createOrUpdateItem, applyResult } = useReviews();
   const { records: simuladoRecords, saveRecord: saveSimuladoRecord } = useSimulados();
-  const { saveSession: saveRedacaoSession } = useRedacao();
+  const { sessions: redacaoSessions, saveSession: saveRedacaoSession, deleteSession: deleteRedacaoSession } = useRedacao();
   const selectedEdital = React.useMemo(() => {
     if (selectedEditalId === 'custom') {
       try {
@@ -353,6 +353,8 @@ const App: React.FC = () => {
                 streakState={streakState}
                 userName={userName}
                 streakEnabled={streakEnabled}
+                redacaoSessions={redacaoSessions}
+                onDeleteRedacaoSession={deleteRedacaoSession}
               />
             </div>
           )}
