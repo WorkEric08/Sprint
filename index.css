@@ -193,6 +193,47 @@ input[type=number] {
   }
 }
 
+/* Seletor de matérias (Montar Sprint): swipe sem barra no mobile,
+   scrollbar horizontal visível no desktop. Mesmas cores de .scroll-container. */
+.subject-hscroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+}
+.subject-hscroll::-webkit-scrollbar {
+  display: none;
+}
+@media (min-width: 768px) {
+  .subject-hscroll {
+    scrollbar-width: thin;
+    scrollbar-color: #9ca3af transparent;
+  }
+  .dark .subject-hscroll {
+    scrollbar-color: #0f1d3a transparent;
+  }
+  .subject-hscroll::-webkit-scrollbar {
+    display: block;
+    height: 6px;
+  }
+  .subject-hscroll::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .subject-hscroll::-webkit-scrollbar-thumb {
+    background: #9ca3af;
+    border-radius: 10px;
+  }
+  .dark .subject-hscroll::-webkit-scrollbar-thumb {
+    background: #0f1d3a;
+  }
+  .subject-hscroll::-webkit-scrollbar-thumb:hover {
+    background: #1e3a8a;
+  }
+  .dark .subject-hscroll::-webkit-scrollbar-thumb:hover {
+    background: #1e40af;
+  }
+}
+
 /* Padrão de cabeçalho para telas full-screen: absorve a safe area do topo
    (status bar translúcida no PWA) mantendo um mínimo de 1rem. */
 .safe-top {

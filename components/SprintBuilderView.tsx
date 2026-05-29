@@ -280,7 +280,7 @@ const SprintBuilderView: React.FC<Props> = ({
 
       {/* Bottom controls */}
       <div className="border-t border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900">
-        <div className="overflow-x-scroll-area flex gap-2 px-4 pt-3 pb-2">
+        <div className="subject-hscroll flex gap-2 px-4 pt-3 pb-2 md:pb-3">
           {subjects.map(subject => {
             const done = subject.completedBlocks.length;
             const inQueue = queue.filter(i => i.type === 'study' && i.subjectId === subject.id).length;
