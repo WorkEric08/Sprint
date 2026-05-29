@@ -31,7 +31,6 @@ const PostSimuladoModal: React.FC<Props> = ({
   useBackButton(onSkip);
   const [timeControlScore, setTimeControlScore] = useState<1|2|3|4|5|null>(null);
   const [perception, setPerception] = useState('');
-  const [redacaoText, setRedacaoText] = useState('');
   const [redacaoScore, setRedacaoScore] = useState<string>('');
   const [areaResults, setAreaResults] = useState<SimuladoAreaResult[]>(
     template.areas.map(a => ({
@@ -69,7 +68,7 @@ const PostSimuladoModal: React.FC<Props> = ({
       areaResults,
       timeControlScore,
       perception: perception.trim(),
-      redacaoText: redacaoText.trim(),
+      redacaoText: '',
       redacaoScore: redacaoScore ? Number(redacaoScore) : null,
     };
     onSave(record);
@@ -174,21 +173,6 @@ const PostSimuladoModal: React.FC<Props> = ({
             </div>
           )}
 
-          {/* Redação text (ENEM) */}
-          {template.hasRedacao && (
-            <div className="space-y-2">
-              <p className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">
-                Texto da Redação <span className="font-normal normal-case tracking-normal opacity-60">(opcional)</span>
-              </p>
-              <textarea
-                value={redacaoText}
-                onChange={e => setRedacaoText(e.target.value)}
-                placeholder="Cole ou escreva sua redação aqui para armazenar e revisar depois…"
-                rows={5}
-                className="w-full bg-gray-50 dark:bg-gray-800/40 border border-gray-100 dark:border-gray-800 rounded-2xl px-4 py-3 text-sm text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-600 resize-none focus:outline-none focus:border-indigo-300 dark:focus:border-indigo-700 transition-colors leading-relaxed"
-              />
-            </div>
-          )}
 
           {/* Time control */}
           <div className="space-y-2">
