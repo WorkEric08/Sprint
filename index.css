@@ -155,6 +155,44 @@ input[type=number] {
   }
 }
 
+/* Scrollbar de modais — segue o padrão do sistema (.scroll-container),
+   não o padrão do navegador. Discreta no light, escura no dark. */
+.modal-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: #9ca3af transparent;
+}
+.dark .modal-scroll {
+  scrollbar-color: #0f1d3a transparent;
+}
+.modal-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+.modal-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.modal-scroll::-webkit-scrollbar-thumb {
+  background: #9ca3af;
+  border-radius: 10px;
+}
+.dark .modal-scroll::-webkit-scrollbar-thumb {
+  background: #0f1d3a;
+}
+.modal-scroll::-webkit-scrollbar-thumb:hover {
+  background: #1e3a8a;
+}
+.dark .modal-scroll::-webkit-scrollbar-thumb:hover {
+  background: #1e40af;
+}
+/* No mobile (touch) a barra fica oculta, como no resto do app */
+@media (pointer: coarse) {
+  .modal-scroll {
+    scrollbar-width: none;
+  }
+  .modal-scroll::-webkit-scrollbar {
+    display: none;
+  }
+}
+
 /* Padrão de cabeçalho para telas full-screen: absorve a safe area do topo
    (status bar translúcida no PWA) mantendo um mínimo de 1rem. */
 .safe-top {
